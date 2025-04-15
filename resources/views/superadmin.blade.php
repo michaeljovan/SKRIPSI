@@ -5,6 +5,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>Superadmin</title>
         <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}">
         <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">
@@ -148,7 +149,7 @@
                                     </div>
                                 @endif
 
-                                <form action="{{ route('superadmin.storeUser') }}" method="POST">
+                                <form action="{{ route('superadmin.store_user') }}" method="POST">
                                     @csrf
 
                                     <div class="mb-3">
@@ -285,7 +286,7 @@
                                 }
                             });
 
-                            fetch(`/superadmin/users/${userId}`, {
+                            fetch(`{{ route('superadmin.delete_user', '') }}/${userId}`, {
                                     method: 'DELETE',
                                     headers: {
                                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -330,7 +331,7 @@
                     });
                 });
             });
-            // Modal Button 
+            // Modal Button
             const modalpass = document.getElementById('staticBackdrop');
             modalpass.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
@@ -351,7 +352,7 @@
                 const successToast = new bootstrap.Toast(document.getElementById('successToast'));
                 const toastMessage = document.getElementById('toastMessage');
 
-                fetch("{{ route('superadmin.changePassword') }}", {
+                fetch("{{ route('superadmin.change_password') }}", {
                         method: 'POST',
                         body: formData,
                         headers: {

@@ -89,7 +89,7 @@
                     <h5 class="mb-0">Form Input Kerja Sama</h5>
                 </div>
                 <div class="card-body">
-                    <form id="kerjaSamaForm" action="{{ route('store.kerja.sama') }}" method="POST"
+                    <form id="kerjaSamaForm" action="{{ route('store_kerja_sama') }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         <!-- Row 1 -->

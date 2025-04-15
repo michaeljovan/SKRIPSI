@@ -1,0 +1,200 @@
+body {
+    overflow-x: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar,
+footer {
+    background-color: #707FDD;
+}
+
+.sidebar {
+    width: 300px;
+    background-color: #CCDAFF;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    overflow-y: auto;
+}
+
+.sidebar.collapsed {
+    transform: translateX(-300px);
+}
+
+.main-content {
+    margin-left: 300px;
+    margin-top: 56px;
+    min-height: calc(100vh - 56px - 40px);
+    transition: all 0.3s ease;
+}
+
+.main-content.full-width {
+    margin-left: 0;
+}
+
+.toggle-btn {
+    position: fixed;
+    top: 70px;
+    left: 300px;
+    background: #CCDAFF;
+    border: 1px solid #dee2e6;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    z-index: 1050;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.toggle-btn.collapsed {
+    left: 10px;
+}
+
+/* Sidebar Menu Styles */
+.sidebar-menu {
+    padding: 15px;
+}
+
+.menu-item {
+    background-color: #B7C0FB;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.menu-link {
+    color: #000;
+    padding: 12px 15px;
+    display: block;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.menu-link:hover, .menu-link.active {}
+
+.menu-link i {
+    margin-right: 10px;
+}
+
+.submenu {
+    background-color: #B7C0FB;
+}
+
+.submenu-item {
+    padding: 10px 15px;
+}
+
+.submenu-link {
+    color: #333;
+    text-decoration: none;
+    display: block;
+    padding: 8px 10px;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    border-radius: 4px;
+    margin: 2px 0;
+}
+
+.submenu-link:hover {
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+    z-index: 1;
+    position: relative;
+}
+
+/* Header Button Styles */
+.settingbtn .btn {
+    background-color: white !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.settingbtn .btn-outline-secondary {
+    color: #6c757d !important;
+}
+
+.settingbtn .btn-outline-secondary:hover {
+    color: white !important;
+    background-color: #6c757d !important;
+}
+
+.settingbtn .btn-outline-danger {
+    color: #dc3545 !important;
+}
+
+.settingbtn .btn-outline-danger:hover {
+    color: white !important;
+    background-color: #dc3545 !important;
+}
+
+@media (max-width: 991.98px) {
+    .sidebar {
+        transform: translateX(-300px);
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .toggle-btn {
+        left: 10px;
+    }
+
+    .toggle-btn.show {
+        left: 310px;
+    }
+}
+
+/* Pemberitahuan ganti password*/
+.toast {
+    transition: opacity 0.5s ease;
+}
+
+.toast.hide {
+    opacity: 0;
+}
+
+/*tabel data*/
+.table-responsive {
+    overflow-x: auto;
+}
+
+#rekapTable {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+}
+
+#rekapTable th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+#rekapTable td, #rekapTable th {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+
+#rekapTable tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}

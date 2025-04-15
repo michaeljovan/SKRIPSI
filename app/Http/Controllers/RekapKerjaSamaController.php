@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Storage;
 
 class RekapKerjaSamaController extends Controller
 {
+    // app/Http/Controllers/DokumenKerjaSamaController.php
     public function index()
     {
-        return view('input-kerja-sama');
+        $rekapKerjaSama = RekapKerjaSama::orderBy('created_at', 'desc')->get();
+        return view('datadokumenkerjasama', compact('rekapKerjaSama'));
     }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -65,9 +66,4 @@ class RekapKerjaSamaController extends Controller
 
         return redirect()->back()->with('success', 'Data kerja sama berhasil disimpan!');
     }
-
-    //showData function to display the data
-    // This function retrieves the data from the database and passes it to the view
-    // app/Http/Controllers/RekapKerjaSamaController.php
-
 }

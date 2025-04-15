@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Data Dokumen Kerja Sama</title> 
-    <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}"> 
-    <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">   
-    <link rel="stylesheet" href="{{ asset('fontawesome-free-6.7.2-web/css/all.css') }}"> 
-    <link rel="stylesheet" href="{{ url('CSS/dashboard.css') }}">
+    <title>Data Dokumen Kerja Sama</title>
+    <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('fontawesome-free-6.7.2-web/css/all.css') }}">
+    <link rel="stylesheet" href="{{ url('CSS/datadokumenkerjasama.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <!-- Add MD Bootstrap CSS from CDN -->
@@ -42,7 +42,7 @@
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </div>
-            
+
             <!-- Dokumen Item -->
             <div class="menu-item">
                 <a class="menu-link" data-bs-toggle="collapse" href="#dokumenMenu">
@@ -69,12 +69,84 @@
     </button>
 
     <!-- Main Content -->
-    <main class="main-content p-3" id="mainContent">
-        <div class="container-fluid">
-            <h1>Main Content</h1>
-            <p>Welcome to the dashboard. Your content goes here.</p>
+<!-- Main Content -->
+<main class="main-content p-3" id="mainContent">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1>Input Rekap Kerja Sama</h1>
+                <p class="text-muted">Dokumen - Input Rekap Kerja Sama</p>
+            </div>
         </div>
-    </main>
+
+        <!-- Tabel Data Rekap Kerja Sama -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Data Rekap Kerja Sama</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="rekapTable">
+                        <thead>
+                            <tr>
+                                <th>No Dokumen</th>
+                                <th>Unit</th>
+                                <th>Mitra</th>
+                                <th>Judul</th>
+                                <th>Bentuk Kerja Sama</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Selesai</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($rekapKerjaSama as $rekap)
+                            <tr>
+                                <td>{{ $rekap->no_dokumen }}</td>
+                                <td>{{ $rekap->unit }}</td>
+                                <td>{{ Str::limit($rekap->mitra_kerja_sama, 30) }}</td>
+                                <td>{{ Str::limit($rekap->judul_kerja_sama, 40) }}</td>
+                                <td>
+                                    @if(is_array($rekap->bentuk_kerja_sama))
+                                        {{ implode(', ', $rekap->bentuk_kerja_sama) }}
+                                    @else
+                                        {{ $rekap->bentuk_kerja_sama }}
+                                    @endif
+                                </td>
+                                <td>{{ date('d/m/Y', strtotime($rekap->tanggal_mulai)) }}</td>
+                                <td>{{ date('d/m/Y', strtotime($rekap->tanggal_selesai)) }}</td>
+                                <td>
+                                    <a href="{{ Storage::url($rekap->dokumen_path) }}"
+                                       class="btn btn-sm btn-info"
+                                       target="_blank"
+                                       title="Lihat Dokumen">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-warning edit-btn"
+                                            data-id="{{ $rekap->id }}"
+                                            title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-btn"
+                                            data-id="{{ $rekap->id }}"
+                                            title="Hapus">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Input (existing form code remains the same) -->
+        <div class="card shadow-sm">
+            <!-- ... (your existing form code) ... -->
+        </div>
+    </div>
+</main>
 
     <!-- Footer -->
     <footer class="fixed-bottom py-2 text-center text-white">
@@ -89,7 +161,7 @@
             const sidebarToggle = document.getElementById('sidebarToggle');
             const mainContent = document.getElementById('mainContent');
             const toggleIcon = document.getElementById('toggleIcon');
-            
+
             // Toggle sidebar
             sidebarToggle.addEventListener('click', function() {
                 if (window.innerWidth < 992) {
@@ -101,7 +173,7 @@
                     sidebar.classList.toggle('collapsed');
                     sidebarToggle.classList.toggle('collapsed');
                     mainContent.classList.toggle('full-width');
-                    
+
                     // Toggle icon
                     if (sidebar.classList.contains('collapsed')) {
                         toggleIcon.classList.remove('bi-list');
