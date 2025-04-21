@@ -2,11 +2,20 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\PelaksanaanKerjaSamaController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\RekapKerjaSamaController;
 
-Route::get('/', function () {return view('login');});
-Route::get('/datadokumenkerjasama', function () {return view('datadokumenkerjasama');});
+Route::get('/', function () {
+    return view('login');
+});
+Route::get('/inputlaporanpelaksaankerjasama', function () {
+    return view('inputlaporanpelaksanaankerjasama');
+});
+
+Route::get('/datadokumenkerjasama', function () {
+    return view('datadokumenkerjasama');
+});
 Route::get('/datadokumenkerjasama', [RekapKerjaSamaController::class, 'index'])->name('data_kerja_sama');
 
 
@@ -15,9 +24,13 @@ Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post')
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {return view('dashboard');})->name('dashboard');
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
     //Input Rekap Kerja Sama
-    Route::get('/inputrekapkerjasama', function () {return view('inputrekapkerjasama');})->name('inputrekapkerjasama');
+    Route::get('/inputrekapkerjasama', function () {
+        return view('inputrekapkerjasama');
+    })->name('inputrekapkerjasama');
 
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -37,5 +50,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/data', function () {
             return view('datadokumenkerjasama');
         })->name('data_kerja_sama');
+        Route::delete('rekap_kerja_sama/{id}', [RekapKerjaSamaController::class, 'delete'])->name('delete_kerja_sama');
     });
+
+    //Pelaksanaan Kerja Sama Routes
+    //tambah laporan pelaksanaan kerja sama pada data kerjasama
+    Route::get('/inputlaporanpelaksanaankerjasama/{id}', function ($id) {
+        $rekap = App\Models\RekapKerjaSama::findOrFail($id);
+        return view('inputlaporanpelaksanaankerjasama', ['rekap' => $rekap]);
+    })->name('inputlaporanpelaksanaankerjasama');
+    //nimypam laporan pelaksanaan
+    Route::post('/pelaksanaankerjasama', [PelaksanaanKerjaSamaController::class, 'store'])->name('pelaksanaankerjasama.store');
+    Route::get('/laporan/view/{id}', [PelaksanaanKerjaSamaController::class, 'view'])->name('view_laporan');
+    Route::get('/laporan/edit/{id}', [PelaksanaanKerjaSamaController::class, 'edit'])->name('edit_laporan');
 });

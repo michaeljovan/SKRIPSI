@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Storage;
 
 class RekapKerjaSamaController extends Controller
 {
-    // app/Http/Controllers/DokumenKerjaSamaController.php
     public function index()
     {
         $rekapKerjaSama = RekapKerjaSama::orderBy('created_at', 'desc')->get();
@@ -63,7 +62,41 @@ class RekapKerjaSamaController extends Controller
             'jumlah_implementasi' => $request->jumlahImplementasi,
             'dokumen_path' => $filePath,
         ]);
-
         return redirect()->back()->with('success', 'Data kerja sama berhasil disimpan!');
+    }
+
+    public function delete($id)
+    {
+        try {
+            // This check is redundant since the route is already protected by auth middleware
+            $rekap = RekapKerjaSama::findOrFail($id);
+
+            // Delete the file from storage if exists
+            if ($rekap->dokumen_path) {
+                Storage::disk('public')->delete($rekap->dokumen_path);
+            }
+
+            $rekap->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus!'
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan!'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function create()
+    {
+        return view('inputlaporanpelaksanaankerjasama');
     }
 }

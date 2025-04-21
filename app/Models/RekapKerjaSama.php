@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class RekapKerjaSama extends Model
 {
     use HasFactory;
-    protected $table = 'rekapkerjasama'; 
+    protected $table = 'rekapkerjasama';
     protected $primaryKey = 'id';
 
     protected $fillable = [
@@ -37,4 +37,9 @@ class RekapKerjaSama extends Model
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
     ];
+
+    public function laporanPelaksanaan()
+{
+    return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap');
+}
 }

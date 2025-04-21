@@ -78,7 +78,8 @@ footer {
     transition: all 0.3s;
 }
 
-.menu-link:hover, .menu-link.active {}
+.menu-link:hover, .menu-link.active {
+}
 
 .menu-link i {
     margin-right: 10px;
@@ -166,67 +167,30 @@ footer {
     opacity: 0;
 }
 
-/*tabel data*/
-.table-responsive {
-    overflow-x: auto;
-}
-
-#rekapTable {
-    width: 100%;
-    margin-bottom: 1rem;
-    color: #212529;
-}
-
-#rekapTable th {
+.form-section {
     background-color: #f8f9fa;
-    font-weight: 600;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
-
-#rekapTable td, #rekapTable th {
-    padding: 0.75rem;
-    vertical-align: top;
-    border-top: 1px solid #dee2e6;
+.form-section h3 {
+    color: #0d6efd;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
 }
-
-#rekapTable tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+.required-field::after {
+    content: " *";
+    color: red;
 }
-
-.btn-sm {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    border-radius: 0.2rem;
+.compact-textarea {
+    min-height: 100px;
 }
-
-/*tabel data*/
-.fixed-header-table {
-    position: relative;
-    overflow: auto;
-    height: 600px;
-    /* Sesuaikan tinggi sesuai kebutuhan */
+.form-control-lg {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    height: calc(2.5rem + 2px);
 }
-
-.fixed-header-table thead th {
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
-    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
-}
-
-.fixed-header-table th:first-child,
-.fixed-header-table td:first-child {
-    position: sticky;
-    left: 0;
-    background: white;
-    z-index: 11;
-}
-
-.fixed-header-table th:last-child,
-.fixed-header-table td:last-child {
-    position: sticky;
-    right: 0;
-    background: white;
-    z-index: 11;
+.currency-input {
+    text-align: right;
 }
