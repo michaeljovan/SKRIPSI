@@ -29,7 +29,8 @@ class RekapKerjaSama extends Model
         'in_cash',
         'total_in_cash',
         'jumlah_implementasi',
-        'dokumen_path'
+        'dokumen_path',
+        'is_laporan'
     ];
 
     protected $casts = [

@@ -230,3 +230,33 @@ footer {
     background: white;
     z-index: 11;
 }
+
+/*indikasi pelaksaan*/
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status-filled {
+    background-color: #28a745;
+}
+
+.status-empty {
+    background-color: #dc3545;
+}
+
+.status-text {
+    font-weight: 500;
+}
+
+.status-filled-text {
+    color: #28a745;
+}
+
+.status-empty-text {
+    color: #dc3545;
+}

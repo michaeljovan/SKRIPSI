@@ -134,25 +134,27 @@
                                         <td>{{ $rekap->masa_berlaku }}</td>
                                         <td>{{ $rekap->kategori }}</td>
                                         <td>{{ $rekap->in_kind ? 'Ya' : 'Tidak' }}</td>
-                                        <td>{{ $rekap->total_in_kind ? number_format($rekap->total_in_kind, 0, ',', '.') : '-' }}</td>
-                                        <td>{{ $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '-' }}</td>
-                                        <td>{{ $rekap->total_in_cash ? number_format($rekap->total_in_cash, 0, ',', '.') : '-' }}</td>
+                                        <td>{{ $rekap->total_in_kind ? number_format($rekap->total_in_kind, 0, ',', '.') : '-' }}
+                                        </td>
+                                        <td>{{ $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '-' }}
+                                        </td>
+                                        <td>{{ $rekap->total_in_cash ? number_format($rekap->total_in_cash, 0, ',', '.') : '-' }}
+                                        </td>
                                         <td>{{ $rekap->jumlah_implementasi ?? '-' }}</td>
                                         <td>
-                                            @if($rekap->laporan_pelaksanaan)
-                                                <a href="{{ asset('storage/' . $rekap->laporan_pelaksanaan) }}"
-                                                   class="btn btn-sm btn-success me-1"
-                                                   target="_blank"
-                                                   title="Lihat Laporan">
-                                                    <i class="bi bi-eye"></i> Lihat Laporan
-                                                </a>
-                                            @else
-                                                <a href="{{ route('inputlaporanpelaksanaankerjasama', ['id' => $rekap->id]) }}"
-                                                   class="btn btn-sm btn-primary"
-                                                   title="Tambah Laporan">
-                                                    <i class="bi bi-plus-circle"></i> Tambah
-                                                </a>
-                                            @endif
+                                            <div class="d-flex align-items-center">
+                                            @if ($rekap->is_laporan==true)
+                                                    <span class="status-indicator status-filled"></span>
+                                                    <span class="status-text status-filled-text">Terisi</span>
+                                                @else
+                                                    <span class="status-indicator status-empty"></span>
+                                                    <span class="status-text status-empty-text">Belum Terisi</span>
+                                                    <a href="{{ route('inputlaporanpelaksanaankerjasama', ['id' => $rekap->id]) }}"
+                                                        class="btn btn-sm btn-primary ms-2" title="Tambah Laporan">
+                                                        <i class="bi bi-plus-circle"></i> Tambah
+                                                    </a>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="d-flex">

@@ -46,6 +46,10 @@ class PelaksanaanKerjaSamaController extends Controller
                 'tautan_link_kegiatan' => $validatedData['tautan_kegiatan'],
             ]);
 
+            RekapKerjaSama::findOrFail($validatedData['rekap_id'])->update([
+                'is_laporan' => true,
+            ]);
+
             return redirect()->back()->with('success', 'Laporan pelaksanaan berhasil disimpan');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);

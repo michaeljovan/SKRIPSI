@@ -31,6 +31,7 @@ return new class extends Migration
             $table->decimal('total_in_cash', 15, 2)->nullable();
             $table->integer('jumlah_implementasi')->nullable();
             $table->string('dokumen_path');
+            $table->boolean('is_laporan')->default(false);
             $table->timestamps();
         });
     }
