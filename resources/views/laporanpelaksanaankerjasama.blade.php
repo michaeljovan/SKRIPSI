@@ -81,7 +81,7 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <table class="table table-striped" id="rekapTable" style="min-width: 1650px;">
                             <thead class="table-light">
                                 <tr>
                                     <th>No</th>
@@ -122,7 +122,7 @@
                                                 class="btn btn-sm btn-info" title="Detail">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{{ route('pelaksanaan.edit', $item->id) }}"
+                                            <a href="{{ route('pelaksanaankerjasama.edit', $item->id) }}"
                                                 class="btn btn-sm btn-warning" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>

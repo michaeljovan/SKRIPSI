@@ -9,7 +9,12 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class SuperAdminController extends Controller
 {
-    // Gunakan camelCase untuk method names
+
+    public function index()
+    {
+        $users = User::latest()->get();
+        return view('superadmin', compact('users'));
+    }
     public function createUserForm()
     {
         $users = User::latest()->get();

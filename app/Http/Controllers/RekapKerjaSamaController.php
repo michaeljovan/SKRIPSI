@@ -13,6 +13,9 @@ class RekapKerjaSamaController extends Controller
         $rekapKerjaSama = RekapKerjaSama::orderBy('created_at', 'desc')->get();
         return view('datadokumenkerjasama', compact('rekapKerjaSama'));
     }
+
+
+
     public function store(Request $request)
     {
         $validated = $request->validate([

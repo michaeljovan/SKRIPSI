@@ -11,6 +11,20 @@ Route::get('/', function () {
     return view('login');
 });
 
+Route::get('/inputrekapkerjasama', function () {
+    return view('inputrekapkerjasama');
+});
+
+Route::get('/inputlaporanpelaksanaankerjasama', function () {
+    return view('inputlaporanpelaksanaankerjasama');
+});
+
+Route::get('/laporanpelaksanaankerjasama', function () {
+    return view('laporanpelaksanaankerjasama');
+});
+
+
+
 Route::get('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post');
 
@@ -31,17 +45,17 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Pelaksanaan Kerja Sama
-    Route::prefix('pelaksanaan')->group(function () {
-        Route::get('/', [PelaksanaanKerjaSamaController::class, 'index'])->name('pelaksanaan.index');
-        Route::get('/create/{id}', [PelaksanaanKerjaSamaController::class, 'create'])->name('pelaksanaan.create');
-        Route::post('/', [PelaksanaanKerjaSamaController::class, 'store'])->name('pelaksanaan.store');
-        Route::get('/{id}', [PelaksanaanKerjaSamaController::class, 'show'])->name('pelaksanaan.show');
-        Route::get('/edit/{id}', [PelaksanaanKerjaSamaController::class, 'edit'])->name('pelaksanaan.edit');
-        Route::delete('/{id}', [PelaksanaanKerjaSamaController::class, 'destroy'])->name('pelaksanaan.destroy');
+    Route::prefix('pelaksanaankerjasama')->group(function () {
+        Route::get('/', [PelaksanaanKerjaSamaController::class, 'index'])->name('pelaksanaankerjasama.index');
+        Route::get('/create/{id}', [PelaksanaanKerjaSamaController::class, 'create'])->name('pelaksanaankerjasama.create');
+        Route::post('/', [PelaksanaanKerjaSamaController::class, 'store'])->name('pelaksanaankerjasama.store');
+        Route::get('/{id}', [PelaksanaanKerjaSamaController::class, 'show'])->name('pelaksanaankerjasama.show');
+        Route::get('/edit/{id}', [PelaksanaanKerjaSamaController::class, 'edit'])->name('pelaksanaankerjasama.edit');
+        Route::delete('/{id}', [PelaksanaanKerjaSamaController::class, 'destroy'])->name('pelaksanaankerjasama.destroy');
     });
 
     // Dokumen Kerja Sama
-    Route::get('/datadokumenkerjasama', [RekapKerjaSamaController::class, 'data'])->name('data_kerja_sama');
+    Route::get('/datadokumenkerjasama', [RekapKerjaSamaController::class, 'index'])->name('data_kerja_sama');
 
     // Laporan Pelaksanaan
     Route::get('/laporanpelaksanaankerjasama', [PelaksanaanKerjaSamaController::class, 'index'])->name('laporan.pelaksanaan');

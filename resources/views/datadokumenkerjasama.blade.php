@@ -149,7 +149,7 @@
                                                 @else
                                                     <span class="status-indicator status-empty"></span>
                                                     <span class="status-text status-empty-text">Belum Terisi</span>
-                                                    <a href="{{ route('inputlaporanpelaksanaankerjasama', ['id' => $rekap->id]) }}"
+                                                    <a href="{{ route('pelaksanaankerjasama.create', ['id' => $rekap->id]) }}"
                                                         class="btn btn-sm btn-primary ms-2" title="Tambah Laporan">
                                                         <i class="bi bi-plus-circle"></i> Tambah
                                                     </a>

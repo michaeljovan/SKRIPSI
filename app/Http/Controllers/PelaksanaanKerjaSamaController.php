@@ -13,15 +13,15 @@ class PelaksanaanKerjaSamaController extends Controller
      */
     public function create($id)
     {
-        $kerjaSama = RekapKerjaSama::findOrFail($id);
-        return view('pelaksanaan.create', compact('kerjaSama'));
+        $rekap = RekapKerjaSama::findOrFail($id);
+        return view('inputlaporanpelaksanaankerjasama', compact('rekap'));
     }
 
     public function index()
     {
         $rekap = RekapKerjaSama::with('laporanPelaksanaan')
-                    ->whereHas('laporanPelaksanaan')
-                    ->paginate(10);
+            ->whereHas('laporanPelaksanaan')
+            ->paginate(10);
 
         return view('laporanpelaksanaankerjasama', compact('rekap'));
     }
