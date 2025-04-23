@@ -95,7 +95,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="form-section">
                     <div class="row">
                         <div class="col-md-6 mb-3">

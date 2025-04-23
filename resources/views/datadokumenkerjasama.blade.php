@@ -90,7 +90,7 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="fixed-header-table">
-                        <table class="table table-striped table-hover" id="rekapTable" style="min-width: 1650px;">
+                        <table class="table table-striped" id="rekapTable" style="min-width: 1650px;">
                             <thead>
                                 <tr>
                                     <th style="min-width: 150px;">No Dokumen</th>

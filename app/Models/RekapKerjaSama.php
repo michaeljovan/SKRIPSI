@@ -40,7 +40,12 @@ class RekapKerjaSama extends Model
     ];
 
     public function laporanPelaksanaan()
-{
-    return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap');
-}
+    {
+        return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap','id');
+    }
+
+    public function rekap()
+    {
+        return $this->belongsTo(PelaksanaanKerjaSama::class, 'idrekap');
+    }
 }

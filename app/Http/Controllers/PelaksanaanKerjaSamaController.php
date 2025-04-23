@@ -17,6 +17,15 @@ class PelaksanaanKerjaSamaController extends Controller
         return view('pelaksanaan.create', compact('kerjaSama'));
     }
 
+    public function index()
+    {
+        $rekap = RekapKerjaSama::with('laporanPelaksanaan')
+                    ->whereHas('laporanPelaksanaan')
+                    ->paginate(10);
+
+        return view('laporanpelaksanaankerjasama', compact('rekap'));
+    }
+
     /**
      * Store a newly created resource in storage.
      */
