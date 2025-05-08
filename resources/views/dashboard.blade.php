@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Dashboard</title> 
-    <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}"> 
-    <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">   
-    <link rel="stylesheet" href="{{ asset('fontawesome-free-6.7.2-web/css/all.css') }}"> 
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('fontawesome-free-6.7.2-web/css/all.css') }}">
     <link rel="stylesheet" href="{{ url('CSS/dashboard.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
@@ -38,11 +38,11 @@
         <div class="sidebar-menu">
             <!-- Dashboard Item -->
             <div class="menu-item">
-                <a href="#" class="menu-link active">
+                <a href="{{ route('dashboard') }}" class="menu-link active">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </div>
-            
+
             <!-- Dokumen Item -->
             <div class="menu-item">
                 <a class="menu-link" data-bs-toggle="collapse" href="#dokumenMenu">
@@ -50,11 +50,11 @@
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
                     <div class="submenu-item">
-                        <a href="#" class="submenu-link">Input Rekap Kerja Sama</a>
-                        <a href="#" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="#" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="#" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="#" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
+                        <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
+                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
@@ -89,7 +89,7 @@
             const sidebarToggle = document.getElementById('sidebarToggle');
             const mainContent = document.getElementById('mainContent');
             const toggleIcon = document.getElementById('toggleIcon');
-            
+
             // Toggle sidebar
             sidebarToggle.addEventListener('click', function() {
                 if (window.innerWidth < 992) {
@@ -101,7 +101,7 @@
                     sidebar.classList.toggle('collapsed');
                     sidebarToggle.classList.toggle('collapsed');
                     mainContent.classList.toggle('full-width');
-                    
+
                     // Toggle icon
                     if (sidebar.classList.contains('collapsed')) {
                         toggleIcon.classList.remove('bi-list');

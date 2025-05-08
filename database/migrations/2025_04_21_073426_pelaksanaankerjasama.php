@@ -13,7 +13,15 @@ return new class extends Migration
     {
         Schema::create('pelaksanaankerjasama', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('idrekap')->references('id')->on('rekapkerjasama');
+
+
+            $table->unsignedBigInteger('idrekap');
+
+            $table->foreign('idrekap')
+                    ->references('id')
+                    ->on('rekapkerjasama')
+                    ->onDelete('cascade');
+
             $table->text('ruang_lingkup');
             $table->string('dosen_terlibat');
             $table->string('mahasiswa_terlibat');
@@ -24,12 +32,8 @@ return new class extends Migration
         });
     }
 
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('pelaksanaankerjasama');
     }
 };

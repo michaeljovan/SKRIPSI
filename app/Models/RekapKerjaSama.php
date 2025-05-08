@@ -30,7 +30,9 @@ class RekapKerjaSama extends Model
         'total_in_cash',
         'jumlah_implementasi',
         'dokumen_path',
-        'is_laporan'
+        'is_laporan',
+        'is_kinerja',
+        'is_mitra'
     ];
 
     protected $casts = [
@@ -41,11 +43,25 @@ class RekapKerjaSama extends Model
 
     public function laporanPelaksanaan()
     {
-        return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap','id');
+        return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap', 'id');
     }
 
     public function rekap()
     {
         return $this->belongsTo(PelaksanaanKerjaSama::class, 'idrekap');
+    }
+
+    public function evaluasiMitraKinerja()
+    {
+        return $this->hasOne(EvaluasiMitraKinerja::class, 'rekap_id');
+    }
+
+    public function rekapKerjaSama()
+    {
+        return $this->belongsTo(RekapKerjaSama::class, 'rekap_id');
+    }
+    public function evaluasiMitra()
+    {
+        return $this->hasOne(EvaluasiMitra::class, 'rekap_id');
     }
 }

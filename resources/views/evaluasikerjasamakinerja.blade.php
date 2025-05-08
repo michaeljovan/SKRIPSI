@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Laporan Pelaksanaan Kerja Sama</title>
+    <title>Evaluasi Kerjasama Kinerja</title>
     <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('fontawesome-free-6.7.2-web/css/all.css') }}">
@@ -13,16 +12,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 </head>
-
 <body>
     <!-- Header -->
     <nav class="navbar navbar-expand navbar-light fixed-top border-bottom px-3">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
-                <img src="{{ asset('assets/fti-ukdw.png') }}" width="40" height="40" class="me-2"
-                    alt="">
+                <img src="{{ asset('assets/fti-ukdw.png') }}" width="40" height="40" class="me-2" alt="">
                 <img src="{{ asset('assets/logo-ukdw.png') }}" width="40" height="40" alt="">
             </div>
             <div class="settingbtn d-flex gap-2">
@@ -74,76 +70,98 @@
     <!-- Main Content -->
     <main class="main-content p-3" id="mainContent">
         <div class="container-fluid">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="m-0 font-weight-bold text-primary">Data Pelaksanaan Kerja Sama</h5>
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Data Evaluasi Kinerja Mitra</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped" id="rekapTable" style="min-width: 1650px;">
+                        <table class="table table-striped">
                             <thead class="table-light">
                                 <tr>
+                                    <th>No</th>
                                     <th>No Dokumen</th>
-                                    <th>Judul Kerja Sama</th>
                                     <th>Mitra</th>
-                                    <th>Ruang Lingkup</th>
-                                    <th>Dosen Terlibat</th>
-                                    <th>Mahasiswa Terlibat</th>
-                                    <th>In Kind</th>
-                                    <th>In Cash</th>
-                                    <th>Anggaran Yang di Keluarkan UKDW</th>
-                                    <th>Hasil Pelaksanaan</th>
-                                    <th>Tautan Kegiatan</th>
+                                    <th>Integritas</th>
+                                    <th>Keahlian</th>
+                                    <th>Komunikasi</th>
+                                    <th>Kerja Sama Tim</th>
+                                    <th>Pengembangan Diri</th>
+                                    <th>Kreativitas</th>
+                                    <th>Bahasa Asing</th>
+                                    <th>Teknologi</th>
+                                    <th>Manajerial</th>
+                                    <th>Analisis</th>
+                                    <th>Laporan</th>
+                                    <th>Inovasi</th>
+                                    <th>Lain-lain</th>
+                                    <th>Komentar</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($rekap as $key => $item)
-                                    <tr>
-                                        <td>{{ $item->no_dokumen }}</td>
-                                        <td>{{ $item->judul_kerja_sama }}</td>
-                                        <td>{{ $item->mitra_kerja_sama }}</td>
-                                        <td>{{ $item->laporanPelaksanaan->ruang_lingkup }}</td>
-                                        <td>{{ $item->laporanPelaksanaan->dosen_terlibat }}</td>
-                                        <td>{{ $item->laporanPelaksanaan->mahasiswa_terlibat }}</td>
-                                        <td>{{ number_format($item->in_kind, 0, ',', '.') }}</td>
-                                        <td>{{ number_format($item->in_cash, 0, ',', '.') }}</td>
-                                        <td>{{ number_format($item->laporanPelaksanaan->anggaran_ukdw, 0, ',', '.') }}</td>
-                                        <td>{{ Str::limit($item->laporanPelaksanaan->hasil_pelaksanaan, 50) }}</td>
-                                        <td>
-                                            @if ($item->laporanPelaksanaan->tautan_link_kegiatan)
-                                                <a href="{{ $item->laporanPelaksanaan->tautan_link_kegiatan }}"
-                                                    target="_blank">
-                                                    Lihat Kegiatan
-                                                </a>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <a href="{{ asset('storage/' . $item->dokumen_path) }}"
-                                                class="btn btn-sm btn-info" target="_blank" title="Lihat Detail">
+                                @forelse($evaluasi as $key => $item)
+                                <tr>
+                                    <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td>{{ $item->nodok }}</td>
+                                    <td>{{ $item->mitra }}</td>
+                                    <td class="text-center">{{ $item->integritas_text }}</td>
+                                    <td class="text-center">{{ $item->keahlian_text }}</td>
+                                    <td class="text-center">{{ $item->komunikasi_text }}</td>
+                                    <td class="text-center">{{ $item->kerjasamatim_text }}</td>
+                                    <td class="text-center">{{ $item->pengembangandiri_text }}</td>
+                                    <td class="text-center">{{ $item->kreativitas_text }}</td>
+                                    <td class="text-center">{{ $item->bahasaasing_text }}</td>
+                                    <td class="text-center">{{ $item->teknologi_text }}</td>
+                                    <td class="text-center">{{ $item->manajerial_text }}</td>
+                                    <td class="text-center">{{ $item->analisis_text }}</td>
+                                    <td class="text-center">{{ $item->laporan_text }}</td>
+                                    <td class="text-center">{{ $item->inovasi_text }}</td>
+                                    <td>
+                                        @if($item->lainlainlabel)
+                                            {{ $item->lainlainlabel }} ({{ $item->lainlainnilai }})
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>{{ Str::limit($item->komentar, 30) }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="#" class="btn btn-sm btn-info" title="Detail">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{{ route('pelaksanaankerjasama.edit', $item->id) }}"
-                                                class="btn btn-sm btn-warning" title="Edit">
+                                            <a href="#" class="btn btn-sm btn-warning" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                        </td>
-                                    </tr>
+                                            <button class="btn btn-sm btn-danger" title="Hapus">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="9" class="text-center">Tidak ada data pelaksanaan kerja sama
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="18" class="text-center py-4">
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> Tidak ada data evaluasi ditemukan
+                                        </div>
+                                    </td>
+                                </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
                     <!-- Pagination -->
-                    <div class="d-flex justify-content-center mt-3">
-                        {{ $rekap->links() }}
+                    <div class="d-flex justify-content-between mt-3">
+                        <div class="text-muted">
+                            Menampilkan {{ $evaluasi->firstItem() ?? 0 }} sampai {{ $evaluasi->lastItem() ?? 0 }} dari {{ $evaluasi->total() ?? 0 }} entri
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm">
+                                {{ $evaluasi->links() }}
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -151,7 +169,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="fixed-bottom py-2 text-center text-white">
+    <footer class="py-2 text-center text-white">
         <p class="mb-0">&copy; Fakultas Teknologi Informasi.</p>
     </footer>
 
@@ -197,8 +215,13 @@
                     }
                 });
             });
+
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         });
     </script>
 </body>
-
 </html>

@@ -42,7 +42,7 @@
         <div class="sidebar-menu">
             <!-- Dashboard Item -->
             <div class="menu-item">
-                <a href="#" class="menu-link active">
+                <a href="{{ route('dashboard') }}" class="menu-link active">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </div>
@@ -53,15 +53,13 @@
                     <i class="bi bi-files"></i> Dokumen <i class="bi bi-chevron-down float-end"></i>
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
-                    <div class="submenu-item">
-                        <a href="#" class="submenu-link">Input Rekap Kerja Sama</a>
-                        <a href="#" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="#" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="#" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja
-                            Mahasiswa/Dosen)</a>
-                        <a href="#" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
-                        <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
-                        <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
+                    <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
+                    <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
+                    <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
+                    <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                    <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                    <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
+                    <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
                 </div>
             </div>
@@ -78,8 +76,8 @@
         <div class="container-fluid">
             <div class="row mb-4">
                 <div class="col-12">
-                    <h1>Input Rekap Kerja Sama</h1>
-                    <p class="text-muted">Dokumen - Input Rekap Kerja Sama</p>
+                    <h1>Data Dokumen Kerjasama</h1>
+                    <p class="text-muted">Dokumen - Data Dokumen Kerjasama</p>
                 </div>
             </div>
 
@@ -110,6 +108,8 @@
                                     <th style="min-width: 120px;">Total In Cash</th>
                                     <th style="min-width: 150px;">Jumlah Implementasi</th>
                                     <th style="min-width: 200px;">Laporan Pelaksanaan Kerja Sama</th>
+                                    <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)</th>
+                                    <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama</th>
                                     <th style="min-width: 150px;">Aksi</th>
                                 </tr>
                             </thead>
@@ -143,13 +143,43 @@
                                         <td>{{ $rekap->jumlah_implementasi ?? '-' }}</td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                            @if ($rekap->is_laporan==true)
+                                                @if ($rekap->is_laporan == true)
                                                     <span class="status-indicator status-filled"></span>
                                                     <span class="status-text status-filled-text">Terisi</span>
                                                 @else
                                                     <span class="status-indicator status-empty"></span>
                                                     <span class="status-text status-empty-text">Belum Terisi</span>
                                                     <a href="{{ route('pelaksanaankerjasama.create', ['id' => $rekap->id]) }}"
+                                                        class="btn btn-sm btn-primary ms-2" title="Tambah Laporan">
+                                                        <i class="bi bi-plus-circle"></i> Tambah
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if ($rekap->is_kinerja == true)
+                                                    <span class="status-indicator status-filled"></span>
+                                                    <span class="status-text status-filled-text">Terisi</span>
+                                                @else
+                                                    <span class="status-indicator status-empty"></span>
+                                                    <span class="status-text status-empty-text">Belum Terisi</span>
+                                                    <a href="{{ route('EvaluasiMitraKinerja.create', ['id' => $rekap->id]) }}"
+                                                        class="btn btn-sm btn-primary ms-2" title="Tambah Laporan">
+                                                        <i class="bi bi-plus-circle"></i> Tambah
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if ($rekap->is_mitra == true)
+                                                    <span class="status-indicator status-filled"></span>
+                                                    <span class="status-text status-filled-text">Terisi</span>
+                                                @else
+                                                    <span class="status-indicator status-empty"></span>
+                                                    <span class="status-text status-empty-text">Belum Terisi</span>
+                                                    <a href="{{ route('EvaluasiMitra.create', ['id' => $rekap->id]) }}"
                                                         class="btn btn-sm btn-primary ms-2" title="Tambah Laporan">
                                                         <i class="bi bi-plus-circle"></i> Tambah
                                                     </a>

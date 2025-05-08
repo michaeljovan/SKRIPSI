@@ -100,6 +100,6 @@ class RekapKerjaSamaController extends Controller
 
     public function create()
     {
-        return view('inputlaporanpelaksanaankerjasama');
+        return view('inputrekapkerjasama');
     }
 }

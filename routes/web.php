@@ -5,14 +5,12 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PelaksanaanKerjaSamaController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\RekapKerjaSamaController;
+use App\Http\Controllers\EvaluasiMitraKinerjaController;
+use App\Http\Controllers\EvaluasiMitraController;
 
 // Public Routes
 Route::get('/', function () {
     return view('login');
-});
-
-Route::get('/inputrekapkerjasama', function () {
-    return view('inputrekapkerjasama');
 });
 
 Route::get('/inputlaporanpelaksanaankerjasama', function () {
@@ -22,6 +20,13 @@ Route::get('/inputlaporanpelaksanaankerjasama', function () {
 Route::get('/laporanpelaksanaankerjasama', function () {
     return view('laporanpelaksanaankerjasama');
 });
+
+Route::get('/inputevaluasikerjasamakinerja', function () {
+    return view('inputevaluasikerjasamakinerja');
+});
+
+Route::get('/evaluasikerjasamakinerja', [EvaluasiMitraKinerjaController::class, 'index'])->name('evaluasikerjasamakinerja.index');
+Route::get('/evaluasikerjasamamitra', [EvaluasiMitraController::class, 'index'])->name('evaluasikerjasamamitra.index');
 
 
 
@@ -42,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [RekapKerjaSamaController::class, 'store'])->name('store_kerja_sama');
         Route::get('/data', [RekapKerjaSamaController::class, 'data'])->name('data_kerja_sama');
         Route::delete('/{id}', [RekapKerjaSamaController::class, 'delete'])->name('delete_kerja_sama');
+        Route::get('/create', [RekapKerjaSamaController::class, 'create'])->name('input_kerja_sama');
+
     });
 
     // Pelaksanaan Kerja Sama
@@ -67,6 +74,19 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store_user', [SuperAdminController::class, 'storeUser'])->name('superadmin.store_user');
         Route::post('/change_password', [SuperAdminController::class, 'changePassword'])->name('superadmin.change_password');
         Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.delete_user');
+    });
+
+    //Evaluasi Kepuasan Kinerja
+    Route::prefix('EvaluasiMitraKinerja')->controller(EvaluasiMitraKinerjaController::class)->group(function() {
+        Route::get('/', 'index')->name('EvaluasiMitraKinerja.form');
+        Route::post('/', 'store')->name('EvaluasiMitraKinerja.store');
+        Route::get('/create/{id}', 'create')->name('EvaluasiMitraKinerja.create');
+    });
+
+    Route::prefix('EvaluasiMitra')->controller(EvaluasiMitraController::class)->group(function() {
+        Route::get('/', 'index')->name('EvaluasiMitra.form');
+        Route::post('/', 'store')->name('EvaluasiMitra.store');
+        Route::get('/create/{id}', 'create')->name('EvaluasiMitra.create');
     });
 
     // Logout

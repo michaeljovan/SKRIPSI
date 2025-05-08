@@ -43,8 +43,8 @@
         <div class="sidebar-menu">
             <!-- Dashboard Item -->
             <div class="menu-item">
-                <a href="#" class="menu-link active">
-                    <i class="bi bi-speedometer2"></i>Dashboard
+                <a href="{{ route('dashboard') }}" class="menu-link active">
+                    <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </div>
 
@@ -55,12 +55,11 @@
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
                     <div class="submenu-item">
-                        <a href="#" class="submenu-link">Input Rekap Kerja Sama</a>
-                        <a href="#" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="#" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="#" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja
-                            Mahasiswa/Dosen)</a>
-                        <a href="#" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
+                        <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
+                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
@@ -259,7 +258,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ... (your existing code for sidebar, date calculation, etc.)
 
             // Reset button with SweetAlert confirmation
             document.querySelector('button[type="reset"]').addEventListener('click', function(e) {

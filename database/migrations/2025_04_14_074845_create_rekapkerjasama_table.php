@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('unit');
             $table->text('mitra_kerja_sama');
             $table->text('judul_kerja_sama');
-            $table->json('bentuk_kerja_sama'); // Store as JSON array
+            $table->json('bentuk_kerja_sama');
             $table->string('bentuk_kerja_sama_text')->nullable();
             $table->string('pihak_ukdw');
             $table->string('pihak_mitra');
@@ -32,6 +32,8 @@ return new class extends Migration
             $table->integer('jumlah_implementasi')->nullable();
             $table->string('dokumen_path');
             $table->boolean('is_laporan')->default(false);
+            $table->boolean('is_kinerja')->default(false);
+            $table->boolean('is_mitra')->default(false);
             $table->timestamps();
         });
     }
