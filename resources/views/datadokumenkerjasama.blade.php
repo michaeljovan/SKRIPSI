@@ -13,12 +13,10 @@
     <link rel="stylesheet" href="{{ url('CSS/datadokumenkerjasama.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <!-- Add MD Bootstrap CSS from CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Header -->
     <nav class="navbar navbar-expand navbar-light fixed-top border-bottom px-3">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
@@ -37,10 +35,8 @@
         </div>
     </nav>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-menu">
-            <!-- Dashboard Item -->
             <div class="menu-item">
                 <a href="{{ route('dashboard') }}" class="menu-link active">
                     <i class="bi bi-speedometer2"></i> Dashboard
@@ -55,15 +51,18 @@
                 <div class="collapse show submenu" id="dokumenMenu">
                     <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                     <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                    <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                    <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                    <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                    <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja
+                        Sama</a>
+                    <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                        Mitra (Kinerja Mahasiswa/Dosen)</a>
+                    <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                        Mitra</a>
                     <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                     <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Toggle Button -->
@@ -86,6 +85,13 @@
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Data Rekap Kerja Sama</h5>
                 </div>
+                <div class="mb-3 px-3">
+                    <button type="button" class="btn btn-outline-primary hover-scale hover-shadow"
+                        data-bs-toggle="modal" data-bs-target="#filterModal">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                </div>
+
                 <div class="card-body p-0">
                     <div class="fixed-header-table">
                         <table class="table table-striped" id="rekapTable" style="min-width: 1650px;">
@@ -108,7 +114,8 @@
                                     <th style="min-width: 120px;">Total In Cash</th>
                                     <th style="min-width: 150px;">Jumlah Implementasi</th>
                                     <th style="min-width: 200px;">Laporan Pelaksanaan Kerja Sama</th>
-                                    <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)</th>
+                                    <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)
+                                    </th>
                                     <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama</th>
                                     <th style="min-width: 150px;">Aksi</th>
                                 </tr>
@@ -193,10 +200,10 @@
                                                     title="Lihat Dokumen">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <button class="btn btn-sm btn-warning me-1 edit-btn"
-                                                    data-id="{{ $rekap->id }}" title="Edit">
+                                                <a href="{{ route('rekap_kerja_sama.edit', $rekap->id) }}"
+                                                    class="btn btn-sm btn-warning me-1" title="Edit">
                                                     <i class="bi bi-pencil"></i>
-                                                </button>
+                                                </a>
                                                 <button class="btn btn-sm btn-danger delete-btn"
                                                     data-id="{{ $rekap->id }}" title="Hapus">
                                                     <i class="bi bi-trash"></i>
@@ -216,6 +223,118 @@
     <footer class="fixed-bottom py-2 text-center text-white">
         <p class="mb-0">&copy; Fakultas Teknologi Informasi.</p>
     </footer>
+
+    <!-- Filter Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg"> <!-- Tambahkan class modal-lg di sini -->
+            <form method="GET" action="{{ route('data_kerja_sama') }}" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel">Filter Data Kerja Sama</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="no_dokumen" class="form-label">No Dokumen</label>
+                            <input type="text" class="form-control" id="no_dokumen" name="no_dokumen"
+                                value="{{ request('no_dokumen') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="unit" class="form-label">Unit</label>
+                            <select class="form-select" id="unit" name="unit">
+                                <option value="">Semua</option>
+                                <option value="Fakultas Teknologi Informasi"
+                                    {{ request('unit') == 'Fakultas Teknologi Informasi' ? 'selected' : '' }}>Fakultas
+                                    Teknologi Informasi</option>
+                                <option value="Informatika" {{ request('unit') == 'Informatika' ? 'selected' : '' }}>
+                                    Informatika</option>
+                                <option value="Sistem Informasi"
+                                    {{ request('unit') == 'Sistem Informasi' ? 'selected' : '' }}>Sistem Informasi
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="mitra" class="form-label">Nama Mitra</label>
+                            <input type="text" class="form-control" id="mitra" name="mitra"
+                                value="{{ request('mitra') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="kategori" class="form-label">Kategori</label>
+                            <select class="form-select" id="kategori" name="kategori">
+                                <option value="">Semua</option>
+                                <option value="Pendidikan"
+                                    {{ request('kategori') == 'Pendidikan' ? 'selected' : '' }}>Pendidikan</option>
+                                <option value="Penelitian"
+                                    {{ request('kategori') == 'Penelitian' ? 'selected' : '' }}>Penelitian</option>
+                                <option value="Pengabdian"
+                                    {{ request('kategori') == 'Pengabdian' ? 'selected' : '' }}>Pengabdian</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="judul" class="form-label">Judul Kerja Sama</label>
+                        <input type="text" class="form-control" id="judul" name="judul"
+                            value="{{ request('judul') }}">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="bentuk_kerja_sama" class="form-label">Bentuk Kerja Sama</label>
+                            <select class="form-select" id="bentuk_kerja_sama" name="bentuk_kerja_sama">
+                                <option value="">Semua</option>
+                                <option value="MoU" {{ request('bentuk_kerja_sama') == 'MoU' ? 'selected' : '' }}>
+                                    MoU</option>
+                                <option value="MoA" {{ request('bentuk_kerja_sama') == 'MoA' ? 'selected' : '' }}>
+                                    MoA</option>
+                                <option value="Implementasi"
+                                    {{ request('bentuk_kerja_sama') == 'Implementasi' ? 'selected' : '' }}>Implementasi
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
+                            <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai"
+                                value="{{ request('tanggal_mulai') }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
+                            <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai"
+                                value="{{ request('tanggal_selesai') }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="masa_berlaku" class="form-label">Masa Berlaku (Hari)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="masa_berlaku" name="masa_berlaku"
+                                    value="{{ request('masa_berlaku') }}">
+                                <span class="input-group-text">Hari</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="is_laporan" class="form-label">Status Laporan</label>
+                            <select class="form-select" id="is_laporan" name="is_laporan">
+                                <option value="">Semua</option>
+                                <option value="1" {{ request('is_laporan') == '1' ? 'selected' : '' }}>Sudah
+                                    Dilaporkan</option>
+                                <option value="0" {{ request('is_laporan') == '0' ? 'selected' : '' }}>Belum
+                                    Dilaporkan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('data_kerja_sama') }}" class="btn btn-outline-secondary">Reset Filter</a>
+                    <button type="submit" class="btn btn-primary">Terapkan Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -313,6 +432,24 @@
                 });
             });
         });
+
+        @if (session('success'))
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: '{{ session('success') }}',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    position: 'top-end',
+                    toast: true,
+                    background: '#f8f9fa',
+                    iconColor: '#28a745',
+                    color: '#000'
+                });
+            });
+        @endif
     </script>
 </body>
 

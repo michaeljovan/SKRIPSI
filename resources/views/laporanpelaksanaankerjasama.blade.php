@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="{{ asset('CSS/sweetalert2.min.css') }}">
+    <script src="{{ asset('JS/sweetalert2.all.min.js') }}"></script>
 </head>
 
 <body>
@@ -55,9 +57,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi
+                            Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi
+                            Kepuasan Mitra</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
@@ -108,7 +113,8 @@
                                         <td>{{ $item->laporanPelaksanaan->mahasiswa_terlibat }}</td>
                                         <td>{{ number_format($item->in_kind, 0, ',', '.') }}</td>
                                         <td>{{ number_format($item->in_cash, 0, ',', '.') }}</td>
-                                        <td>{{ number_format($item->laporanPelaksanaan->anggaran_ukdw, 0, ',', '.') }}</td>
+                                        <td>{{ number_format($item->laporanPelaksanaan->anggaran_ukdw, 0, ',', '.') }}
+                                        </td>
                                         <td>{{ Str::limit($item->laporanPelaksanaan->hasil_pelaksanaan, 50) }}</td>
                                         <td>
                                             @if ($item->laporanPelaksanaan->tautan_link_kegiatan)
@@ -125,7 +131,7 @@
                                                 class="btn btn-sm btn-info" target="_blank" title="Lihat Detail">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{{ route('pelaksanaankerjasama.edit', $item->id) }}"
+                                            <a href="{{ route('pelaksanaankerjasama.edit', $item->laporanPelaksanaan->id) }}"
                                                 class="btn btn-sm btn-warning" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
@@ -157,26 +163,26 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle functionality
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const mainContent = document.getElementById('mainContent');
             const toggleIcon = document.getElementById('toggleIcon');
 
+
             // Toggle sidebar
             sidebarToggle.addEventListener('click', function() {
                 if (window.innerWidth < 992) {
-                    // Mobile behavior
                     sidebar.classList.toggle('show');
                     sidebarToggle.classList.toggle('show');
                 } else {
-                    // Desktop behavior
                     sidebar.classList.toggle('collapsed');
                     sidebarToggle.classList.toggle('collapsed');
                     mainContent.classList.toggle('full-width');
 
-                    // Toggle icon
                     if (sidebar.classList.contains('collapsed')) {
                         toggleIcon.classList.remove('bi-list');
                         toggleIcon.classList.add('bi-chevron-right');
@@ -187,7 +193,7 @@
                 }
             });
 
-            // Auto-close sidebar on mobile when clicking a link
+            // Auto-close sidebar on mobile
             const navLinks = document.querySelectorAll('.menu-link, .submenu-link');
             navLinks.forEach(link => {
                 link.addEventListener('click', function() {
@@ -197,6 +203,19 @@
                     }
                 });
             });
+
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: '{{ session('success') }}',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    position: 'top-end',
+                    toast: true,
+                    timerProgressBar: true
+                });
+            @endif
         });
     </script>
 </body>

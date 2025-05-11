@@ -20,4 +20,11 @@ class PelaksanaanKerjaSama extends Model
         'hasil_pelaksanaan',
         'tautan_link_kegiatan',
     ];
+
+    // app/Models/PelaksanaanKerjaSama.php
+
+    public function rekap()
+    {
+        return $this->belongsTo(RekapKerjaSama::class, 'idrekap');
+    }
 }

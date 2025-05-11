@@ -64,4 +64,42 @@ class PelaksanaanKerjaSamaController extends Controller
             return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
+
+    public function edit($id)
+    {
+        $pelaksanaan = PelaksanaanKerjaSama::with('rekap')->findOrFail($id);
+
+        if (!$pelaksanaan->rekap) {
+            abort(404, 'Associated rekap record not found');
+        }
+
+        return view('editpelaksanaankerjasama', [
+            'pelaksanaan' => $pelaksanaan,
+            'rekap' => $pelaksanaan->rekap
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'ruang_lingkup' => 'required',
+            'dosen_terlibat' => 'nullable',
+            'mahasiswa_terlibat' => 'nullable',
+            'anggaran_ukdw' => 'required|numeric',
+            'hasil_pelaksanaan' => 'required',
+            'tautan_link_kegiatan' => 'nullable|url'
+        ]);
+
+        // Format angka (remove dots if using thousand separators)
+        if ($request->anggaran_ukdw) {
+            $validated['anggaran_ukdw'] = str_replace('.', '', $request->anggaran_ukdw);
+        }
+
+        $pelaksanaan = PelaksanaanKerjaSama::findOrFail($id);
+        $pelaksanaan->update($validated);
+
+
+        return redirect()->route('pelaksanaankerjasama.index')
+            ->with('success', 'Data berhasil diperbarui!');
+    }
 }

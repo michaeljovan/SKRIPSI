@@ -39,11 +39,15 @@ class RekapKerjaSama extends Model
         'bentuk_kerja_sama' => 'array',
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
+        'in_cash' => 'float',
+        'in_kind' => 'float',
+        'total_in_cash' => 'float',
+        'total_in_kind' => 'float',
     ];
 
     public function laporanPelaksanaan()
     {
-        return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap', 'id');
+        return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap');
     }
 
     public function rekap()
@@ -64,4 +68,6 @@ class RekapKerjaSama extends Model
     {
         return $this->hasOne(EvaluasiMitra::class, 'rekap_id');
     }
+
+
 }

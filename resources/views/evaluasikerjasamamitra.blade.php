@@ -80,21 +80,21 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>No</th>
-                                    <th>No Dokumen</th>
-                                    <th>Mitra</th>
+                                    <th style="min-width: 150px;">No Dokumen</th>
+                                    <th style="min-width: 120px;">Mitra</th>
                                     <th>Integritas</th>
                                     <th>Keahlian</th>
                                     <th>Komunikasi</th>
-                                    <th>Kerja Sama Tim</th>
-                                    <th>Pengembangan Diri</th>
+                                    <th style="min-width: 150px;">Kerja Sama Tim</th>
+                                    <th style="min-width: 180px;">Pengembangan Diri</th>
                                     <th>Kreativitas</th>
-                                    <th>Bahasa Asing</th>
+                                    <th style="min-width: 150px;">Bahasa Asing</th>
                                     <th>Teknologi</th>
                                     <th>Manajerial</th>
                                     <th>Analisis</th>
                                     <th>Laporan</th>
                                     <th>Inovasi</th>
-                                    <th>Lain-lain</th>
+                                    <th style="min-width: 120px;">Lain-lain</th>
                                     <th>Komentar</th>
                                     <th>Aksi</th>
                                 </tr>

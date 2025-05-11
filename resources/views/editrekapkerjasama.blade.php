@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Input Rekap Kerja Sama</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('fontawesome-free-6.7.2-web/css/all.css') }}">
@@ -38,12 +37,10 @@
         </div>
     </nav>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-menu">
-            <!-- Dashboard Item -->
             <div class="menu-item">
-                <a href="{{ route('dashboard') }}" class="menu-link active">
+                <a href="{{ route('dashboard') }}" class="menu-link">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </div>
@@ -57,9 +54,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi
+                            Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi
+                            Kepuasan Mitra</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
@@ -78,32 +78,41 @@
         <div class="container-fluid">
             <div class="row mb-4">
                 <div class="col-12">
-                    <h1>Input Rekap Kerja Sama</h1>
-                    <p class="text-muted">Dokumen - Input Rekap Kerja Sama</p>
+                    <h1>Edit Rekap Kerja Sama</h1>
+                    <p class="text-muted">Dokumen - Edit Rekap Kerja Sama</p>
                 </div>
             </div>
 
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0">Form Input Kerja Sama</h5>
+                    <h5 class="mb-0">Form Edit Kerja Sama</h5>
                 </div>
                 <div class="card-body">
-                    <form id="kerjaSamaForm" action="{{ route('store_kerja_sama') }}" method="POST"
+                    <form id="kerjaSamaForm" action="{{ route('rekap_kerja_sama.update', $rekap->id) }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
+                        @method('PUT')
+
                         <!-- Row 1 -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="noDokumen" class="form-label">No Dokumen</label>
-                                <input type="text" class="form-control" id="noDokumen" name="noDokumen" required>
+                                <input type="text" class="form-control" id="noDokumen" name="noDokumen"
+                                    value="{{ old('noDokumen', $rekap->no_dokumen) }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="unit" class="form-label">Unit</label>
                                 <select class="form-select" id="unit" name="unit" required>
-                                    <option value="" selected disabled></option>
-                                    <option value="Fakultas Teknologi Informasi">Fakultas Teknologi Informasi</option>
-                                    <option value="Informatika">Informatika</option>
-                                    <option value="Sistem Informasi">Sistem Informasi</option>
+                                    <option value="" disabled>Pilih Unit</option>
+                                    <option value="Fakultas Teknologi Informasi"
+                                        {{ old('unit', $rekap->unit) == 'Fakultas Teknologi Informasi' ? 'selected' : '' }}>
+                                        Fakultas Teknologi Informasi</option>
+                                    <option value="Informatika"
+                                        {{ old('unit', $rekap->unit) == 'Informatika' ? 'selected' : '' }}>Informatika
+                                    </option>
+                                    <option value="Sistem Informasi"
+                                        {{ old('unit', $rekap->unit) == 'Sistem Informasi' ? 'selected' : '' }}>Sistem
+                                        Informasi</option>
                                 </select>
                             </div>
                         </div>
@@ -112,34 +121,43 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="mitraKerjaSama" class="form-label">Mitra Kerja Sama</label>
-                                <textarea class="form-control" id="mitraKerjaSama" name="mitraKerjaSama" rows="3" required></textarea>
+                                <textarea class="form-control" id="mitraKerjaSama" name="mitraKerjaSama" rows="3" required>{{ old('mitraKerjaSama', $rekap->mitra_kerja_sama) }}</textarea>
                             </div>
                             <div class="col-md-6">
                                 <label for="judulKerjaSama" class="form-label">Judul Kerja Sama</label>
-                                <textarea class="form-control" id="judulKerjaSama" name="judulKerjaSama" rows="3" required></textarea>
+                                <textarea class="form-control" id="judulKerjaSama" name="judulKerjaSama" rows="3" required>{{ old('judulKerjaSama', $rekap->judul_kerja_sama) }}</textarea>
                             </div>
                         </div>
 
-                        <!-- Row 3 -->
+                        <!-- Row 3 - Bentuk Kerja Sama -->
                         <div class="row mb-4 card shadow p-3 border-0">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Bentuk Kerja Sama</label>
                                 <div class="card shadow-sm p-3">
+                                    @php
+                                        $bentukKerjaSama = is_array($rekap->bentuk_kerja_sama)
+                                            ? $rekap->bentuk_kerja_sama
+                                            : json_decode($rekap->bentuk_kerja_sama, true);
+                                    @endphp
+
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="bentuk1"
-                                            name="bentukKerjaSama[]" value="MoU">
+                                            name="bentukKerjaSama[]" value="MoU"
+                                            {{ in_array('MoU', old('bentukKerjaSama', $bentukKerjaSama)) ? 'checked' : '' }}>
                                         <label class="form-check-label" for="bentuk1">MoU (Memorandum of
                                             Understanding)</label>
                                     </div>
                                     <div class="form-check mt-2">
                                         <input class="form-check-input" type="checkbox" id="bentuk2"
-                                            name="bentukKerjaSama[]" value="MoA">
+                                            name="bentukKerjaSama[]" value="MoA"
+                                            {{ in_array('MoA', old('bentukKerjaSama', $bentukKerjaSama)) ? 'checked' : '' }}>
                                         <label class="form-check-label" for="bentuk2">MoA (Memorandum of
                                             Agreement)</label>
                                     </div>
                                     <div class="form-check mt-2">
                                         <input class="form-check-input" type="checkbox" id="bentuk3"
-                                            name="bentukKerjaSama[]" value="Implementasi">
+                                            name="bentukKerjaSama[]" value="Implementasi"
+                                            {{ in_array('Implementasi', old('bentukKerjaSama', $bentukKerjaSama)) ? 'checked' : '' }}>
                                         <label class="form-check-label" for="bentuk3">Implementasi</label>
                                     </div>
                                 </div>
@@ -150,39 +168,46 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-card-text"></i></span>
                                     <input type="text" class="form-control" id="bentukKerjaSamaText"
-                                        name="bentukKerjaSamaText" placeholder="Tambahkan detail jika diperlukan">
+                                        name="bentukKerjaSamaText"
+                                        value="{{ old('bentukKerjaSamaText', $rekap->bentuk_kerja_sama_text) }}"
+                                        placeholder="Tambahkan detail jika diperlukan">
                                 </div>
                             </div>
                         </div>
+
                         <!-- Row 4 -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="pihakUKDW" class="form-label">Pihak UKDW</label>
-                                <input type="text" class="form-control" id="pihakUKDW" name="pihakUKDW" required>
+                                <input type="text" class="form-control" id="pihakUKDW" name="pihakUKDW"
+                                    value="{{ old('pihakUKDW', $rekap->pihak_ukdw) }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="pihakMitra" class="form-label">Pihak Mitra</label>
                                 <input type="text" class="form-control" id="pihakMitra" name="pihakMitra"
-                                    required>
+                                    value="{{ old('pihakMitra', $rekap->pihak_mitra) }}" required>
                             </div>
                         </div>
 
-                        <!-- Row 5 -->
+                        <!-- Row 5 - Dates -->
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="tanggalMulai" class="form-label">Tanggal Mulai</label>
                                 <input type="date" class="form-control" id="tanggalMulai" name="tanggalMulai"
+                                    value="{{ old('tanggalMulai', $rekap->tanggal_mulai->format('Y-m-d')) }}"
                                     required>
                             </div>
                             <div class="col-md-4">
                                 <label for="tanggalSelesai" class="form-label">Tanggal Selesai</label>
                                 <input type="date" class="form-control" id="tanggalSelesai" name="tanggalSelesai"
+                                    value="{{ old('tanggalSelesai', $rekap->tanggal_selesai->format('Y-m-d')) }}"
                                     required>
                             </div>
                             <div class="col-md-4">
                                 <label for="masaBerlaku" class="form-label">Masa Berlaku (Hari)</label>
                                 <input type="text" class="form-control" id="masaBerlaku" name="masaBerlaku"
-                                    placeholder="Otomatis" readonly>
+                                    value="{{ old('masaBerlaku', $rekap->masa_berlaku) }}" placeholder="Otomatis"
+                                    readonly>
                             </div>
                         </div>
 
@@ -190,23 +215,26 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="kategori" class="form-label">Kategori</label>
-                                <input type="text" class="form-control" id="kategori" name="kategori" required>
+                                <input type="text" class="form-control" id="kategori" name="kategori"
+                                    value="{{ old('kategori', $rekap->kategori) }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="inKind" class="form-label">In Kind</label>
-                                <textarea class="form-control" id="inKind" name="inKind" rows="2"></textarea>
+                                <textarea class="form-control" id="inKind" name="inKind" rows="2">{{ old('inKind', $rekap->in_kind) }}</textarea>
                             </div>
                         </div>
 
-                        <!-- Row 7 -->
+                        <!-- Row 7 - Financial -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="totalInKind" class="form-label">Total In Kind (Rp)</label>
-                                <input type="text" class="form-control" id="totalInKind" name="totalInKind">
+                                <input type="text" class="form-control" id="totalInKind" name="totalInKind"
+                                    value="{{ old('totalInKind', $rekap->total_in_kind ? number_format($rekap->total_in_kind, 0, ',', '.') : '') }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="inCash" class="form-label">In Cash (Rp)</label>
-                                <input type="text" class="form-control" id="inCash" name="inCash">
+                                <input type="text" class="form-control" id="inCash" name="inCash"
+                                    value="{{ old('inCash', $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '') }}">
                             </div>
                         </div>
 
@@ -214,33 +242,41 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="totalInCash" class="form-label">Total In Cash (Rp)</label>
-                                <input type="text" class="form-control" id="totalInCash" name="totalInCash">
+                                <input type="text" class="form-control" id="totalInCash" name="totalInCash"
+                                    value="{{ old('totalInCash', $rekap->total_in_cash ? number_format($rekap->total_in_cash, 0, ',', '.') : '') }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="jumlahImplementasi" class="form-label">Jumlah Implementasi</label>
                                 <input type="text" class="form-control" id="jumlahImplementasi"
-                                    name="jumlahImplementasi">
+                                    name="jumlahImplementasi"
+                                    value="{{ old('jumlahImplementasi', $rekap->jumlah_implementasi) }}">
                             </div>
                         </div>
 
-                        <!-- Row 9 -->
+                        <!-- Row 9 - Document -->
                         <div class="row mb-3">
                             <div class="col-md-12">
                                 <label for="dokumenPendukung" class="form-label">Upload Dokumen Pendukung
                                     (PDF)</label>
                                 <input type="file" class="form-control" id="dokumenPendukung"
-                                    name="dokumenPendukung" accept=".pdf" required>
-                                <div class="form-text">Maksimal ukuran file 5MB</div>
+                                    name="dokumenPendukung" accept=".pdf">
+                                <div class="form-text">
+                                    Biarkan kosong jika tidak ingin mengubah dokumen.
+                                    @if ($rekap->dokumen_path)
+                                        <a href="{{ asset('storage/' . $rekap->dokumen_path) }}" target="_blank">Lihat
+                                            dokumen saat ini</a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Submit Button -->
+                        <!-- Submit Buttons -->
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="reset" class="btn btn-secondary me-md-2">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </button>
+                            <a href="{{ route('data_kerja_sama') }}" class="btn btn-secondary me-md-2">
+                                <i class="bi bi-x-circle"></i> Batal
+                            </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Simpan
+                                <i class="bi bi-save"></i> Simpan Perubahan
                             </button>
                         </div>
                     </form>
@@ -257,117 +293,6 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            // Reset button with SweetAlert confirmation
-            document.querySelector('button[type="reset"]').addEventListener('click', function(e) {
-                e.preventDefault();
-
-                Swal.fire({
-                    title: 'Konfirmasi Reset Form',
-                    text: "Apakah Anda yakin ingin mereset semua data yang telah diisi?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, Reset!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Reset the form
-                        document.getElementById('kerjaSamaForm').reset();
-
-                        // Show success message
-                        Swal.fire(
-                            'Berhasil!',
-                            'Form telah berhasil direset.',
-                            'success'
-                        );
-                    }
-                });
-            });
-
-            // Form submission with SweetAlert
-            document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const form = this;
-                const formData = new FormData(form);
-
-                Swal.fire({
-                    title: 'Memproses...',
-                    html: 'Sedang menyimpan data kerja sama',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
-
-                fetch(form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            // Remove 'Accept': 'application/json' to accept any response type
-                        }
-                    })
-                    .then(response => {
-                        // Check if response is JSON
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json();
-                        }
-                        // If not JSON, assume successful form submission
-                        return {
-                            success: true
-                        };
-                    })
-                    .then(data => {
-                        Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Data kerja sama berhasil disimpan',
-                            icon: 'success'
-                        }).then(() => {
-                            form.reset();
-                        });
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Terjadi kesalahan saat menyimpan data',
-                            icon: 'error'
-                        });
-                        console.error('Error:', error);
-                    });
-            });
-        });
-
-        // Hitung Masa Berlaku
-        document.addEventListener('DOMContentLoaded', function() {
-            const tanggalMulai = document.getElementById('tanggalMulai');
-            const tanggalSelesai = document.getElementById('tanggalSelesai');
-            const masaBerlaku = document.getElementById('masaBerlaku');
-
-            function calculateDuration() {
-                if (tanggalMulai.value && tanggalSelesai.value) {
-                    const startDate = new Date(tanggalMulai.value);
-                    const endDate = new Date(tanggalSelesai.value);
-
-                    // Calculate difference in milliseconds
-                    const diffTime = Math.abs(endDate - startDate);
-
-                    // Convert to days
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                    // Add 1 day to include both start and end dates
-                    masaBerlaku.value = diffDays + 1;
-                } else {
-                    masaBerlaku.value = '';
-                }
-            }
-
-            // Add event listeners to both date inputs
-            tanggalMulai.addEventListener('change', calculateDuration);
-            tanggalSelesai.addEventListener('change', calculateDuration);
-        });
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
@@ -404,6 +329,81 @@
                     if (window.innerWidth < 992) {
                         sidebar.classList.remove('show');
                         sidebarToggle.classList.remove('show');
+                    }
+                });
+            });
+
+            // Calculate duration when dates change
+            const tanggalMulai = document.getElementById('tanggalMulai');
+            const tanggalSelesai = document.getElementById('tanggalSelesai');
+            const masaBerlaku = document.getElementById('masaBerlaku');
+
+            function calculateDuration() {
+                if (tanggalMulai.value && tanggalSelesai.value) {
+                    const startDate = new Date(tanggalMulai.value);
+                    const endDate = new Date(tanggalSelesai.value);
+                    const diffTime = Math.abs(endDate - startDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    masaBerlaku.value = diffDays + 1;
+                } else {
+                    masaBerlaku.value = '';
+                }
+            }
+
+            tanggalMulai.addEventListener('change', calculateDuration);
+            tanggalSelesai.addEventListener('change', calculateDuration);
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('kerjaSamaForm');
+            const submitButton = form.querySelector('button[type="submit"]');
+
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: '{{ session('success') }}',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    position: 'top-end',
+                    toast: true,
+                    timerProgressBar: true
+                });
+            @endif
+
+            submitButton.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Validate form first
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Konfirmasi Penyimpanan',
+                    text: "Anda yakin ingin menyimpan perubahan data ini?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Simpan',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading indicator
+                        Swal.fire({
+                            title: 'Menyimpan...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Submit the form
+                        form.submit();
                     }
                 });
             });
