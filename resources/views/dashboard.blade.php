@@ -109,6 +109,11 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="text-end mt-3">
+                                <a href="{{ route('mitraaktif') }}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-chevron-double-right"></i> Lihat Semua Mitra Aktif
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -141,6 +146,11 @@
                                         @endfor
                                     </tbody>
                                 </table>
+                            </div>
+                            <div class="text-end mt-3">
+                                <a href="{{ route('mitrapasif') }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-chevron-double-right"></i> Lihat Semua Mitra Tidak Aktif
+                                </a>
                             </div>
                         </div>
                     </div>

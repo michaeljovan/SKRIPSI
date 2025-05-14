@@ -102,4 +102,24 @@ class PelaksanaanKerjaSamaController extends Controller
         return redirect()->route('pelaksanaankerjasama.index')
             ->with('success', 'Data berhasil diperbarui!');
     }
+
+    public function destroy($id)
+    {
+        try {
+            $pelaksanaan = PelaksanaanKerjaSama::findOrFail($id);
+
+            // Update the associated RekapKerjaSama
+            RekapKerjaSama::where('id', $pelaksanaan->idrekap)
+                ->update(['is_laporan' => false]);
+
+            // Delete the pelaksanaan record
+            $pelaksanaan->delete();
+
+            return redirect()->route('pelaksanaankerjasama.index')
+                ->with('success', 'Laporan pelaksanaan berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
 }

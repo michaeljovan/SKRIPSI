@@ -135,6 +135,15 @@
                                                 class="btn btn-sm btn-warning" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
+                                            <form
+                                                action="{{ route('pelaksanaankerjasama.destroy', $item->laporanPelaksanaan->id) }}"
+                                                method="POST" class="d-inline" onsubmit="return confirmDelete()">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @empty
@@ -217,6 +226,22 @@
                 });
             @endif
         });
+
+        //delete laporan konfirmasi
+        function confirmDelete() {
+            return Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
     </script>
 </body>
 

@@ -47,6 +47,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     });
 
+    Route::get('/mitraaktif', function () {return view('mitraaktif');});
+
+    Route::get('/mitrapasif', function () {return view('mitrapasif');});
+
+
     // Rekap Kerja Sama
     Route::prefix('rekap_kerja_sama')->group(function () {
         Route::get('/', [RekapKerjaSamaController::class, 'index'])->name('input_kerja_sama');

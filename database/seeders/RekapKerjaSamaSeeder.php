@@ -75,9 +75,6 @@ class RekapKerjaSamaSeeder extends Seeder
                 'total_in_cash' => rand(0, 1) ? rand(50000000, 500000000) : null,
                 'jumlah_implementasi' => rand(0, 5),
                 'dokumen_path' => 'dokumen_kerja_sama/contoh_dokumen_' . $i . '.pdf',
-                'is_laporan' => rand(0, 1),
-                'is_kinerja' => rand(0, 1),
-                'is_mitra' => rand(0, 1),
                 'created_at' => now(),
                 'updated_at' => now()
             ];
