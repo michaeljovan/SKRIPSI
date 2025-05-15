@@ -47,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     });
 
+    Route::get('/dashboard/filter', [DashboardController::class, 'filterByYear']);
+
     Route::get('/mitraaktif', function () {return view('mitraaktif');});
 
     Route::get('/mitrapasif', function () {return view('mitrapasif');});

@@ -126,21 +126,21 @@
                                 <label class="form-label fw-semibold">Bentuk Kerja Sama</label>
                                 <div class="card shadow-sm p-3">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="bentuk1"
-                                            name="bentukKerjaSama[]" value="MoU">
+                                        <input class="form-check-input" type="radio" id="bentuk1"
+                                            name="bentukKerjaSama" value="MoU" required>
                                         <label class="form-check-label" for="bentuk1">MoU (Memorandum of
                                             Understanding)</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" id="bentuk2"
-                                            name="bentukKerjaSama[]" value="MoA">
+                                        <input class="form-check-input" type="radio" id="bentuk2"
+                                            name="bentukKerjaSama" value="MoA">
                                         <label class="form-check-label" for="bentuk2">MoA (Memorandum of
                                             Agreement)</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" id="bentuk3"
-                                            name="bentukKerjaSama[]" value="Implementasi">
-                                        <label class="form-check-label" for="bentuk3">Implementasi</label>
+                                        <input class="form-check-input" type="radio" id="bentuk3"
+                                            name="bentukKerjaSama" value="Implementasi">
+                                        <label class="form-check-label" for="bentuk3">IA (Implementation Agreement)</label>
                                     </div>
                                 </div>
                             </div>

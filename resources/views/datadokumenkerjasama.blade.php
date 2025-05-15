@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +9,7 @@
     <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('fontawesome-free-6.7.2-web/css/all.css') }}">
-    <link rel="stylesheet" href="{{ url('CSS/datadokumenkerjasama.css') }}">
+    <link rel="stylesheet" href="{{ asset('CSS/datadokumenkerjasama.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
@@ -49,14 +48,11 @@
                     <i class="bi bi-files"></i> Dokumen <i class="bi bi-chevron-down float-end"></i>
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
-                    <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
-                    <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                    <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja
-                        Sama</a>
-                    <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
-                        Mitra (Kinerja Mahasiswa/Dosen)</a>
-                    <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
-                        Mitra</a>
+                    <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerjasama</a>
+                    <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerjasama</a>
+                    <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksanaan Kerjasama</a>
+                    <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                    <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
                     <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                     <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                 </div>
@@ -114,8 +110,7 @@
                                     <th style="min-width: 120px;">Total In Cash</th>
                                     <th style="min-width: 150px;">Jumlah Implementasi</th>
                                     <th style="min-width: 200px;">Laporan Pelaksanaan Kerja Sama</th>
-                                    <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)
-                                    </th>
+                                    <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)</th>
                                     <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama</th>
                                     <th style="min-width: 150px;">Aksi</th>
                                 </tr>
@@ -126,7 +121,7 @@
                                         <td>{{ $rekap->no_dokumen }}</td>
                                         <td>{{ $rekap->unit }}</td>
                                         <td>{{ Str::limit($rekap->mitra_kerja_sama, 30) }}</td>
-                                        <td>{{ Str::limit($rekap->judul_kerja_sama, 40) }}</td>
+                                        <td>{{ Str::limit($rekap->judul_kerja_sama) }}</td>
                                         <td>
                                             @if (is_array($rekap->bentuk_kerja_sama))
                                                 {{ implode(', ', $rekap->bentuk_kerja_sama) }}
@@ -220,7 +215,7 @@
         </div>
     </main>
     <!-- Footer -->
-    <footer class="fixed-bottom py-2 text-center text-white">
+    <footer class=" py-2 text-center text-white">
         <p class="mb-0">&copy; Fakultas Teknologi Informasi.</p>
     </footer>
 

@@ -48,7 +48,7 @@ class RekapKerjaSamaController extends Controller
         }
 
         // Eksekusi query
-        $rekapKerjaSama = $query->paginate(10);
+        $rekapKerjaSama = $query->get();
 
         return view('datadokumenkerjasama', compact('rekapKerjaSama'));
     }

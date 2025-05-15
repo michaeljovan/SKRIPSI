@@ -33,10 +33,6 @@ class RekapKerjaSamaSeeder extends Seeder
             ['MoU'],
             ['MoA'],
             ['Implementasi'],
-            ['MoU', 'MoA'],
-            ['MoU', 'Implementasi'],
-            ['MoA', 'Implementasi'],
-            ['MoU', 'MoA', 'Implementasi']
         ];
 
         $kategoris = [
@@ -49,7 +45,7 @@ class RekapKerjaSamaSeeder extends Seeder
 
         $data = [];
 
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 50; $i++) {
             $startDate = Carbon::now()->subDays(rand(1, 365));
             $endDate = (clone $startDate)->addDays(rand(30, 730));
             $duration = $endDate->diffInDays($startDate);

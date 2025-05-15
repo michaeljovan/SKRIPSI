@@ -78,7 +78,8 @@ footer {
     transition: all 0.3s;
 }
 
-.menu-link:hover, .menu-link.active {}
+
+
 
 .menu-link i {
     margin-right: 10px;
@@ -199,12 +200,53 @@ footer {
     border-radius: 0.2rem;
 }
 
-/*tabel data*/
+/* Ganti semua definisi .fixed-header-table yang ada dengan ini */
 .fixed-header-table {
     position: relative;
     overflow: auto;
     height: 600px;
     /* Sesuaikan tinggi sesuai kebutuhan */
+    width: 100%;
+}
+
+/* Header tetap di atas */
+.fixed-header-table thead th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 20;
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Kolom pertama (No Dokumen) */
+.fixed-header-table th:first-child,
+.fixed-header-table td:first-child {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 15;
+    box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Kolom terakhir (Aksi) */
+.fixed-header-table th:last-child,
+.fixed-header-table td:last-child {
+    position: sticky;
+    right: 0;
+    background: white;
+    z-index: 15;
+    box-shadow: -2px 0 5px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Untuk sel yang berada di sudut (header + kolom pertama/terakhir) */
+.fixed-header-table thead th:first-child {
+    z-index: 25;
+    left: 0;
+}
+
+.fixed-header-table thead th:last-child {
+    z-index: 25;
+    right: 0;
 }
 
 .fixed-header-table thead th {

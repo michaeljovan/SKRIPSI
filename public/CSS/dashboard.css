@@ -78,7 +78,46 @@ footer {
     transition: all 0.3s;
 }
 
-.menu-link:hover, .menu-link.active {
+/* Style untuk tombol Lihat Semua Mitra Aktif */
+.btn-outline-success {
+    transition: all 0.3s ease;
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.btn-outline-success:hover {
+    background-color: #28a745;
+    color: white;
+    transform: translateX(5px); /* Sedikit bergeser ke kanan */
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3); /* Shadow hijau */
+}
+
+/* Animasi icon panah */
+.btn-outline-success:hover .bi-chevron-double-right {
+    transform: translateX(3px); /* Icon bergeser lebih jauh */
+    transition: transform 0.3s ease;
+}
+
+/* Style khusus untuk icon */
+.bi-chevron-double-right {
+    transition: transform 0.3s ease;
+}
+
+.btn-outline-warning {
+    transition: all 0.3s ease;
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    color: #212529; /* Warna teks gelap untuk kontras */
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3); /* Shadow kuning */
+}
+
+.btn-outline-warning:hover .bi-chevron-double-right {
+    transform: translateX(3px);
 }
 
 .menu-link i {

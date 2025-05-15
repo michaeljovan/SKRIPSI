@@ -93,7 +93,7 @@
                                         <tr>
                                             <th>#</th>
                                             <th>Nama Mitra</th>
-                                            <th>Jumlah Implementasi</th>
+                                            <th>Jumlah Implementasi (IA)</th>
                                             <th>Total Kerjasama</th>
                                         </tr>
                                     </thead>
@@ -110,7 +110,7 @@
                                 </table>
                             </div>
                             <div class="text-end mt-3">
-                                <a href="{{ route('mitraaktif') }}" class="btn btn-sm btn-outline-success">
+                                <a href="#" class="btn btn-sm btn-outline-success">
                                     <i class="bi bi-chevron-double-right"></i> Lihat Semua Mitra Aktif
                                 </a>
                             </div>
@@ -131,7 +131,7 @@
                                         <tr>
                                             <th>#</th>
                                             <th>Nama Mitra</th>
-                                            <th>Jumlah Implementasi</th>
+                                            <th>Jumlah Implementasi (IA)</th>
                                             <th>Total Kerjasama</th>
                                         </tr>
                                     </thead>
@@ -148,7 +148,7 @@
                                 </table>
                             </div>
                             <div class="text-end mt-3">
-                                <a href="{{ route('mitrapasif') }}" class="btn btn-sm btn-outline-warning">
+                                <a href="#" class="btn btn-sm btn-outline-warning">
                                     <i class="bi bi-chevron-double-right"></i> Lihat Semua Mitra Tidak Aktif
                                 </a>
                             </div>
@@ -159,18 +159,42 @@
 
             <!-- Chart Section -->
             <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-primary text-white">
+                <!-- Chart Bar (Distribusi Kerja Sama per Unit) -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div
+                            class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Distribusi Kerja Sama
                                 per Unit</h5>
+                            <div>
+                                <select id="tahunFilter" class="form-select form-select-sm" style="width: 120px;">
+                                    <option value="all">Semua Tahun</option>
+                                    @foreach ($tahunList as $tahun)
+                                        <option value="{{ $tahun }}">{{ $tahun }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div id="unitChart" style="height: 370px; width: 100%;"></div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Chart Line (Tren Jumlah Kerja Sama 5 Tahun Terakhir) -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0"><i class="bi bi-graph-up me-2"></i>Tren Jumlah Kerja Sama per
+                                Unit (5 Tahun Terakhir)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="lineChart" style="height: 370px; width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
     </main>
 
@@ -225,8 +249,30 @@
         });
 
         //Chart 1
+        // Variabel global untuk menyimpan chart dan data awal
+        var chart;
+        var allChartData = @json($chartData);
+
         window.onload = function() {
-            var chart = new CanvasJS.Chart("unitChart", {
+            // Inisialisasi chart pertama kali
+            renderChart(allChartData);
+
+            // Event listener untuk dropdown tahun
+            document.getElementById('tahunFilter').addEventListener('change', function() {
+                var selectedYear = this.value;
+
+                if (selectedYear === 'all') {
+                    // Tampilkan semua data jika memilih "Semua Tahun"
+                    renderChart(allChartData);
+                } else {
+                    // Filter data berdasarkan tahun yang dipilih
+                    filterDataByYear(selectedYear);
+                }
+            });
+        };
+
+        function renderChart(chartData) {
+            chart = new CanvasJS.Chart("unitChart", {
                 animationEnabled: true,
                 theme: "light2",
                 title: {
@@ -250,54 +296,100 @@
                         type: "column",
                         name: "MoU",
                         showInLegend: true,
-                        dataPoints: [
-                            @foreach ($chartData as $data)
-                                {
-                                    label: "{{ $data['unit'] }}",
-                                    y: {{ $data['mou'] }}
-                                },
-                            @endforeach
-                        ]
+                        dataPoints: chartData.map(data => ({
+                            label: data.unit,
+                            y: data.mou
+                        }))
                     },
                     {
                         type: "column",
                         name: "MoA",
                         showInLegend: true,
-                        dataPoints: [
-                            @foreach ($chartData as $data)
-                                {
-                                    label: "{{ $data['unit'] }}",
-                                    y: {{ $data['moa'] }}
-                                },
-                            @endforeach
-                        ]
+                        dataPoints: chartData.map(data => ({
+                            label: data.unit,
+                            y: data.moa
+                        }))
                     },
                     {
                         type: "column",
                         name: "Implementasi",
                         showInLegend: true,
-                        dataPoints: [
-                            @foreach ($chartData as $data)
-                                {
-                                    label: "{{ $data['unit'] }}",
-                                    y: {{ $data['implementasi'] }}
-                                },
-                            @endforeach
-                        ]
+                        dataPoints: chartData.map(data => ({
+                            label: data.unit,
+                            y: data.implementasi
+                        }))
                     }
                 ]
             });
             chart.render();
-
-            function toggleDataSeries(e) {
-                if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-                    e.dataSeries.visible = false;
-                } else {
-                    e.dataSeries.visible = true;
-                }
-                chart.render();
-            }
         }
+
+        function toggleDataSeries(e) {
+            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+            } else {
+                e.dataSeries.visible = true;
+            }
+            chart.render();
+        }
+
+        function filterDataByYear(year) {
+            // Kirim AJAX request untuk mendapatkan data berdasarkan tahun
+            fetch(`/dashboard/filter?year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderChart(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        //5 tahun terakhir
+        var lineChartData = @json($lineChartData);
+
+        function renderLineChart(data) {
+            const chart = new CanvasJS.Chart("lineChart", {
+                animationEnabled: true,
+                theme: "light2",
+                title: {
+                    text: "Jumlah Kerja Sama per Tahun"
+                },
+                axisX: {
+                    title: "Tahun"
+                },
+                axisY: {
+                    title: "Jumlah Kerja Sama"
+                },
+                toolTip: {
+                    shared: true
+                },
+                legend: {
+                    cursor: "pointer"
+                },
+                data: Object.keys(data).map(unit => ({
+                    type: "line",
+                    name: unit,
+                    showInLegend: true,
+                    dataPoints: data[unit]
+                }))
+            });
+            chart.render();
+        }
+
+        window.onload = function() {
+            renderChart(allChartData); // chart batang
+            renderLineChart(lineChartData); // chart garis
+
+            document.getElementById('tahunFilter').addEventListener('change', function() {
+                var selectedYear = this.value;
+                if (selectedYear === 'all') {
+                    renderChart(allChartData);
+                } else {
+                    filterDataByYear(selectedYear);
+                }
+            });
+        };
     </script>
 </body>
 
