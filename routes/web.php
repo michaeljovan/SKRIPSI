@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PelaksanaanKerjaSamaController;
@@ -8,29 +7,14 @@ use App\Http\Controllers\RekapKerjaSamaController;
 use App\Http\Controllers\EvaluasiMitraKinerjaController;
 use App\Http\Controllers\EvaluasiMitraController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MitraAktifController;
+use App\Http\Controllers\MitraPasifController;
 
 
 // Public Routes
 Route::get('/', function () {
     return view('login');
 });
-
-Route::get('/inputlaporanpelaksanaankerjasama', function () {
-    return view('inputlaporanpelaksanaankerjasama');
-});
-
-Route::get('/laporanpelaksanaankerjasama', function () {
-    return view('laporanpelaksanaankerjasama');
-});
-
-Route::get('/inputevaluasikerjasamakinerja', function () {
-    return view('inputevaluasikerjasamakinerja');
-});
-
-Route::get('/evaluasikerjasamakinerja', [EvaluasiMitraKinerjaController::class, 'index'])->name('evaluasikerjasamakinerja.index');
-Route::get('/evaluasikerjasamamitra', [EvaluasiMitraController::class, 'index'])->name('evaluasikerjasamamitra.index');
-
-
 
 Route::get('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post');
@@ -49,10 +33,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard/filter', [DashboardController::class, 'filterByYear']);
 
-    Route::get('/mitraaktif', function () {return view('mitraaktif');});
+    Route::get('/mitraaktif', [MitraAktifController::class, 'index'])->name('mitraaktifindex');
+    Route::get('/mitraaktif/detail/{mitra}', [MitraAktifController::class, 'showDetail']);
 
-    Route::get('/mitrapasif', function () {return view('mitrapasif');});
-
+    Route::get('/mitrapasif', [MitraPasifController::class, 'index'])->name('mitrapasifindex');
 
     // Rekap Kerja Sama
     Route::prefix('rekap_kerja_sama')->group(function () {
@@ -103,6 +87,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', 'store')->name('EvaluasiMitra.store');
         Route::get('/create/{id}', 'create')->name('EvaluasiMitra.create');
     });
+
+    Route::get('/evaluasikerjasamakinerja', [EvaluasiMitraKinerjaController::class, 'index'])->name('evaluasikerjasamakinerja.index');
+    Route::get('/evaluasikerjasamamitra', [EvaluasiMitraController::class, 'index'])->name('evaluasikerjasamamitra.index');
+
 
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

@@ -26,11 +26,12 @@ class DashboardController extends Controller
             ->select(
                 'mitra_kerja_sama',
                 DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"Implementasi"\') THEN 1 END) as total_implementasi'),
-                DB::raw('COUNT(*) as total_kerjasama')
+                DB::raw('COUNT(*) as total_kerjasama'),
+                DB::raw('MAX(updated_at) as terakhir_aktif')
             )
             ->groupBy('mitra_kerja_sama')
-            ->having('total_implementasi', '>', 0)
-            ->orderBy('total_implementasi')
+            ->orderBy('total_implementasi', 'asc')
+            ->orderBy('terakhir_aktif', 'asc')
             ->take(5)
             ->get();
 

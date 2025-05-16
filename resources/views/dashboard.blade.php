@@ -29,9 +29,13 @@
                 <a href="{{ route('superadmin') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
                     <i class="bi bi-gear"></i> <span class="d-none d-md-inline">Super Admin</span>
                 </a>
-                <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-danger rounded-pill">
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                    class="btn btn-sm btn-outline-danger rounded-pill">
                     <i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline">Logout</span>
                 </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
             </div>
         </div>
     </nav>
@@ -110,7 +114,7 @@
                                 </table>
                             </div>
                             <div class="text-end mt-3">
-                                <a href="#" class="btn btn-sm btn-outline-success">
+                                <a href="{{ route('mitraaktifindex') }}" class="btn btn-sm btn-outline-success">
                                     <i class="bi bi-chevron-double-right"></i> Lihat Semua Mitra Aktif
                                 </a>
                             </div>
@@ -148,7 +152,7 @@
                                 </table>
                             </div>
                             <div class="text-end mt-3">
-                                <a href="#" class="btn btn-sm btn-outline-warning">
+                                <a href="{{ route('mitrapasifindex') }}" class="btn btn-sm btn-outline-success">
                                     <i class="bi bi-chevron-double-right"></i> Lihat Semua Mitra Tidak Aktif
                                 </a>
                             </div>

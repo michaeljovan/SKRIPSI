@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,12 +14,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
 </head>
+
 <body>
     <!-- Header -->
     <nav class="navbar navbar-expand navbar-light fixed-top border-bottom px-3">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
-                <img src="{{ asset('assets/fti-ukdw.png') }}" width="40" height="40" class="me-2" alt="">
+                <img src="{{ asset('assets/fti-ukdw.png') }}" width="40" height="40" class="me-2"
+                    alt="">
                 <img src="{{ asset('assets/logo-ukdw.png') }}" width="40" height="40" alt="">
             </div>
             <div class="settingbtn d-flex gap-2">
@@ -37,7 +40,7 @@
         <div class="sidebar-menu">
             <!-- Dashboard Item -->
             <div class="menu-item">
-                <a href="#" class="menu-link active">
+                <a href="{{ route('dashboard') }}" class="menu-link active">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </div>
@@ -51,9 +54,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi
+                            Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi
+                            Kepuasan Mitra</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
@@ -70,13 +76,55 @@
     <!-- Main Content -->
     <main class="main-content p-3" id="mainContent">
         <div class="container-fluid">
-            <h1>Main Content</h1>
-            <p>Welcome to the dashboard. Your content goes here.</p>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-people-fill me-2"></i>Daftar Mitra Tidak Teraktif Berdasarkan Implementasi (IA)
+                                <a href="{{ url()->previous() }}" class="btn btn-sm btn-light float-end">
+                                    <i class="bi bi-arrow-left"></i> Kembali
+                                </a>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped">
+                                    <thead class="table-danger">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nama Mitra</th>
+                                            <th class="text-center">Jumlah Implementasi (IA)</th>
+                                            <th class="text-center">Total Kerjasama</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($mitrapasif as $index => $mitra)
+                                            <tr>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td>{{ $mitra->mitra_kerja_sama }}</td>
+                                                <td class="text-center">{{ $mitra->total_implementasi }}</td>
+                                                <td class="text-center">{{ $mitra->total_kerjasama }}</td>
+                                                <td>
+                                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-eye"></i> Detail
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="fixed-bottom py-2 text-center text-white">
+    <footer class="py-2 text-center text-white">
         <p class="mb-0">&copy; Fakultas Teknologi Informasi.</p>
     </footer>
 
@@ -125,4 +173,5 @@
         });
     </script>
 </body>
+
 </html>
