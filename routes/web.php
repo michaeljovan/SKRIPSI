@@ -31,12 +31,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     });
 
+    //Dashboard filter
     Route::get('/dashboard/filter', [DashboardController::class, 'filterByYear']);
 
+    // Mitra aktif dashboard dan detailnya
     Route::get('/mitraaktif', [MitraAktifController::class, 'index'])->name('mitraaktifindex');
-    Route::get('/mitraaktif/detail/{mitra}', [MitraAktifController::class, 'showDetail']);
+
 
     Route::get('/mitrapasif', [MitraPasifController::class, 'index'])->name('mitrapasifindex');
+
 
     // Rekap Kerja Sama
     Route::prefix('rekap_kerja_sama')->group(function () {
@@ -75,6 +78,9 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.delete_user');
     });
 
+
+    Route::get('/evaluasikerjasamakinerja', [EvaluasiMitraKinerjaController::class, 'index'])->name('evaluasikerjasamakinerja.index');
+    Route::get('/evaluasikerjasamamitra', [EvaluasiMitraController::class, 'index'])->name('evaluasikerjasamamitra.index');
     //Evaluasi Kepuasan Kinerja
     Route::prefix('EvaluasiMitraKinerja')->controller(EvaluasiMitraKinerjaController::class)->group(function () {
         Route::get('/', 'index')->name('EvaluasiMitraKinerja.form');
@@ -88,8 +94,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create/{id}', 'create')->name('EvaluasiMitra.create');
     });
 
-    Route::get('/evaluasikerjasamakinerja', [EvaluasiMitraKinerjaController::class, 'index'])->name('evaluasikerjasamakinerja.index');
-    Route::get('/evaluasikerjasamamitra', [EvaluasiMitraController::class, 'index'])->name('evaluasikerjasamamitra.index');
+
+
 
 
     // Logout
