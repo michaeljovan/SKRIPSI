@@ -54,7 +54,7 @@
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
                     <div class="submenu-item">
-                        <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
+                        <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
                         <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
                             Kerja Sama</a>

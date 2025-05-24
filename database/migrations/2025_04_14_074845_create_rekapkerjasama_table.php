@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('unit');
             $table->text('mitra_kerja_sama');
             $table->text('judul_kerja_sama');
-            $table->json('bentuk_kerja_sama');
-            $table->string('bentuk_kerja_sama_text')->nullable();
+            $table->string('bentuk_kerja_sama');
+            $table->string('jenis_kerja_sama');
             $table->string('pihak_ukdw');
             $table->string('pihak_mitra');
             $table->date('tanggal_mulai');

@@ -55,11 +55,14 @@
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
                     <div class="submenu-item">
-                        <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
+                        <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi
+                            Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi
+                            Kepuasan Mitra</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
@@ -88,7 +91,7 @@
                     <h5 class="mb-0">Form Input Kerja Sama</h5>
                 </div>
                 <div class="card-body">
-                    <form id="kerjaSamaForm" action="{{ route('store_kerja_sama') }}" method="POST"
+                    <form id="kerjaSamaForm" action="{{ route('rekapkerjasama.store') }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         <!-- Row 1 -->
@@ -100,7 +103,7 @@
                             <div class="col-md-6">
                                 <label for="unit" class="form-label">Unit</label>
                                 <select class="form-select" id="unit" name="unit" required>
-                                    <option value="" selected disabled></option>
+                                    <option value="" selected disabled> Pilih Unit</option>
                                     <option value="Fakultas Teknologi Informasi">Fakultas Teknologi Informasi</option>
                                     <option value="Informatika">Informatika</option>
                                     <option value="Sistem Informasi">Sistem Informasi</option>
@@ -121,36 +124,46 @@
                         </div>
 
                         <!-- Row 3 -->
-                        <div class="row mb-4 card shadow p-3 border-0">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">Bentuk Kerja Sama</label>
-                                <div class="card shadow-sm p-3">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Bentuk Kerja Sama <span class="text-danger">*</span></label>
+                                <div class="border border-secondary rounded p-3 shadow-sm">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" id="bentuk1"
-                                            name="bentukKerjaSama" value="MoU" required>
-                                        <label class="form-check-label" for="bentuk1">MoU (Memorandum of
+                                        <input class="form-check-input" type="checkbox" id="bentuk1" name="bentukKerjaSama[]" value="Penelitian">
+                                        <label class="form-check-label" for="bentuk1">Penelitian</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="bentuk2" name="bentukKerjaSama[]" value="Pendidikan">
+                                        <label class="form-check-label" for="bentuk2">Pendidikan</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="bentuk3" name="bentukKerjaSama[]" value="Pengabdian">
+                                        <label class="form-check-label" for="bentuk3">Pengabdian</label>
+                                    </div>
+                                    <div id="bentukKerjaSamaError" class="text-danger" style="display:none;">Pilih minimal satu Bentuk Kerja Sama</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label ">Jenis Kerja Sama</label>
+                                <div class="border border-secondary rounded p-3 shadow-sm">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="jenis1"
+                                            name="jenisKerjaSama" value="MoU" required>
+                                        <label class="form-check-label" for="jenis1">MoU (Memorandum of
                                             Understanding)</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" id="bentuk2"
-                                            name="bentukKerjaSama" value="MoA">
-                                        <label class="form-check-label" for="bentuk2">MoA (Memorandum of
+                                        <input class="form-check-input" type="radio" id="jenis2"
+                                            name="jenisKerjaSama" value="MoA">
+                                        <label class="form-check-label" for="jenis2">MoA (Memorandum of
                                             Agreement)</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" id="bentuk3"
-                                            name="bentukKerjaSama" value="Implementasi">
-                                        <label class="form-check-label" for="bentuk3">IA (Implementation Agreement)</label>
+                                        <input class="form-check-input" type="radio" id="jenis3"
+                                            name="jenisKerjaSama" value="IA">
+                                        <label class="form-check-label" for="jenis3">IA (Implementing
+                                            Agreement)</label>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="bentukKerjaSamaText" class="form-label fw-semibold">Detail Bentuk Kerja
-                                    Sama</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                                    <input type="text" class="form-control" id="bentukKerjaSamaText"
-                                        name="bentukKerjaSamaText" placeholder="Tambahkan detail jika diperlukan">
                                 </div>
                             </div>
                         </div>
@@ -190,7 +203,11 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="kategori" class="form-label">Kategori</label>
-                                <input type="text" class="form-control" id="kategori" name="kategori" required>
+                                <select class="form-select" id="kategori" name="kategori" required>
+                                    <option value="" selected disabled>Pilih Kategori</option>
+                                    <option value="nasional"> Nasional </option>
+                                    <option value="internasional">Internasional</option>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="inKind" class="form-label">In Kind</label>
@@ -291,6 +308,15 @@
             document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // Validate checkboxes first
+                const checkboxes = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
+                if (checkboxes.length === 0) {
+                    document.getElementById('bentukKerjaSamaError').style.display = 'block';
+                    return;
+                } else {
+                    document.getElementById('bentukKerjaSamaError').style.display = 'none';
+                }
+
                 const form = this;
                 const formData = new FormData(form);
 
@@ -305,34 +331,36 @@
                         method: 'POST',
                         body: formData,
                         headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            // Remove 'Accept': 'application/json' to accept any response type
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
                         }
                     })
                     .then(response => {
-                        // Check if response is JSON
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json();
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw err;
+                            });
                         }
-                        // If not JSON, assume successful form submission
-                        return {
-                            success: true
-                        };
+                        return response.json();
                     })
                     .then(data => {
-                        Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Data kerja sama berhasil disimpan',
-                            icon: 'success'
-                        }).then(() => {
-                            form.reset();
-                        });
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: data.message || 'Data kerja sama berhasil disimpan',
+                                icon: 'success'
+                            }).then(() => {
+                                window.location.href = data.redirect ||
+                                    '{{ route('data_kerja_sama') }}';
+                            });
+                        } else {
+                            throw new Error(data.message || 'Gagal menyimpan data');
+                        }
                     })
                     .catch(error => {
                         Swal.fire({
                             title: 'Error!',
-                            text: 'Terjadi kesalahan saat menyimpan data',
+                            text: error.message || 'Terjadi kesalahan saat menyimpan data',
                             icon: 'error'
                         });
                         console.error('Error:', error);

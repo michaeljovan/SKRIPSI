@@ -57,7 +57,7 @@
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
                     <div class="submenu-item">
-                        <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
+                        <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
                         <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
                             Kerja Sama</a>
@@ -97,19 +97,23 @@
                                         <tr>
                                             <th>#</th>
                                             <th>Nama Mitra</th>
-                                            <th>Jumlah Implementasi (IA)</th>
+                                            <th>Jumlah IA</th>
                                             <th>Total Kerjasama</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @for ($i = 0; $i < 5; $i++)
+                                        @forelse ($mitraaktif as $index => $mitra)
                                             <tr>
-                                                <td>{{ $i + 1 }}</td>
-                                                <td>{{ $mitraaktif[$i]->mitra_kerja_sama ?? '-' }}</td>
-                                                <td>{{ $mitraaktif[$i]->total_implementasi ?? '-' }}</td>
-                                                <td>{{ $mitraaktif[$i]->total_kerjasama ?? '-' }}</td>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td>{{ $mitra->mitra_kerja_sama }}</td>
+                                                <td>{{ $mitra->total_implementasi }}</td>
+                                                <td>{{ $mitra->total_kerjasama }}</td>
                                             </tr>
-                                        @endfor
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center">Tidak ada data mitra aktif</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -135,19 +139,24 @@
                                         <tr>
                                             <th>#</th>
                                             <th>Nama Mitra</th>
-                                            <th>Jumlah Implementasi (IA)</th>
+                                            <th>Jumlah IA</th>
                                             <th>Total Kerjasama</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @for ($i = 0; $i < 5; $i++)
+                                        @forelse ($mitrapasif as $index => $mitra)
                                             <tr>
-                                                <td>{{ $i + 1 }}</td>
-                                                <td>{{ $mitrapasif[$i]->mitra_kerja_sama ?? '-' }}</td>
-                                                <td>{{ $mitrapasif[$i]->total_implementasi ?? '-' }}</td>
-                                                <td>{{ $mitrapasif[$i]->total_kerjasama ?? '-' }}</td>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td>{{ $mitra->mitra_kerja_sama }}</td>
+                                                <td>{{ $mitra->total_implementasi }}</td>
+                                                <td>{{ $mitra->total_kerjasama }}</td>
                                             </tr>
-                                        @endfor
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center">Tidak ada data mitra tidak
+                                                    aktif</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -159,47 +168,49 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Chart Section -->
-            <div class="row mt-4">
-                <!-- Chart Bar (Distribusi Kerja Sama per Unit) -->
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <div
-                            class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Distribusi Kerja Sama
-                                per Unit</h5>
-                            <div>
-                                <select id="tahunFilter" class="form-select form-select-sm" style="width: 120px;">
-                                    <option value="all">Semua Tahun</option>
-                                    @foreach ($tahunList as $tahun)
-                                        <option value="{{ $tahun }}">{{ $tahun }}</option>
-                                    @endforeach
-                                </select>
+                <!-- Chart Section -->
+                <div class="row mt-4">
+                    <!-- Chart Bar (Distribusi Kerja Sama per Unit) -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div
+                                class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Distribusi Kerja
+                                    Sama
+                                    per Unit</h5>
+                                <div>
+                                    <select id="tahunFilter" class="form-select form-select-sm"
+                                        style="width: 120px;">
+                                        <option value="all">Semua Tahun</option>
+                                        @foreach ($tahunList as $tahun)
+                                            <option value="{{ $tahun }}">{{ $tahun }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="unitChart" style="height: 370px; width: 100%;"></div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div id="unitChart" style="height: 370px; width: 100%;"></div>
+                    </div>
+
+                    <!-- Chart Line (Tren Jumlah Kerja Sama 5 Tahun Terakhir) -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="card-title mb-0"><i class="bi bi-graph-up me-2"></i>Tren Jumlah Kerja Sama
+                                    per
+                                    Unit (5 Tahun Terakhir)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="lineChart" style="height: 370px; width: 100%;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Chart Line (Tren Jumlah Kerja Sama 5 Tahun Terakhir) -->
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="card-title mb-0"><i class="bi bi-graph-up me-2"></i>Tren Jumlah Kerja Sama per
-                                Unit (5 Tahun Terakhir)</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="lineChart" style="height: 370px; width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
-
-        </div>
     </main>
 
 

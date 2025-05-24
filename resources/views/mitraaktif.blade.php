@@ -53,7 +53,7 @@
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
                     <div class="submenu-item">
-                        <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerja Sama</a>
+                        <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
                         <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
                             Kerja Sama</a>
@@ -105,14 +105,19 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($mitraaktif as $index => $mitra)
+                                        @foreach ($mitraAktif as $index => $mitra)
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>{{ $mitra->mitra_kerja_sama }}</td>
                                                 <td class="text-center">{{ $mitra->total_implementasi }}</td>
                                                 <td class="text-center">{{ $mitra->total_kerjasama }}</td>
                                                 <td>
-                                                    <button class="btn btn-sm btn-outline-primary btn-detail">
+                                                    <button class="btn btn-sm btn-outline-primary btn-detail"
+                                                        data-bs-toggle="modal" data-bs-target="#detailModal"
+                                                        data-mitra="{{ $mitra->mitra_kerja_sama }}"
+                                                        data-mou="{{ $mitra->jumlah_mou ?? 0 }}"
+                                                        data-moa="{{ $mitra->jumlah_moa ?? 0 }}"
+                                                        data-ia="{{ $mitra->total_implementasi ?? 0 }}">
                                                         <i class="bi bi-eye"></i> Detail
                                                     </button>
                                                 </td>
@@ -132,6 +137,48 @@
     <footer class="py-2 text-center text-white">
         <p class="mb-0">&copy; Fakultas Teknologi Informasi.</p>
     </footer>
+
+    <!-- Modal detail -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel">Detail Kerjasama</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="mb-3">Mitra: <span id="mitraName"></span></h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Jenis Kerjasama</th>
+                                    <th class="text-center">Jumlah</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>MoU</td>
+                                    <td class="text-center" id="mouCount">0</td>
+                                </tr>
+                                <tr>
+                                    <td>MoA</td>
+                                    <td class="text-center" id="moaCount">0</td>
+                                </tr>
+                                <tr>
+                                    <td>IA/Implementasi</td>
+                                    <td class="text-center" id="iaCount">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -177,6 +224,27 @@
             });
         });
 
+        // untuk get detail
+        document.addEventListener('DOMContentLoaded', function() {
+            const detailButtons = document.querySelectorAll('.btn-detail');
+            const detailModal = document.getElementById('detailModal');
+
+            detailButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Ambil data dari atribut data-*
+                    const mitraName = this.getAttribute('data-mitra');
+                    const mouCount = this.getAttribute('data-mou');
+                    const moaCount = this.getAttribute('data-moa');
+                    const iaCount = this.getAttribute('data-ia');
+
+                    // Set data ke modal
+                    document.getElementById('mitraName').textContent = mitraName;
+                    document.getElementById('mouCount').textContent = mouCount;
+                    document.getElementById('moaCount').textContent = moaCount;
+                    document.getElementById('iaCount').textContent = iaCount;
+                });
+            });
+        });
     </script>
 </body>
 

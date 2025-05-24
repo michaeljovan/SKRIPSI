@@ -1,0 +1,25 @@
+body {
+  background-image: url('../assets/backgroundlogin.jpg');
+  background-repeat: repeat;
+  background-attachment: fixed;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.bg-custom {
+  background-color: rgba(255, 255, 255, 0.8);
+  min-height: 100vh;
+}
+
+.card-rounded {
+  border-radius: 1rem !important;
+}
+
+.img-rounded-left {
+  border-radius: 1rem 0 0 1rem !important;
+}
+
+.form-outline {
+  margin-bottom: 1rem;
+}

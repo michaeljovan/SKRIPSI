@@ -17,7 +17,7 @@ class RekapKerjaSama extends Model
         'mitra_kerja_sama',
         'judul_kerja_sama',
         'bentuk_kerja_sama',
-        'bentuk_kerja_sama_text',
+        'jenis_kerja_sama',
         'pihak_ukdw',
         'pihak_mitra',
         'tanggal_mulai',
@@ -36,7 +36,6 @@ class RekapKerjaSama extends Model
     ];
 
     protected $casts = [
-        'bentuk_kerja_sama' => 'array',
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
         'in_cash' => 'float',

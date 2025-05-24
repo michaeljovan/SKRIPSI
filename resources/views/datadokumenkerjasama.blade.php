@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,11 +49,14 @@
                     <i class="bi bi-files"></i> Dokumen <i class="bi bi-chevron-down float-end"></i>
                 </a>
                 <div class="collapse show submenu" id="dokumenMenu">
-                    <a href="{{ route('input_kerja_sama') }}" class="submenu-link">Input Rekap Kerjasama</a>
+                    <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerjasama</a>
                     <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerjasama</a>
-                    <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksanaan Kerjasama</a>
-                    <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                    <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                    <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksanaan
+                        Kerjasama</a>
+                    <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                        Mitra (Kinerja Mahasiswa/Dosen)</a>
+                    <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                        Mitra</a>
                     <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                     <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                 </div>
@@ -95,9 +99,11 @@
                                 <tr>
                                     <th style="min-width: 150px;">No Dokumen</th>
                                     <th style="min-width: 120px;">Unit</th>
-                                    <th style="min-width: 200px;">Mitra</th>
+                                    <th style="min-width: 250px;">Mitra</th>
                                     <th style="min-width: 250px;">Judul</th>
+                                    <th style="min-width: 250px;">Jenis Kerja Sama</th>
                                     <th style="min-width: 200px;">Bentuk Kerja Sama</th>
+                                    <th style="min-width: 200px;">Kategori</th>
                                     <th style="min-width: 150px;">Pihak UKDW</th>
                                     <th style="min-width: 150px;">Pihak Mitra</th>
                                     <th style="min-width: 120px;">Tanggal Mulai</th>
@@ -110,7 +116,8 @@
                                     <th style="min-width: 120px;">Total In Cash</th>
                                     <th style="min-width: 150px;">Jumlah Implementasi</th>
                                     <th style="min-width: 200px;">Laporan Pelaksanaan Kerja Sama</th>
-                                    <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)</th>
+                                    <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)
+                                    </th>
                                     <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama</th>
                                     <th style="min-width: 150px;">Aksi</th>
                                 </tr>
@@ -122,13 +129,9 @@
                                         <td>{{ $rekap->unit }}</td>
                                         <td>{{ Str::limit($rekap->mitra_kerja_sama, 30) }}</td>
                                         <td>{{ Str::limit($rekap->judul_kerja_sama) }}</td>
-                                        <td>
-                                            @if (is_array($rekap->bentuk_kerja_sama))
-                                                {{ implode(', ', $rekap->bentuk_kerja_sama) }}
-                                            @else
-                                                {{ $rekap->bentuk_kerja_sama }}
-                                            @endif
-                                        </td>
+                                        <td>{{ Str::limit($rekap->jenis_kerja_sama) }}</td>
+                                        <td>{{ $rekap->bentuk_kerja_sama }}</td>
+                                        <td>{{ $rekap->kategori }}</td>
                                         <td>{{ $rekap->pihak_ukdw }}</td>
                                         <td>{{ $rekap->pihak_mitra }}</td>
                                         <td>{{ date('d/m/Y', strtotime($rekap->tanggal_mulai)) }}</td>
@@ -195,7 +198,7 @@
                                                     title="Lihat Dokumen">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <a href="{{ route('rekap_kerja_sama.edit', $rekap->id) }}"
+                                                <a href="{{ route('rekapkerjasama.edit', $rekap->id) }}"
                                                     class="btn btn-sm btn-warning me-1" title="Edit">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
@@ -221,7 +224,7 @@
 
     <!-- Filter Modal -->
     <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg"> <!-- Tambahkan class modal-lg di sini -->
+        <div class="modal-dialog modal-lg">
             <form method="GET" action="{{ route('data_kerja_sama') }}" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="filterModalLabel">Filter Data Kerja Sama</h5>
@@ -260,12 +263,11 @@
                             <label for="kategori" class="form-label">Kategori</label>
                             <select class="form-select" id="kategori" name="kategori">
                                 <option value="">Semua</option>
-                                <option value="Pendidikan"
-                                    {{ request('kategori') == 'Pendidikan' ? 'selected' : '' }}>Pendidikan</option>
-                                <option value="Penelitian"
-                                    {{ request('kategori') == 'Penelitian' ? 'selected' : '' }}>Penelitian</option>
-                                <option value="Pengabdian"
-                                    {{ request('kategori') == 'Pengabdian' ? 'selected' : '' }}>Pengabdian</option>
+                                <option value="Nasional" {{ request('kategori') == 'Nasional' ? 'selected' : '' }}>
+                                    Nasional</option>
+                                <option value="Internasional"
+                                    {{ request('kategori') == 'Internasional' ? 'selected' : '' }}>Internasional
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -278,18 +280,31 @@
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="bentuk_kerja_sama" class="form-label">Bentuk Kerja Sama</label>
-                            <select class="form-select" id="bentuk_kerja_sama" name="bentuk_kerja_sama">
+                            <label for="jenis_kerja_sama" class="form-label">Jenis Kerja Sama</label>
+                            <select class="form-select" id="jenis_kerja_sama" name="jenis_kerja_sama">
                                 <option value="">Semua</option>
-                                <option value="MoU" {{ request('bentuk_kerja_sama') == 'MoU' ? 'selected' : '' }}>
+                                <option value="MoU" {{ request('jenis_kerja_sama') == 'MoU' ? 'selected' : '' }}>
                                     MoU</option>
-                                <option value="MoA" {{ request('bentuk_kerja_sama') == 'MoA' ? 'selected' : '' }}>
+                                <option value="MoA" {{ request('jenis_kerja_sama') == 'MoA' ? 'selected' : '' }}>
                                     MoA</option>
-                                <option value="Implementasi"
-                                    {{ request('bentuk_kerja_sama') == 'Implementasi' ? 'selected' : '' }}>Implementasi
-                                </option>
+                                <option value="IA" {{ request('jenis_kerja_sama') == 'IA' ? 'selected' : '' }}>
+                                    IA</option>
                             </select>
                         </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="is_laporan" class="form-label">Status Laporan</label>
+                            <select class="form-select" id="is_laporan" name="is_laporan">
+                                <option value="">Semua</option>
+                                <option value="1" {{ request('is_laporan') == '1' ? 'selected' : '' }}>Sudah
+                                    Dilaporkan</option>
+                                <option value="0" {{ request('is_laporan') == '0' ? 'selected' : '' }}>Belum
+                                    Dilaporkan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
                             <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai"
@@ -299,27 +314,6 @@
                             <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
                             <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai"
                                 value="{{ request('tanggal_selesai') }}">
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="masa_berlaku" class="form-label">Masa Berlaku (Hari)</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="masa_berlaku" name="masa_berlaku"
-                                    value="{{ request('masa_berlaku') }}">
-                                <span class="input-group-text">Hari</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="is_laporan" class="form-label">Status Laporan</label>
-                            <select class="form-select" id="is_laporan" name="is_laporan">
-                                <option value="">Semua</option>
-                                <option value="1" {{ request('is_laporan') == '1' ? 'selected' : '' }}>Sudah
-                                    Dilaporkan</option>
-                                <option value="0" {{ request('is_laporan') == '0' ? 'selected' : '' }}>Belum
-                                    Dilaporkan</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -363,7 +357,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: "{{ route('delete_kerja_sama', '') }}/" + id,
+                        url: "{{ route('rekapkerjasama.delete', '') }}/" + id,
                         type: 'DELETE',
                         dataType: 'json',
                         success: function(response) {

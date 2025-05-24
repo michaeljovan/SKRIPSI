@@ -14,18 +14,22 @@ class DashboardController extends Controller
         $mitraaktif = RekapKerjaSama::query()
             ->select(
                 'mitra_kerja_sama',
-                DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"Implementasi"\') THEN 1 END) as total_implementasi'),
+                DB::raw('COUNT(CASE WHEN jenis_kerja_sama = "IA" THEN 1 END) as total_implementasi'),
+                DB::raw('COUNT(CASE WHEN bentuk_kerja_sama LIKE "%Implementasi%" THEN 1 END) as total_dengan_implementasi'),
                 DB::raw('COUNT(*) as total_kerjasama')
             )
             ->groupBy('mitra_kerja_sama')
             ->orderByDesc('total_implementasi')
+            ->orderByDesc('total_kerjasama')
             ->take(5)
             ->get();
 
+        // Query untuk mitra tidak teraktif
         $mitrapasif = RekapKerjaSama::query()
             ->select(
                 'mitra_kerja_sama',
-                DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"Implementasi"\') THEN 1 END) as total_implementasi'),
+                DB::raw('COUNT(CASE WHEN jenis_kerja_sama = "IA" THEN 1 END) as total_implementasi'),
+                DB::raw('COUNT(CASE WHEN bentuk_kerja_sama LIKE "%Implementasi%" THEN 1 END) as total_dengan_implementasi'),
                 DB::raw('COUNT(*) as total_kerjasama'),
                 DB::raw('MAX(updated_at) as terakhir_aktif')
             )
@@ -34,6 +38,20 @@ class DashboardController extends Controller
             ->orderBy('terakhir_aktif', 'asc')
             ->take(5)
             ->get();
+
+        // Query untuk jenis kerja sama terbanyak dan tersedikit dari IA
+        $jenisKerjaSamaStats = RekapKerjaSama::query()
+            ->select(
+                'jenis_kerja_sama',
+                DB::raw('COUNT(*) as total')
+            )
+            ->where('jenis_kerja_sama', 'IA')
+            ->groupBy('jenis_kerja_sama')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        $jenisTerbanyak = $jenisKerjaSamaStats->first();
+        $jenisTersedikit = $jenisKerjaSamaStats->last();
 
         // Definisikan urutan unit yang diinginkan
         $orderedUnits = [
@@ -46,9 +64,9 @@ class DashboardController extends Controller
         $unitData = RekapKerjaSama::query()
             ->select(
                 'unit',
-                DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"MoU"\') THEN 1 END) as total_mou'),
-                DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"MoA"\') THEN 1 END) as total_moa'),
-                DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"Implementasi"\') THEN 1 END) as total_implementasi')
+                DB::raw('COUNT(CASE WHEN jenis_kerja_sama = "MoU" THEN 1 END) as total_mou'),
+                DB::raw('COUNT(CASE WHEN jenis_kerja_sama = "MoA" THEN 1 END) as total_moa'),
+                DB::raw('COUNT(CASE WHEN jenis_kerja_sama = "IA" THEN 1 END) as total_implementasi')
             )
             ->whereIn('unit', $orderedUnits)
             ->groupBy('unit')
@@ -102,7 +120,15 @@ class DashboardController extends Controller
             $lineChartData[$unitName] = $yearData;
         }
 
-        return view('dashboard', compact('mitraaktif', 'mitrapasif', 'chartData', 'tahunList', 'lineChartData'));
+        return view('dashboard', compact(
+            'mitraaktif',
+            'mitrapasif',
+            'chartData',
+            'tahunList',
+            'lineChartData',
+            'jenisTerbanyak',
+            'jenisTersedikit'
+        ));
     }
 
     public function filterByYear(Request $request)
@@ -112,9 +138,9 @@ class DashboardController extends Controller
         $query = RekapKerjaSama::query()
             ->select(
                 'unit',
-                DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"MoU"\') THEN 1 END) as total_mou'),
-                DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"MoA"\') THEN 1 END) as total_moa'),
-                DB::raw('COUNT(CASE WHEN JSON_CONTAINS(bentuk_kerja_sama, \'"Implementasi"\') THEN 1 END) as total_implementasi')
+                DB::raw('COUNT(CASE WHEN jenis_kerja_sama = "MoU" THEN 1 END) as total_mou'),
+                DB::raw('COUNT(CASE WHEN jenis_kerja_sama = "MoA" THEN 1 END) as total_moa'),
+                DB::raw('COUNT(CASE WHEN jenis_kerja_sama = "IA" THEN 1 END) as total_implementasi')
             )
             ->whereIn('unit', ['Fakultas Teknologi Informasi', 'Informatika', 'Sistem Informasi']);
 

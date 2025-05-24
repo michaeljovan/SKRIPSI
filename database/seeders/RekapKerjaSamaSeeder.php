@@ -2,80 +2,121 @@
 
 namespace Database\Seeders;
 
+use App\Models\RekapKerjaSama;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Schema;
 
 class RekapKerjaSamaSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        $units = [
-            'Fakultas Teknologi Informasi',
-            'Informatika',
-            'Sistem Informasi',
-        ];
+        try {
+            // Nonaktifkan foreign key checks sementara
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        $mitras = [
-            'PT. Teknologi Maju Indonesia',
-            'CV. Solusi Digital',
-            'Universitas Gadjah Mada',
-            'Google Indonesia',
-            'Microsoft Corporation',
-            'PT. Telkom Indonesia',
-            'Dinas Pendidikan Provinsi Jawa Tengah',
-            'PT. Bank Central Asia',
-            'PT. Astra International',
-            'Universitas Indonesia'
-        ];
+            // Hapus data dari tabel terkait jika tabelnya ada
+            $this->safeDelete('pelaksanaankerjasama');
+            $this->safeDelete('evaluasi_mitra_kinerja');
+            $this->safeDelete('evaluasi_mitra');
 
-        $bentukKerjaSama = [
-            ['MoU'],
-            ['MoA'],
-            ['Implementasi'],
-        ];
+            // Hapus data rekap
+            RekapKerjaSama::truncate();
 
-        $kategoris = [
-            'Pendidikan',
-            'Penelitian',
-            'Pengabdian Masyarakat',
-            'Magang',
-            'Beasiswa'
-        ];
+            // Aktifkan kembali foreign key checks
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        $data = [];
+            // Buat direktori penyimpanan jika belum ada
+            if (!Storage::exists('public/dokumen_kerja_sama')) {
+                Storage::makeDirectory('public/dokumen_kerja_sama');
+            }
 
-        for ($i = 1; $i <= 50; $i++) {
-            $startDate = Carbon::now()->subDays(rand(1, 365));
-            $endDate = (clone $startDate)->addDays(rand(30, 730));
-            $duration = $endDate->diffInDays($startDate);
+            $faker = Faker::create('id_ID');
 
-            $bentuk = $bentukKerjaSama[array_rand($bentukKerjaSama)];
-
-            $data[] = [
-                'no_dokumen' => 'DOC-' . str_pad($i, 4, '0', STR_PAD_LEFT) . '-' . date('Y'),
-                'unit' => $units[array_rand($units)],
-                'mitra_kerja_sama' => $mitras[array_rand($mitras)],
-                'judul_kerja_sama' => 'Kerja Sama ' . $kategoris[array_rand($kategoris)] . ' dengan ' . $mitras[array_rand($mitras)],
-                'bentuk_kerja_sama' => json_encode($bentuk),
-                'bentuk_kerja_sama_text' => in_array('Implementasi', $bentuk) ? 'Implementasi khusus bidang TI' : null,
-                'pihak_ukdw' => 'Rektor UKDW',
-                'pihak_mitra' => 'Direktur ' . $mitras[array_rand($mitras)],
-                'tanggal_mulai' => $startDate,
-                'tanggal_selesai' => $endDate,
-                'masa_berlaku' => $duration,
-                'kategori' => $kategoris[array_rand($kategoris)],
-                'in_kind' => rand(0, 1) ? 'Perangkat lunak dan pelatihan' : null,
-                'total_in_kind' => rand(0, 1) ? rand(5000000, 50000000) : null,
-                'in_cash' => rand(0, 1) ? rand(10000000, 100000000) : null,
-                'total_in_cash' => rand(0, 1) ? rand(50000000, 500000000) : null,
-                'jumlah_implementasi' => rand(0, 5),
-                'dokumen_path' => 'dokumen_kerja_sama/contoh_dokumen_' . $i . '.pdf',
-                'created_at' => now(),
-                'updated_at' => now()
+            // Data acak untuk berbagai bidang
+            $units = ['Fakultas Teknologi Informasi', 'Informatika', 'Sistem Informasi'];
+            $bentukKerjaSama = [
+                ['Penelitian'],
+                ['Pendidikan'],
+                ['Pengabdian'],
+                ['Penelitian', 'Pendidikan'],
+                ['Pendidikan', 'Pengabdian'],
+                ['Penelitian', 'Pengabdian'],
+                ['Penelitian', 'Pendidikan', 'Pengabdian']
             ];
-        }
+            $jenisKerjaSama = ['MoU', 'MoA', 'IA'];
+            $kategori = ['nasional', 'internasional'];
+            $perusahaan = ['PT.', 'CV.', 'UD.', 'PD.'];
+            $bidangUsaha = [
+                'Teknologi', 'Pendidikan', 'Kesehatan', 'Keuangan',
+                'Manufaktur', 'Retail', 'Jasa', 'Pertanian'
+            ];
 
-        DB::table('rekapkerjasama')->insert($data);
+            // Generate 50 data dummy
+            for ($i = 1; $i <= 50; $i++) {
+                $startDate = $faker->dateTimeBetween('-2 years', 'now');
+                $endDate = $faker->dateTimeBetween($startDate, '+3 years');
+                $duration = $endDate->diff($startDate)->days + 1;
+
+                $bentuk = $faker->randomElement($bentukKerjaSama);
+                $mitra = $faker->randomElement($perusahaan).' '.$faker->company.' '.$faker->randomElement($bidangUsaha);
+
+                $inKind = $faker->boolean(70) ? implode(', ', $faker->randomElements([
+                    'Pelatihan', 'Sertifikasi', 'Software', 'Hardware',
+                    'Konsultasi', 'Beasiswa', 'Akomodasi', 'Alat Laboratorium'
+                ], $faker->numberBetween(1, 3))) : null;
+
+                $inCash = $faker->boolean(60) ? $faker->numberBetween(5000000, 500000000) : null;
+
+                RekapKerjaSama::create([
+                    'no_dokumen' => 'KS/FTI/'.date('Y').'/'.str_pad($i, 3, '0', STR_PAD_LEFT),
+                    'unit' => $faker->randomElement($units),
+                    'mitra_kerja_sama' => $mitra,
+                    'judul_kerja_sama' => 'Kerja Sama '.implode(' dan ', $bentuk).' dengan '.$mitra,
+                    'bentuk_kerja_sama' => implode(', ', $bentuk),
+                    'jenis_kerja_sama' => $faker->randomElement($jenisKerjaSama),
+                    'pihak_ukdw' => $faker->name,
+                    'pihak_mitra' => $faker->name,
+                    'tanggal_mulai' => $startDate,
+                    'tanggal_selesai' => $endDate,
+                    'masa_berlaku' => $duration,
+                    'kategori' => $faker->randomElement($kategori),
+                    'in_kind' => $inKind,
+                    'total_in_kind' => $inKind ? $faker->numberBetween(10000000, 200000000) : null,
+                    'in_cash' => $inCash,
+                    'total_in_cash' => $inCash,
+                    'jumlah_implementasi' => $faker->numberBetween(0, 10),
+                    'dokumen_path' => 'dokumen_kerja_sama/dummy_'.$i.'.pdf',
+                    'created_at' => $faker->dateTimeBetween('-1 year', 'now'),
+                    'updated_at' => $faker->dateTimeBetween('-1 year', 'now'),
+                ]);
+            }
+
+            $this->command->info('Berhasil menambahkan 50 data dummy Rekap Kerja Sama!');
+
+        } catch (\Exception $e) {
+            $this->command->error('Error: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Fungsi untuk menghapus data dari tabel hanya jika tabel tersebut ada
+     */
+    protected function safeDelete(string $tableName): void
+    {
+        try {
+            if (Schema::hasTable($tableName)) {
+                DB::table($tableName)->delete();
+                $this->command->info("Data dari tabel {$tableName} berhasil dihapus");
+            } else {
+                $this->command->warn("Tabel {$tableName} tidak ditemukan, dilewati");
+            }
+        } catch (\Exception $e) {
+            $this->command->error("Gagal menghapus data dari {$tableName}: ".$e->getMessage());
+        }
     }
 }
