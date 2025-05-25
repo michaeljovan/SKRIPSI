@@ -98,7 +98,7 @@ class EvaluasiMitra extends Model
 
         return $map[$value] ?? '-';
     }
-    protected $primaryKey = 'idkinerja';
+    protected $primaryKey = 'idmitra';
     public $incrementing = true;
     protected $fillable = [
         'rekap_id',

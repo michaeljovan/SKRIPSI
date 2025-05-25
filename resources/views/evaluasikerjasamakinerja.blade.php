@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Evaluasi Kerjasama Kinerja</title>
     <link rel="stylesheet" href="{{ asset('CSS/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('CSS/bootstrap.min.css') }}">
@@ -12,13 +14,17 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('CSS/sweetalert2.min.css') }}">
+    <script src="{{ asset('JS/sweetalert2.all.min.js') }}"></script>
 </head>
+
 <body>
     <!-- Header -->
     <nav class="navbar navbar-expand navbar-light fixed-top border-bottom px-3">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
-                <img src="{{ asset('assets/fti-ukdw.png') }}" width="40" height="40" class="me-2" alt="">
+                <img src="{{ asset('assets/fti-ukdw.png') }}" width="40" height="40" class="me-2"
+                    alt="">
                 <img src="{{ asset('assets/logo-ukdw.png') }}" width="40" height="40" alt="">
             </div>
             <div class="settingbtn d-flex gap-2">
@@ -51,9 +57,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
@@ -101,52 +110,54 @@
                             </thead>
                             <tbody>
                                 @forelse($evaluasi as $key => $item)
-                                <tr>
-                                    <td class="text-center">{{ $loop->iteration }}</td>
-                                    <td>{{ $item->nodok }}</td>
-                                    <td>{{ $item->mitra }}</td>
-                                    <td class="text-center">{{ $item->integritas_text }}</td>
-                                    <td class="text-center">{{ $item->keahlian_text }}</td>
-                                    <td class="text-center">{{ $item->komunikasi_text }}</td>
-                                    <td class="text-center">{{ $item->kerjasamatim_text }}</td>
-                                    <td class="text-center">{{ $item->pengembangandiri_text }}</td>
-                                    <td class="text-center">{{ $item->kreativitas_text }}</td>
-                                    <td class="text-center">{{ $item->bahasaasing_text }}</td>
-                                    <td class="text-center">{{ $item->teknologi_text }}</td>
-                                    <td class="text-center">{{ $item->manajerial_text }}</td>
-                                    <td class="text-center">{{ $item->analisis_text }}</td>
-                                    <td class="text-center">{{ $item->laporan_text }}</td>
-                                    <td class="text-center">{{ $item->inovasi_text }}</td>
-                                    <td>
-                                        @if($item->lainlainlabel)
-                                            {{ $item->lainlainlabel }} ({{ $item->lainlainnilai }})
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                    <td>{{ Str::limit($item->komentar, 30) }}</td>
-                                    <td class="text-center">
-                                        <div class="btn-group" role="group">
-                                            <a href="#" class="btn btn-sm btn-info" title="Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="#" class="btn btn-sm btn-warning" title="Edit">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <button class="btn btn-sm btn-danger" title="Hapus">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td class="text-center">{{ $loop->iteration }}</td>
+                                        <td>{{ $item->nodok }}</td>
+                                        <td>{{ $item->mitra }}</td>
+                                        <td class="text-center">{{ $item->integritas_text }}</td>
+                                        <td class="text-center">{{ $item->keahlian_text }}</td>
+                                        <td class="text-center">{{ $item->komunikasi_text }}</td>
+                                        <td class="text-center">{{ $item->kerjasamatim_text }}</td>
+                                        <td class="text-center">{{ $item->pengembangandiri_text }}</td>
+                                        <td class="text-center">{{ $item->kreativitas_text }}</td>
+                                        <td class="text-center">{{ $item->bahasaasing_text }}</td>
+                                        <td class="text-center">{{ $item->teknologi_text }}</td>
+                                        <td class="text-center">{{ $item->manajerial_text }}</td>
+                                        <td class="text-center">{{ $item->analisis_text }}</td>
+                                        <td class="text-center">{{ $item->laporan_text }}</td>
+                                        <td class="text-center">{{ $item->inovasi_text }}</td>
+                                        <td>
+                                            @if ($item->lainlainlabel)
+                                                {{ $item->lainlainlabel }} ({{ $item->lainlainnilai }})
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                        <td>{{ Str::limit($item->komentar, 30) }}</td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="#" class="btn btn-sm btn-info" title="Detail">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="#" class="btn btn-sm btn-warning" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-danger" title="Hapus"
+                                                    onclick="confirmDelete({{ $item->idkinerja ?? 'null' }})"
+                                                    {{ !isset($item->idkinerja) ? 'disabled' : '' }}>
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="18" class="text-center py-4">
-                                        <div class="alert alert-info">
-                                            <i class="bi bi-info-circle"></i> Tidak ada data evaluasi ditemukan
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="18" class="text-center py-4">
+                                            <div class="alert alert-info">
+                                                <i class="bi bi-info-circle"></i> Tidak ada data evaluasi ditemukan
+                                            </div>
+                                        </td>
+                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -155,7 +166,8 @@
                     <!-- Pagination -->
                     <div class="d-flex justify-content-between mt-3">
                         <div class="text-muted">
-                            Menampilkan {{ $evaluasi->firstItem() ?? 0 }} sampai {{ $evaluasi->lastItem() ?? 0 }} dari {{ $evaluasi->total() ?? 0 }} entri
+                            Menampilkan {{ $evaluasi->firstItem() ?? 0 }} sampai {{ $evaluasi->lastItem() ?? 0 }} dari
+                            {{ $evaluasi->total() ?? 0 }} entri
                         </div>
                         <nav aria-label="Page navigation">
                             <ul class="pagination pagination-sm">
@@ -175,6 +187,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
@@ -218,10 +231,69 @@
 
             // Initialize tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
+
+        function confirmDelete(id) {
+            if (!id || id === 'null') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Data tidak valid untuk dihapus!',
+                });
+                return false;
+            }
+
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/EvaluasiMitraKinerja/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json',
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Gagal menghapus data');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: data.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: error.message,
+                            });
+                        });
+                }
+            });
+        }
     </script>
 </body>
+
 </html>

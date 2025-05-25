@@ -13,6 +13,7 @@
     <style>
     </style>
 </head>
+
 <body>
     <section class="vh-100 bg-custom">
         <div class="container py-5 h-100">
@@ -29,10 +30,10 @@
                                     <form action="{{ route('login.post') }}" method="POST">
                                         @csrf
                                         <div class="d-flex align-items-center mb-3 pb-1">
-                                            <img src="{{ asset('assets/fti-ukdw.png') }}" width="40" height="40"
-                                                class="me-3" alt="">
                                             <img src="{{ asset('assets/logo-ukdw.png') }}" width="40" height="40"
                                                 alt="">
+                                            <img src="{{ asset('assets/fti-ukdw.png') }}" width="40" height="40"
+                                                class="me-3" alt="">
                                         </div>
 
                                         <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Masukkan Email dan

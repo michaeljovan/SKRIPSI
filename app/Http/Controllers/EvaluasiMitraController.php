@@ -17,7 +17,6 @@ class EvaluasiMitraController extends Controller
             ->paginate(10);
 
         return view('evaluasikerjasamamitra', ['evaluasimitra' => $evaluasimitra]);
-        // return view('evaluasikerjasamamitra', compact('evaluasimitra'));
     }
 
     public function create($id)
@@ -85,5 +84,49 @@ class EvaluasiMitraController extends Controller
         $rekap->update(['is_mitra' => true]);
 
         return redirect()->back()->with('success', 'Evaluasi berhasil disimpan');
+    }
+
+    // app/Http/Controllers/EvaluasiMitraController.php
+
+    public function delete($id)
+    {
+        try {
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ID tidak valid'
+                ], 400);
+            }
+
+            // Change to use 'idmitra' instead of 'idkinerja'
+            $evaluasi = EvaluasiMitra::with('rekapKerjasama')
+                ->where('idmitra', $id)
+                ->first();
+
+            if (!$evaluasi) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data evaluasi mitra tidak ditemukan'
+                ], 404);
+            }
+
+            $rekap_id = $evaluasi->rekap_id;
+            $evaluasi->delete();
+
+            if ($rekap_id) {
+                RekapKerjaSama::where('id', $rekap_id)
+                    ->update(['is_mitra' => false]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Evaluasi mitra berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus evaluasi mitra: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

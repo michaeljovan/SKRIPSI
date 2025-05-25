@@ -56,12 +56,9 @@
                     <div class="submenu-item">
                         <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
-                            Kerja Sama</a>
-                        <a href="{{ route('evaluasikerjasamakinerja.index') }}" class="submenu-link">Form Evaluasi
-                            Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('evaluasikerjasamamitra.index') }}" class="submenu-link">Form Evaluasi
-                            Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
                         <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>

@@ -85,21 +85,50 @@ class EvaluasiMitraKinerjaController extends Controller
 
         return redirect()->back()->with('success', 'Evaluasi berhasil disimpan');
     }
-
-    /**
-     * Display a listing of the evaluations for admin view.
-     */
-    public function list()
+    public function delete($id)
     {
-        $evaluations = EvaluasiMitraKinerja::latest()->paginate(10);
-        return view('EvaluasiMitraKinerja.list', compact('evaluations'));
-    }
+        try {
+            // Validasi ID
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ID tidak valid'
+                ], 400);
+            }
 
-    /**
-     * Display the specified evaluation.
-     */
-    public function show(EvaluasiMitraKinerja $evaluasi)
-    {
-        return view('EvaluasiMitraKinerja.show', compact('evaluasi'));
+            // Cari data evaluasi
+            $evaluasi = EvaluasiMitraKinerja::with('rekapKerjasama')
+                ->where('idkinerja', $id)
+                ->first();
+
+            if (!$evaluasi) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data evaluasi tidak ditemukan'
+                ], 404);
+            }
+
+            // Simpan rekap_id sebelum dihapus
+            $rekap_id = $evaluasi->rekap_id;
+
+            // Hapus data evaluasi
+            $evaluasi->delete();
+
+            // Update is_kinerja di rekapkerjasama
+            if ($rekap_id) {
+                RekapKerjaSama::where('id', $rekap_id)
+                    ->update(['is_kinerja' => false]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Hasil evaluasi berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus hasil evaluasi: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

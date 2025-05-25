@@ -80,20 +80,19 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.delete_user');
     });
 
-
-    Route::get('/evaluasikerjasamakinerja', [EvaluasiMitraKinerjaController::class, 'index'])->name('evaluasikerjasamakinerja.index');
-    Route::get('/evaluasikerjasamamitra', [EvaluasiMitraController::class, 'index'])->name('evaluasikerjasamamitra.index');
     //Evaluasi Kepuasan Kinerja
     Route::prefix('EvaluasiMitraKinerja')->controller(EvaluasiMitraKinerjaController::class)->group(function () {
-        Route::get('/', 'index')->name('EvaluasiMitraKinerja.form');
+        Route::get('/', 'index')->name('EvaluasiMitraKinerja.index');
         Route::post('/', 'store')->name('EvaluasiMitraKinerja.store');
         Route::get('/create/{id}', 'create')->name('EvaluasiMitraKinerja.create');
+        Route::delete('/{id}', 'delete')->name('EvaluasiMitraKinerja.delete');
     });
 
     Route::prefix('EvaluasiMitra')->controller(EvaluasiMitraController::class)->group(function () {
-        Route::get('/', 'index')->name('EvaluasiMitra.form');
+        Route::get('/', 'index')->name('EvaluasiMitra.index');
         Route::post('/', 'store')->name('EvaluasiMitra.store');
         Route::get('/create/{id}', 'create')->name('EvaluasiMitra.create');
+        Route::delete('/{id}', 'delete')->name('EvaluasiMitra.delete');
     });
 
     // Logout
