@@ -131,4 +131,50 @@ class EvaluasiMitraKinerjaController extends Controller
             ], 500);
         }
     }
+
+    public function edit($id)
+    {
+        $evaluasi = EvaluasiMitraKinerja::where('idkinerja', $id)->firstOrFail();
+
+        return view('evaluasikerjasamakinerjaedit', [
+            'evaluasi' => $evaluasi,
+            'rekap' => $evaluasi->rekap
+        ]);
+    }
+
+
+    public function update(Request $request, $id)
+    {
+        $evaluasi = EvaluasiMitraKinerja::where('idkinerja', $id)->firstOrFail();
+
+        // Konversi nilai radio (misalnya "Sangat Tinggi") ke angka
+        $map = [
+            'Sangat Tinggi' => 5,
+            'Tinggi' => 4,
+            'Cukup' => 3,
+            'Kurang' => 2,
+            'Sangat Kurang' => 1
+        ];
+
+        // Simpan ke DB
+        $evaluasi->update([
+            'integritas' => $map[$request->integritas] ?? null,
+            'keahlian' => $map[$request->keahlian] ?? null,
+            'komunikasi' => $map[$request->komunikasi] ?? null,
+            'kerjasamatim' => $map[$request->kerjasamatim] ?? null,
+            'pengembangandiri' => $map[$request->pengembangandiri] ?? null,
+            'kreativitas' => $map[$request->kreativitas] ?? null,
+            'bahasaasing' => $map[$request->bahasaasing] ?? null,
+            'teknologi' => $map[$request->teknologi] ?? null,
+            'manajerial' => $map[$request->manajerial] ?? null,
+            'analisis' => $map[$request->analisis] ?? null,
+            'laporan' => $map[$request->laporan] ?? null,
+            'inovasi' => $map[$request->inovasi] ?? null,
+            'lainlainlabel' => $request->lainlainlabel,
+            'lainlainnilai' => $map[$request->lainlainnilai] ?? null,
+            'komentar' => $request->komentar,
+        ]);
+
+        return redirect()->route('EvaluasiMitraKinerja.index')->with('success', 'Evaluasi berhasil diperbarui.');
+    }
 }

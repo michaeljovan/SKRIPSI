@@ -89,23 +89,23 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>No</th>
-                                    <th style="min-width: 150px;">No Dokumen</th>
-                                    <th style="min-width: 120px;">Mitra</th>
-                                    <th>Integritas</th>
-                                    <th>Keahlian</th>
-                                    <th>Komunikasi</th>
-                                    <th style="min-width: 150px;">Kerja Sama Tim</th>
+                                    <th style="min-width: 180px;">No Dokumen</th>
+                                    <th style="min-width: 180px;" >Mitra</th>
+                                    <th style="min-width: 180px;">Integritas</th>
+                                    <th style="min-width: 180px;" >Keahlian</th>
+                                    <th style="min-width: 180px;">Komunikasi</th>
+                                    <th style="min-width: 180px;">Kerja Sama Tim</th>
                                     <th style="min-width: 180px;">Pengembangan Diri</th>
-                                    <th>Kreativitas</th>
-                                    <th style="min-width: 150px;">Bahasa Asing</th>
-                                    <th>Teknologi</th>
-                                    <th>Manajerial</th>
-                                    <th>Analisis</th>
-                                    <th>Laporan</th>
-                                    <th>Inovasi</th>
-                                    <th style="min-width: 120px;">Lain-lain</th>
-                                    <th>Komentar</th>
-                                    <th>Aksi</th>
+                                    <th style="min-width: 180px;">Kreativitas</th>
+                                    <th style="min-width: 180px;">Bahasa Asing</th>
+                                    <th style="min-width: 180px;">Teknologi</th>
+                                    <th style="min-width: 180px;">Manajerial</th>
+                                    <th style="min-width: 180px;">Analisis</th>
+                                    <th style="min-width: 180px;">Laporan</th>
+                                    <th style="min-width: 180px;">Inovasi</th>
+                                    <th style="min-width: 180px;">Lain-lain</th>
+                                    <th style="min-width: 180px;">Komentar</th>
+                                    <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -114,18 +114,18 @@
                                         <td class="text-center">{{ $loop->iteration }}</td>
                                         <td>{{ $item->nodok }}</td>
                                         <td>{{ $item->mitra }}</td>
-                                        <td class="text-center">{{ $item->integritas_text }}</td>
-                                        <td class="text-center">{{ $item->keahlian_text }}</td>
-                                        <td class="text-center">{{ $item->komunikasi_text }}</td>
-                                        <td class="text-center">{{ $item->kerjasamatim_text }}</td>
-                                        <td class="text-center">{{ $item->pengembangandiri_text }}</td>
-                                        <td class="text-center">{{ $item->kreativitas_text }}</td>
-                                        <td class="text-center">{{ $item->bahasaasing_text }}</td>
-                                        <td class="text-center">{{ $item->teknologi_text }}</td>
-                                        <td class="text-center">{{ $item->manajerial_text }}</td>
-                                        <td class="text-center">{{ $item->analisis_text }}</td>
-                                        <td class="text-center">{{ $item->laporan_text }}</td>
-                                        <td class="text-center">{{ $item->inovasi_text }}</td>
+                                        <td>{{ $item->integritas_text }}</td>
+                                        <td>{{ $item->keahlian_text }}</td>
+                                        <td>{{ $item->komunikasi_text }}</td>
+                                        <td>{{ $item->kerjasamatim_text }}</td>
+                                        <td>{{ $item->pengembangandiri_text }}</td>
+                                        <td>{{ $item->kreativitas_text }}</td>
+                                        <td>{{ $item->bahasaasing_text }}</td>
+                                        <td>{{ $item->teknologi_text }}</td>
+                                        <td>{{ $item->manajerial_text }}</td>
+                                        <td>{{ $item->analisis_text }}</td>
+                                        <td>{{ $item->laporan_text }}</td>
+                                        <td>{{ $item->inovasi_text }}</td>
                                         <td>
                                             @if ($item->lainlainlabel)
                                                 {{ $item->lainlainlabel }} ({{ $item->lainlainnilai }})
@@ -139,7 +139,8 @@
                                                 <a href="#" class="btn btn-sm btn-info" title="Detail">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <a href="#" class="btn btn-sm btn-warning" title="Edit">
+                                                <a href="{{ route('EvaluasiMitraKinerja.edit', $item->idkinerja) }}"
+                                                    class="btn btn-sm btn-warning" title="Edit">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <button class="btn btn-sm btn-danger" title="Hapus"

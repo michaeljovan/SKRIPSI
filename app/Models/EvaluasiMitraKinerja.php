@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class EvaluasiMitraKinerja extends Model
 {
     use HasFactory;
-
+    protected $primaryKey = 'idkinerja';
+    public $incrementing = true;
     protected $table = 'EvaluasiMitraKinerja';
 
     // Di dalam model EvaluasiMitraKinerja.php
@@ -85,7 +86,6 @@ class EvaluasiMitraKinerja extends Model
     }
 
 
-
     private function convertToText($value)
     {
         $map = [
@@ -98,8 +98,7 @@ class EvaluasiMitraKinerja extends Model
 
         return $map[$value] ?? '-';
     }
-    protected $primaryKey = 'idkinerja';
-    public $incrementing = true;
+
     protected $fillable = [
         'rekap_id',
         'nodok',
@@ -140,5 +139,10 @@ class EvaluasiMitraKinerja extends Model
     public function rekapKerjasama()
     {
         return $this->belongsTo(RekapKerjaSama::class, 'rekap_id');
+    }
+
+    public function rekap()
+    {
+        return $this->belongsTo(RekapKerjasama::class, 'rekap_id');
     }
 }

@@ -82,8 +82,7 @@
                     <h5 class="mb-0">Edit Evaluasi Kepuasan Mitra Kinerja</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('EvaluasiMitraKinerja.update', $evaluasi->idkinerja ?? '') }}"
-                        method="POST">
+                    <form action="{{ route('EvaluasiMitra.update', $evaluasi->idmitra) }}" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="mb-4">
@@ -92,15 +91,13 @@
                                 <div class="col-md-6">
                                     <label for="nodok" class="form-label">No Dokumen</label>
                                     <input type="text" class="form-control" id="nodok" name="nodok" required
-                                        value="{{ $evaluasi->nodok ?? ($rekap->no_dokumen ?? '') }}" readonly>
-                                    <input type="hidden" name="rekap_id"
-                                        value="{{ $evaluasi->rekap_id ?? $rekap->id }}">
+                                        value="{{ $rekap->no_dokumen ?? '' }}" readonly>
+                                    <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="mitra" class="form-label">Mitra</label>
                                     <input type="text" class="form-control" id="mitra" name="mitra"
-                                        required value="{{ $evaluasi->mitra ?? ($rekap->mitra_kerja_sama ?? '') }}"
-                                        readonly>
+                                        required value="{{ $rekap->mitra_kerja_sama ?? '' }}" readonly>
                                 </div>
                             </div>
                         </div>
@@ -506,6 +503,7 @@
                                 <label for="komentar" class="text-muted">Masukkan saran atau komentar Anda</label>
                             </div>
                         </div>
+
                         <div class="d-flex justify-content-end gap-2">
                             <button type="reset" class="btn btn-outline-secondary">Reset</button>
                             <button type="submit" class="btn btn-primary">Update Evaluasi</button>
@@ -543,7 +541,7 @@
 
                     // Tampilkan loading indicator
                     Swal.fire({
-                        title: 'Memperbarui Evaluasi',
+                        title: 'Mengupdate Evaluasi',
                         html: 'Sedang memproses data...',
                         allowOutsideClick: false,
                         didOpen: () => {
@@ -566,17 +564,16 @@
         @endif
 
         @if ($errors->any())
-        )
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            html: `<ul class="text-start">
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                html: `<ul class="text-start">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>`,
-            confirmButtonText: 'Mengerti'
-        });
+                confirmButtonText: 'Mengerti'
+            });
         @endif
 
         document.addEventListener('DOMContentLoaded', function() {

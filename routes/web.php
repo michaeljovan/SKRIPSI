@@ -86,6 +86,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', 'store')->name('EvaluasiMitraKinerja.store');
         Route::get('/create/{id}', 'create')->name('EvaluasiMitraKinerja.create');
         Route::delete('/{id}', 'delete')->name('EvaluasiMitraKinerja.delete');
+        Route::get('/{id}/edit', 'edit')->name('EvaluasiMitraKinerja.edit');
+        Route::put('/{id}', 'update')->name('EvaluasiMitraKinerja.update');
     });
 
     Route::prefix('EvaluasiMitra')->controller(EvaluasiMitraController::class)->group(function () {
@@ -93,6 +95,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', 'store')->name('EvaluasiMitra.store');
         Route::get('/create/{id}', 'create')->name('EvaluasiMitra.create');
         Route::delete('/{id}', 'delete')->name('EvaluasiMitra.delete');
+        Route::get('/{id}/edit', 'edit')->name('EvaluasiMitra.edit');
+        Route::put('/{id}', 'update')->name('EvaluasiMitra.update');
     });
 
     // Logout
