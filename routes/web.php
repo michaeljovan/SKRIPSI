@@ -22,7 +22,7 @@ Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post')
 
 
 // Autentikasi Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
     // Dashboard
     Route::get('/dashboard', function () {
         $rekap = App\Models\RekapKerjaSama::with('laporanPelaksanaan')->paginate(10);
@@ -72,13 +72,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/laporanpelaksanaankerjasama', [PelaksanaanKerjaSamaController::class, 'index'])->name('laporan.pelaksanaan');
 
     // SuperAdmin Routes
-    Route::prefix('superadmin')->group(function () {
-        Route::get('/', [SuperAdminController::class, 'index'])->name('superadmin');
-        Route::get('/create_user', [SuperAdminController::class, 'createUserForm'])->name('superadmin.create_user_form');
-        Route::post('/store_user', [SuperAdminController::class, 'storeUser'])->name('superadmin.store_user');
-        Route::post('/change_password', [SuperAdminController::class, 'changePassword'])->name('superadmin.change_password');
-        Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.delete_user');
-    });
+    // Route::prefix('superadmin')->group(function () {
+    //     Route::get('/', [SuperAdminController::class, 'index'])->name('superadmin');
+    //     Route::get('/create_user', [SuperAdminController::class, 'createUserForm'])->name('superadmin.create_user_form');
+    //     Route::post('/store_user', [SuperAdminController::class, 'storeUser'])->name('superadmin.store_user');
+    //     Route::post('/change_password', [SuperAdminController::class, 'changePassword'])->name('superadmin.change_password');
+    //     Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.delete_user');
+    // });
 
     //Evaluasi Kepuasan Kinerja
     Route::prefix('EvaluasiMitraKinerja')->controller(EvaluasiMitraKinerjaController::class)->group(function () {
@@ -100,5 +100,18 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Logout
+});
+
+Route::middleware(['auth', 'cekrole:dekanat'])->group(function () {
+    Route::prefix('superadmin')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'index'])->name('superadmin');
+        Route::get('/create_user', [SuperAdminController::class, 'createUserForm'])->name('superadmin.create_user_form');
+        Route::post('/store_user', [SuperAdminController::class, 'storeUser'])->name('superadmin.store_user');
+        Route::post('/change_password', [SuperAdminController::class, 'changePassword'])->name('superadmin.change_password');
+        Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.delete_user');
+    });
+});
+
+Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });

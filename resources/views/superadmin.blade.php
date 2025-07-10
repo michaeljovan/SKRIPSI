@@ -32,9 +32,10 @@
                     <a href="{{ route('superadmin') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
                         <i class="bi bi-gear"></i> <span class="d-none d-md-inline">Super Admin</span>
                     </a>
-                    <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-danger rounded-pill">
-                        <i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline">Logout</span>
-                    </a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Logout</button>
+                    </form>
                 </div>
             </div>
         </nav>
@@ -56,13 +57,15 @@
                     </a>
                     <div class="collapse show submenu" id="dokumenMenu">
                         <div class="submenu-item">
-                            <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
+                            <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja
+                                Sama</a>
                             <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                            <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
-                            <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
-                            <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
+                            <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                                Kerja Sama</a>
+                            <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi
+                                Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
+                            <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                                Mitra</a>
                         </div>
                     </div>
                 </div>
@@ -147,7 +150,6 @@
                                             aria-label="Close"></button>
                                     </div>
                                 @endif
-
                                 <form action="{{ route('superadmin.store_user') }}" method="POST">
                                     @csrf
 
@@ -159,7 +161,6 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-
                                     <div class="mb-3">
                                         <label for="email" class="form-label">Email</label>
                                         <input type="email"
@@ -169,7 +170,6 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-
                                     <div class="mb-3">
                                         <label for="password" class="form-label">Password</label>
                                         <input type="password"
@@ -179,14 +179,22 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-
                                     <div class="mb-3">
                                         <label for="password_confirmation" class="form-label">Konfirmasi
                                             Password</label>
                                         <input type="password" class="form-control" id="password_confirmation"
                                             name="password_confirmation" required placeholder="Minimal 6 Karakter">
                                     </div>
-
+                                    <div class="mb-3">
+                                        <label for="role" class="form-label">Sebagai</label>
+                                        <select class="form-control @error('role') is-invalid @enderror"
+                                            id="role" name="role" required>
+                                            <option value="staff" {{ old('role', 'staff') == 'staff' ? 'selected' : '' }}>Staff</option>
+                                        </select>
+                                        @error('role')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                     <div class="d-grid gap-2">
                                         <button type="submit" class="btn btn-primary">
                                             <i class="bi bi-person-plus me-1"></i> Tambah Staff

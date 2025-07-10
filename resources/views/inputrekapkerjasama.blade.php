@@ -31,9 +31,13 @@
                 <a href="{{ route('superadmin') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
                     <i class="bi bi-gear"></i> <span class="d-none d-md-inline">Super Admin</span>
                 </a>
-                <a href="{{ route('logout') }}" class="btn btn-sm btn-outline-danger rounded-pill">
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                    class="btn btn-sm btn-outline-danger rounded-pill">
                     <i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline">Logout</span>
                 </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
             </div>
         </div>
     </nav>
@@ -57,11 +61,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
-                        <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
-                        <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra</a>
                     </div>
                 </div>
             </div>
@@ -126,18 +131,22 @@
                                 <label class="form-label">Bentuk Kerja Sama <span class="text-danger">*</span></label>
                                 <div class="border border-secondary rounded p-3 shadow-sm">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="bentuk1" name="bentukKerjaSama[]" value="Penelitian">
+                                        <input class="form-check-input" type="checkbox" id="bentuk1"
+                                            name="bentukKerjaSama[]" value="Penelitian">
                                         <label class="form-check-label" for="bentuk1">Penelitian</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="bentuk2" name="bentukKerjaSama[]" value="Pendidikan">
+                                        <input class="form-check-input" type="checkbox" id="bentuk2"
+                                            name="bentukKerjaSama[]" value="Pendidikan">
                                         <label class="form-check-label" for="bentuk2">Pendidikan</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="bentuk3" name="bentukKerjaSama[]" value="Pengabdian">
+                                        <input class="form-check-input" type="checkbox" id="bentuk3"
+                                            name="bentukKerjaSama[]" value="Pengabdian">
                                         <label class="form-check-label" for="bentuk3">Pengabdian</label>
                                     </div>
-                                    <div id="bentukKerjaSamaError" class="text-danger" style="display:none;">Pilih minimal satu Bentuk Kerja Sama</div>
+                                    <div id="bentukKerjaSamaError" class="text-danger" style="display:none;">Pilih
+                                        minimal satu Bentuk Kerja Sama</div>
                                 </div>
                             </div>
                             <div class="col-md-6">

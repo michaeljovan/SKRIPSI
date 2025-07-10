@@ -63,8 +63,6 @@
                             Kerja Sama</a>
                         <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
                         <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
-                        <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama Baru</a>
-                        <a href="#" class="submenu-link">Cetak Laporan SPMI Kerja Sama</a>
                     </div>
                 </div>
             </div>
