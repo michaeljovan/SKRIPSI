@@ -71,15 +71,6 @@ Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
     // Laporan Pelaksanaan
     Route::get('/laporanpelaksanaankerjasama', [PelaksanaanKerjaSamaController::class, 'index'])->name('laporan.pelaksanaan');
 
-    // SuperAdmin Routes
-    // Route::prefix('superadmin')->group(function () {
-    //     Route::get('/', [SuperAdminController::class, 'index'])->name('superadmin');
-    //     Route::get('/create_user', [SuperAdminController::class, 'createUserForm'])->name('superadmin.create_user_form');
-    //     Route::post('/store_user', [SuperAdminController::class, 'storeUser'])->name('superadmin.store_user');
-    //     Route::post('/change_password', [SuperAdminController::class, 'changePassword'])->name('superadmin.change_password');
-    //     Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.delete_user');
-    // });
-
     //Evaluasi Kepuasan Kinerja
     Route::prefix('EvaluasiMitraKinerja')->controller(EvaluasiMitraKinerjaController::class)->group(function () {
         Route::get('/', 'index')->name('EvaluasiMitraKinerja.index');

@@ -120,6 +120,12 @@ class DashboardController extends Controller
             $lineChartData[$unitName] = $yearData;
         }
 
+        $expiringAgreements = RekapKerjaSama::where('tanggal_selesai', '>=', now()) // Hanya yang belum kadaluarsa
+            ->orderBy('tanggal_selesai', 'asc') // Urutkan dari yang paling dekat
+            ->take(5) // Ambil 5 teratas
+            ->get();
+
+
         return view('dashboard', compact(
             'mitraaktif',
             'mitrapasif',
@@ -127,7 +133,8 @@ class DashboardController extends Controller
             'tahunList',
             'lineChartData',
             'jenisTerbanyak',
-            'jenisTersedikit'
+            'jenisTersedikit',
+            'expiringAgreements'
         ));
     }
 

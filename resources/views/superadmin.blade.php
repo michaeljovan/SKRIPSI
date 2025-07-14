@@ -78,7 +78,6 @@
         </button>
 
         <!-- Main Content -->
-        <!-- Main Content -->
         <main class="main-content p-3" id="mainContent">
             <div class="container-fluid">
                 <div class="row mb-4">

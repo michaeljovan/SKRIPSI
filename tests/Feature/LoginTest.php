@@ -12,15 +12,15 @@ class LoginTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function login_page_loads_successfully()
-    {
-        $response = $this->get(route('login'));
+public function login_page_loads_successfully()
+{
+    $response = $this->get(route('login'));
 
-        $response->assertStatus(200);
-        $response->assertSee('Login');
-        $response->assertSee('User');
-        $response->assertSee('Password');
-    }
+    $response->assertStatus(200);
+    $response->assertSee('Login');
+    $response->assertSee('Email');  
+    $response->assertSee('Password');
+}
 
     /** @test */
     public function user_can_login_with_valid_credentials()

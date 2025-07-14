@@ -61,8 +61,10 @@
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
                         <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
                             Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra</a>
                     </div>
                 </div>
             </div>
@@ -205,7 +207,87 @@
                         </div>
                     </div>
                 </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="card-title mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Kerja Sama
+                                    yang Akan Berakhir</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-info-circle-fill me-2"></i>Berikut daftar kerja sama yang akan berakhir
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Mitra Kerja Sama</th>
+                                                <th>Judul Kerja Sama</th>
+                                                <th>Unit</th>
+                                                <th>Tanggal Mulai</th>
+                                                <th>Tanggal Berakhir</th>
+                                                <th>Sisa Hari</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($expiringAgreements as $index => $agreement)
+                                                @php
+                                                    $today = now();
+                                                    $endDate = \Carbon\Carbon::parse($agreement->tanggal_selesai);
+                                                    $daysLeft = $today->diffInDays($endDate, false);
 
+                                                    if ($daysLeft < 0) {
+                                                        $status = 'Kadaluarsa';
+                                                        $badgeClass = 'bg-danger';
+                                                    } elseif ($daysLeft <= 30) {
+                                                        $status = 'Akan Habis';
+                                                        $badgeClass = 'bg-warning text-dark';
+                                                    } else {
+                                                        $status = 'Aktif';
+                                                        $badgeClass = 'bg-success';
+                                                    }
+                                                @endphp
+                                                <tr>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{ $agreement->mitra_kerja_sama }}</td>
+                                                    <td>{{ $agreement->judul_kerja_sama }}</td>
+                                                    <td>{{ $agreement->unit }}</td>
+                                                    <td>{{ $agreement->tanggal_mulai->format('d/m/Y') }}</td>
+                                                    <td>{{ $agreement->tanggal_selesai->format('d/m/Y') }}</td>
+                                                    <td>{{ $daysLeft > 0 ? $daysLeft : 0 }} hari</td>
+                                                    <td>
+                                                        <span
+                                                            class="badge {{ $badgeClass }}">{{ $status }}</span>
+                                                        @if ($daysLeft <= 30 && $daysLeft > 0)
+                                                            <i class="bi bi-exclamation-triangle-fill ms-2 text-warning"
+                                                                title="Kerja sama akan berakhir dalam {{ $daysLeft }} hari"></i>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="8" class="text-center">Tidak ada kerja sama yang
+                                                        akan berakhir ke depan</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                @if (count($expiringAgreements) > 0)
+                                    <div class="text-end mt-3">
+                                            class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-chevron-double-right"></i> Lihat Semua
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
     </main>
 

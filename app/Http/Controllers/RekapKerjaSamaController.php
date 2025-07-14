@@ -97,8 +97,8 @@ class RekapKerjaSamaController extends Controller
             }
 
             $file = $request->file('dokumenPendukung');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('dokumen_kerja_sama', $fileName, 'public');
+            // $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->store('dokumen_kerja_sama', 'public');
 
 
             // Create new record
@@ -213,8 +213,8 @@ class RekapKerjaSamaController extends Controller
 
                 // Store new file
                 $file = $request->file('dokumenPendukung');
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('dokumen_kerja_sama', $fileName, 'public');
+                // $fileName = time() . '_' . $file->getClientOriginalName();
+                $filePath = $file->store('dokumen_kerja_sama', 'public');
             }
 
             // Convert bentukKerjaSama array to string if needed
