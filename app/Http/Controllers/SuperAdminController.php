@@ -37,7 +37,7 @@ class SuperAdminController extends Controller
             'role' => $request->role,
         ]);
 
-        return redirect()->back()->with('success', 'User created successfully!');
+        return redirect()->back()->with('success', 'User berhasil dibuat!');
     }
 
     public function changePassword(Request $request)
