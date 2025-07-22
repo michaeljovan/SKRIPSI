@@ -427,23 +427,31 @@
                     const startDate = new Date(tanggalMulai.value);
                     const endDate = new Date(tanggalSelesai.value);
 
-                    // Calculate difference in milliseconds
-                    const diffTime = Math.abs(endDate - startDate);
-
-                    // Convert to days
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                    // Add 1 day to include both start and end dates
-                    masaBerlaku.value = diffDays + 1;
+                    if (endDate >= startDate) {
+                        const diffTime = endDate - startDate;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                        masaBerlaku.value = diffDays + ' hari';
+                    } else {
+                        masaBerlaku.value = '';
+                        alert('Tanggal selesai tidak boleh lebih awal dari tanggal mulai!');
+                        tanggalSelesai.value = ''; // Reset nilai tanggal selesai
+                    }
                 } else {
                     masaBerlaku.value = '';
                 }
             }
 
-            // Add event listeners to both date inputs
-            tanggalMulai.addEventListener('change', calculateDuration);
+            tanggalMulai.addEventListener('change', function() {
+                // Batasi tanggal selesai minimal sama dengan tanggal mulai
+                tanggalSelesai.min = tanggalMulai.value;
+                calculateDuration();
+            });
+
             tanggalSelesai.addEventListener('change', calculateDuration);
         });
+
+
+        // Sidebar Toggle Functionality
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
@@ -550,7 +558,7 @@
                 const selected = this.options[this.selectedIndex];
 
                 if (selected.value === 'none') {
-                    this.value = ''; 
+                    this.value = '';
                     parentMitra.value = '';
                     parentJudul.value = '';
                     parentMitra.disabled = true;
@@ -569,7 +577,7 @@
                 loadParentOptions(checkedJenis.value);
             }
         });
+
     </script>
 </body>
-
 </html>
