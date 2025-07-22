@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('rekapkerjasama', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->string('no_dokumen_induk')->nullable();
+            $table->foreign('parent_id')->references('id')->on('rekapkerjasama')->nullOnDelete();
+
             $table->string('no_dokumen')->unique();
             $table->string('unit');
             $table->text('mitra_kerja_sama');

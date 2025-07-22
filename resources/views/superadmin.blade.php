@@ -90,7 +90,7 @@
                     <div class="col-md-6">
                         <div class="card shadow-sm">
                             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">Existing Users</h5>
+                                <h5 class="mb-0">Pengguna Tersedia</h5>
                                 <span class="badge bg-primary">{{ $users->count() }} users</span>
                             </div>
                             <div class="card-body">
@@ -188,7 +188,8 @@
                                         <label for="role" class="form-label">Sebagai</label>
                                         <select class="form-control @error('role') is-invalid @enderror"
                                             id="role" name="role" required>
-                                            <option value="staff" {{ old('role', 'staff') == 'staff' ? 'selected' : '' }}>Staff</option>
+                                            <option value="staff"
+                                                {{ old('role', 'staff') == 'staff' ? 'selected' : '' }}>Staff</option>
                                         </select>
                                         @error('role')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -226,21 +227,44 @@
                             <input type="hidden" id="userId" name="user_id">
                             <div class="mb-3">
                                 <label for="new_password" class="form-label">Password Baru</label>
-                                <input type="password" class="form-control" id="new_password" name="new_password"
-                                    required>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="new_password"
+                                        name="new_password" required>
+                                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                                 <div class="invalid-feedback" id="passwordError"></div>
                             </div>
                             <div class="mb-3">
                                 <label for="new_password_confirmation" class="form-label">Konfirmasi Password
                                     Baru</label>
-                                <input type="password" class="form-control" id="new_password_confirmation"
-                                    name="new_password_confirmation" required>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="new_password_confirmation"
+                                        name="new_password_confirmation" required>
+                                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                                 <div class="invalid-feedback" id="confirmPasswordError"></div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-primary">Ganti Password</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            <button type="button" class="btn btn-primary" id="changePasswordBtn">Ganti
+                                Password</button>
+                        </div>
+                        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                            <div id="passwordMismatchToast" class="toast align-items-center text-white bg-danger"
+                                role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <i class="fas fa-exclamation-circle me-2"></i> Password tidak sesuai!
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                                        data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -263,6 +287,68 @@
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Elemen yang diperlukan
+                const passwordInput = document.getElementById('new_password');
+                const confirmInput = document.getElementById('new_password_confirmation');
+                const confirmError = document.getElementById('confirmPasswordError');
+                const changePasswordBtn = document.getElementById('changePasswordBtn');
+                const toastEl = document.getElementById('passwordMismatchToast');
+                const toast = new bootstrap.Toast(toastEl);
+
+                // Fungsi validasi
+                function validatePasswordMatch() {
+                    if (passwordInput.value !== confirmInput.value) {
+                        confirmInput.classList.add('is-invalid');
+                        confirmError.textContent = 'Password tidak sesuai';
+                        return false;
+                    } else {
+                        confirmInput.classList.remove('is-invalid');
+                        confirmError.textContent = '';
+                        return true;
+                    }
+                }
+
+                // Toggle password visibility
+                document.querySelectorAll('.toggle-password').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        const input = this.parentElement.querySelector('input');
+                        const icon = this.querySelector('i');
+
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            icon.classList.remove('fa-eye');
+                            icon.classList.add('fa-eye-slash');
+                        } else {
+                            input.type = 'password';
+                            icon.classList.remove('fa-eye-slash');
+                            icon.classList.add('fa-eye');
+                        }
+                    });
+                });
+
+                // Validasi saat mengetik
+                confirmInput.addEventListener('input', validatePasswordMatch);
+                passwordInput.addEventListener('input', validatePasswordMatch);
+
+                // Handle tombol Ganti Password
+                changePasswordBtn.addEventListener('click', function() {
+                    if (!validatePasswordMatch()) {
+                        // Tampilkan notifikasi toast
+                        toast.show();
+
+                        // Fokus ke field yang salah
+                        confirmInput.focus();
+                    } else {
+                        // Jika valid, submit form
+                        const form = this.closest('.modal').querySelector('form');
+                        if (form) {
+                            form.submit();
+                        }
+                    }
+                });
+            });
+
             // Delete User Functionality with SweetAlert2
             document.querySelectorAll('.delete-user-btn').forEach(button => {
                 button.addEventListener('click', function() {

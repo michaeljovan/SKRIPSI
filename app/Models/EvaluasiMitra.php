@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+
 
 class EvaluasiMitra extends Model
 {
@@ -25,7 +27,9 @@ class EvaluasiMitra extends Model
         'analisis_text',
         'laporan_text',
         'inovasi_text',
-        'lainlainnilai_text'
+        'lainlainnilai_text',
+        'pdf_url'
+
     ];
 
     // Accessor untuk mengubah nilai numerik ke teks
@@ -84,6 +88,11 @@ class EvaluasiMitra extends Model
         return $this->convertToText($this->lainlainlabel);
     }
 
+    public function getPdfUrlAttribute()
+    {
+        return $this->file_pdf ? Storage::url($this->file_pdf) : null;
+    }
+
 
 
     private function convertToText($value)
@@ -118,7 +127,8 @@ class EvaluasiMitra extends Model
         'inovasi',
         'lainlainlabel',
         'lainlainnilai',
-        'komentar'
+        'komentar',
+        'file_pdf'
     ];
 
     protected $casts = [

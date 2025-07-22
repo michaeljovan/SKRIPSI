@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class PelaksanaanKerjaSamaController extends Controller
 {
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create($id)
     {
         $rekap = RekapKerjaSama::findOrFail($id);

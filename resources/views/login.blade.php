@@ -39,21 +39,31 @@
                                         <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Masukkan Email dan
                                             Password</h5>
 
-                                        @if ($errors->has('loginError'))
+                                        @if ($errors->has('user'))
                                             <div class="alert alert-danger">
-                                                {{ $errors->first('loginError') }}
+                                                <i class="fas fa-exclamation-circle me-2"></i>
+                                                {{ $errors->first('user') }}
+                                            </div>
+                                        @endif
+
+                                        @if ($errors->has('password'))
+                                            <div class="alert alert-danger">
+                                                <i class="fas fa-exclamation-circle me-2"></i>
+                                                {{ $errors->first('password') }}
                                             </div>
                                         @endif
 
                                         <div class="form-outline mb-4">
                                             <input type="text" name="user" id="form2Example17"
-                                                class="form-control form-control-lg" required />
+                                                class="form-control form-control-lg {{ $errors->has('user') ? 'is-invalid' : '' }}"
+                                                value="{{ old('user') }}" required />
                                             <label class="form-label" for="form2Example17">Email</label>
                                         </div>
 
                                         <div class="form-outline mb-4">
                                             <input type="password" name="password" id="form2Example27"
-                                                class="form-control form-control-lg" required />
+                                                class="form-control form-control-lg {{ $errors->has('password') ? 'is-invalid' : '' }}"
+                                                required />
                                             <label class="form-label" for="form2Example27">Password</label>
                                         </div>
 

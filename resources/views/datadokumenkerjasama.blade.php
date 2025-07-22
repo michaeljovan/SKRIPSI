@@ -103,6 +103,7 @@
                                     <th style="min-width: 250px;">Mitra</th>
                                     <th style="min-width: 250px;">Judul</th>
                                     <th style="min-width: 250px;">Jenis Kerja Sama</th>
+                                    <th style="min-width: 150px;">No Dokumen Induk</th>
                                     <th style="min-width: 200px;">Bentuk Kerja Sama</th>
                                     <th style="min-width: 200px;">Kategori</th>
                                     <th style="min-width: 150px;">Pihak UKDW</th>
@@ -131,6 +132,13 @@
                                         <td>{{ Str::limit($rekap->mitra_kerja_sama, 30) }}</td>
                                         <td>{{ Str::limit($rekap->judul_kerja_sama) }}</td>
                                         <td>{{ Str::limit($rekap->jenis_kerja_sama) }}</td>
+                                        <td>
+                                            @if ($rekap->induk)
+                                                {{ $rekap->induk->no_dokumen }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
                                         <td>{{ $rekap->bentuk_kerja_sama }}</td>
                                         <td>{{ $rekap->kategori }}</td>
                                         <td>{{ $rekap->pihak_ukdw }}</td>

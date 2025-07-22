@@ -59,9 +59,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra</a>
                     </div>
                 </div>
             </div>
@@ -81,7 +84,7 @@
                     <h5 class="mb-0">Form Evaluasi Kepuasan Mitra Kinerja</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('EvaluasiMitraKinerja.store') }}" method="POST">
+                    <form action="{{ route('EvaluasiMitraKinerja.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-4">
                             <h6 class="border-bottom pb-2"> </h6>
@@ -430,10 +433,16 @@
 
                         <div class="mb-4">
                             <h6 class="border-bottom pb-2">Komentar Tambahan</h6>
-                            <div class="form-floating">
+                            <div class="form-floating mb-3">
                                 <textarea class="form-control" placeholder="Tulis komentar Anda di sini" id="komentar" name="komentar"
                                     style="height: 100px"></textarea>
                                 <label for="komentar" class="text-muted">Masukkan saran atau komentar Anda</label>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pdfFile" class="form-label">Unggah Dokumen PDF (Opsional)</label>
+                                <input class="form-control" type="file" id="pdfFile" name="pdfFile"
+                                    accept=".pdf">
+                                <div class="form-text">Maksimal ukuran file: 5MB</div>
                             </div>
                         </div>
 

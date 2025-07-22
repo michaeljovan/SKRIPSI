@@ -5,54 +5,47 @@ namespace App\Http\Controllers;
 use App\Models\RekapKerjaSama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class RekapKerjaSamaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = RekapKerjaSama::query()->orderBy('created_at', 'desc');
+        $query = RekapKerjaSama::with('induk')->orderBy('created_at', 'desc');
 
-        // Filter No Dokumen
         if ($request->filled('no_dokumen')) {
             $query->where('no_dokumen', 'like', '%' . $request->no_dokumen . '%');
         }
 
-        // Filter Unit
         if ($request->filled('unit')) {
             $query->where('unit', $request->unit);
         }
 
-        // Filter Mitra
         if ($request->filled('mitra')) {
             $query->where('mitra_kerja_sama', 'like', '%' . $request->mitra . '%');
         }
 
-        // Filter Kategori
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
         }
 
-        // Filter Judul
         if ($request->filled('judul')) {
             $query->where('judul_kerja_sama', 'like', '%' . $request->judul . '%');
         }
 
-        // Filter Jenis Kerja Sama
         if ($request->filled('jenis_kerja_sama')) {
             $query->where('jenis_kerja_sama', $request->jenis_kerja_sama);
         }
 
-        // Filter Status Laporan
         if ($request->filled('is_laporan')) {
             $query->where('is_laporan', $request->is_laporan);
         }
 
-        // Filter Tanggal Mulai
         if ($request->filled('tanggal_mulai')) {
             $query->whereDate('tanggal_mulai', '>=', $request->tanggal_mulai);
         }
 
-        // Filter Tanggal Selesai
         if ($request->filled('tanggal_selesai')) {
             $query->whereDate('tanggal_selesai', '<=', $request->tanggal_selesai);
         }
@@ -66,6 +59,10 @@ class RekapKerjaSamaController extends Controller
     public function store(Request $request)
     {
         try {
+            if ($request->parent_id === 'none') {
+                $request->merge(['parent_id' => null]);
+            }
+
             $validated = $request->validate([
                 'noDokumen' => 'required|unique:rekapkerjasama,no_dokumen',
                 'unit' => 'required',
@@ -73,35 +70,53 @@ class RekapKerjaSamaController extends Controller
                 'judulKerjaSama' => 'required',
                 'bentukKerjaSama' => 'required|array|min:1',
                 'bentukKerjaSama.*' => 'string|in:Penelitian,Pendidikan,Pengabdian',
-                'jenisKerjaSama' => 'required',
+                'jenisKerjaSama' => 'required|string|in:MoU,MoA,IA',
                 'pihakUKDW' => 'required',
                 'pihakMitra' => 'required',
                 'tanggalMulai' => 'required|date|before_or_equal:tanggalSelesai',
                 'tanggalSelesai' => 'required|date|after_or_equal:tanggalMulai',
                 'kategori' => 'required|string|in:nasional,internasional',
+                'inKind' => 'nullable|string',
+                'totalInKind' => 'nullable|numeric',
+                'inCash' => 'nullable|numeric',
+                'totalInCash' => 'nullable|numeric',
+                'jumlahImplementasi' => 'nullable|integer|min:0',
                 'dokumenPendukung' => 'required|file|mimes:pdf|max:5120',
+                'parent_id' => 'nullable|exists:rekapkerjasama,id',
             ], [
-                'bentukKerjaSama.min' => 'Pilih minimal satu bentuk kerja sama',
-                'tanggalSelesai.after_or_equal' => 'Tanggal selesai harus setelah atau sama dengan tanggal mulai',
-                'dokumenPendukung.max' => 'Ukuran dokumen maksimal 5MB',
+                'bentukKerjaSama.min' => 'Pilih minimal satu bentuk kerja sama.',
+                'tanggalSelesai.after_or_equal' => 'Tanggal selesai harus setelah atau sama dengan tanggal mulai.',
+                'totalInKind.numeric' => 'In Kind dan In Cash  harus berupa angka.',
+                'inCash.numeric' => 'In Cash harus berupa angka.',
+                'totalInCash.numeric' => 'Total In Cash harus berupa angka.',
+                'dokumenPendukung.max' => 'Ukuran dokumen maksimal 5MB.',
             ]);
 
-            // Calculate duration
+            // Hitung masa berlaku
             $startDate = new \DateTime($request->tanggalMulai);
             $endDate = new \DateTime($request->tanggalSelesai);
             $duration = $endDate->diff($startDate)->days + 1;
 
-            // Handle file upload
+            // Upload file
             if (!$request->hasFile('dokumenPendukung')) {
                 throw new \Exception('Dokumen pendukung harus diupload');
             }
 
             $file = $request->file('dokumenPendukung');
-            // $fileName = time() . '_' . $file->getClientOriginalName();
             $filePath = $file->store('dokumen_kerja_sama', 'public');
 
+            // Ambil informasi no dokumen induk (jika ada)
+            $parentId = $request->parent_id !== 'none' ? $request->parent_id : null;
+            $noInduk = null;
 
-            // Create new record
+            if ($parentId) {
+                $induk = RekapKerjaSama::find($parentId);
+                if ($induk) {
+                    $noInduk = $induk->no_dokumen;
+                }
+            }
+
+            // Simpan ke DB
             RekapKerjaSama::create([
                 'no_dokumen' => $request->noDokumen,
                 'unit' => $request->unit,
@@ -119,8 +134,10 @@ class RekapKerjaSamaController extends Controller
                 'total_in_kind' => $request->totalInKind ? str_replace(',', '', $request->totalInKind) : null,
                 'in_cash' => $request->inCash ? str_replace(',', '', $request->inCash) : null,
                 'total_in_cash' => $request->totalInCash ? str_replace(',', '', $request->totalInCash) : null,
-                'jumlah_implementasi' => $request->jumlahImplementasi,
+                'jumlah_implementasi' => $request->jumlahImplementasi ?? 0,
                 'dokumen_path' => $filePath,
+                'parent_id' => $parentId,
+                'no_dokumen_induk' => $noInduk,
             ]);
 
             return response()->json([
@@ -135,6 +152,40 @@ class RekapKerjaSamaController extends Controller
             ], 500);
         }
     }
+
+
+
+    public function getDokumenInduk(Request $request)
+    {
+        $jenis = $request->input('jenis');
+
+        if (!in_array($jenis, ['MoU', 'MoA', 'IA'])) {
+            return response()->json([], 400);
+        }
+
+        $allowed = match ($jenis) {
+            'MoA' => ['MoU'],
+            'IA' => ['MoU', 'MoA'],
+            default => [],
+        };
+
+        $dokumen = RekapKerjaSama::whereIn('jenis_kerja_sama', $allowed)
+            ->select('id', 'no_dokumen', 'judul_kerja_sama', 'mitra_kerja_sama')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Tambahkan pilihan opsional untuk "Tidak Ada Induk"
+        $dokumen->prepend((object)[
+            'id' => 'none',
+            'no_dokumen' => 'Tidak Ada Induk',
+            'judul_kerja_sama' => '-',
+            'mitra_kerja_sama' => '-',
+        ]);
+
+        return response()->json($dokumen);
+    }
+
+
 
     public function delete($id)
     {

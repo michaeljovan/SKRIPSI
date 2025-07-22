@@ -23,6 +23,9 @@ Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post')
 
 // Autentikasi Routes
 Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
+
+    // routes/api.php
+    Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
     // Dashboard
     Route::get('/dashboard', function () {
         $rekap = App\Models\RekapKerjaSama::with('laporanPelaksanaan')->paginate(10);
@@ -94,6 +97,8 @@ Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
 });
 
 Route::middleware(['auth', 'cekrole:dekanat'])->group(function () {
+    Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
+
     Route::prefix('superadmin')->group(function () {
         Route::get('/', [SuperAdminController::class, 'index'])->name('superadmin');
         Route::get('/create_user', [SuperAdminController::class, 'createUserForm'])->name('superadmin.create_user_form');
@@ -104,5 +109,7 @@ Route::middleware(['auth', 'cekrole:dekanat'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
+
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });

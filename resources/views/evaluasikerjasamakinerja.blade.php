@@ -92,9 +92,9 @@
                                 <tr>
                                     <th>No</th>
                                     <th style="min-width: 180px;">No Dokumen</th>
-                                    <th style="min-width: 180px;" >Mitra</th>
+                                    <th style="min-width: 180px;">Mitra</th>
                                     <th style="min-width: 180px;">Integritas</th>
-                                    <th style="min-width: 180px;" >Keahlian</th>
+                                    <th style="min-width: 180px;">Keahlian</th>
                                     <th style="min-width: 180px;">Komunikasi</th>
                                     <th style="min-width: 180px;">Kerja Sama Tim</th>
                                     <th style="min-width: 180px;">Pengembangan Diri</th>
@@ -138,9 +138,17 @@
                                         <td>{{ Str::limit($item->komentar, 30) }}</td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                                <a href="#" class="btn btn-sm btn-info" title="Detail">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
+                                                @if ($item->file_pdf)
+                                                    <a href="{{ $item->pdf_url }}" target="_blank"
+                                                        class="btn btn-sm btn-info" title="Detail">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                @else
+                                                    <button class="btn btn-sm btn-secondary" title="Tidak ada dokumen"
+                                                        disabled>
+                                                        <i class="bi bi-eye-slash"></i>
+                                                    </button>
+                                                @endif
                                                 <a href="{{ route('EvaluasiMitraKinerja.edit', $item->idkinerja) }}"
                                                     class="btn btn-sm btn-warning" title="Edit">
                                                     <i class="bi bi-pencil"></i>

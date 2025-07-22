@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class RekapKerjaSama extends Model
 {
     use HasFactory;
+
     protected $table = 'rekapkerjasama';
     protected $primaryKey = 'id';
 
@@ -32,7 +33,8 @@ class RekapKerjaSama extends Model
         'dokumen_path',
         'is_laporan',
         'is_kinerja',
-        'is_mitra'
+        'is_mitra',
+        'parent_id' // <--- penting!
     ];
 
     protected $casts = [
@@ -44,29 +46,37 @@ class RekapKerjaSama extends Model
         'total_in_kind' => 'float',
     ];
 
+    // Relasi pelaksanaan
     public function laporanPelaksanaan()
     {
         return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap');
     }
 
-    public function rekap()
-    {
-        return $this->belongsTo(PelaksanaanKerjaSama::class, 'idrekap');
-    }
-
+    // Relasi evaluasi
     public function evaluasiMitraKinerja()
     {
         return $this->hasOne(EvaluasiMitraKinerja::class, 'rekap_id');
     }
 
-    public function rekapKerjaSama()
-    {
-        return $this->belongsTo(RekapKerjaSama::class, 'rekap_id');
-    }
     public function evaluasiMitra()
     {
         return $this->hasOne(EvaluasiMitra::class, 'rekap_id');
     }
 
+    // 🔁 Dokumen induk
+    public function parent()
+    {
+        return $this->belongsTo(RekapKerjaSama::class, 'parent_id');
+    }
 
+    // 🔁 Dokumen turunan
+    public function children()
+    {
+        return $this->hasMany(RekapKerjaSama::class, 'parent_id');
+    }
+
+    public function induk()
+    {
+        return $this->belongsTo(RekapKerjaSama::class, 'parent_id');
+    }
 }

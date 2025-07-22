@@ -35,6 +35,7 @@ return new class extends Migration
             $table->string('lainlainnilai')->nullable();
 
             $table->text('komentar')->nullable();
+            $table->string('file_pdf')->nullable();
             $table->timestamps();
         });
     }

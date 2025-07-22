@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\EvaluasiMitraKinerja;
 use App\Models\RekapKerjaSama;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EvaluasiMitraKinerjaController extends Controller
 {
@@ -58,6 +60,7 @@ class EvaluasiMitraKinerjaController extends Controller
             'lainlainnilai' => 'nullable|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
 
             'komentar' => 'nullable|string',
+            'pdfFile' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
         // Convert text values to numbers before saving
@@ -78,6 +81,13 @@ class EvaluasiMitraKinerjaController extends Controller
             $validated['lainlainnilai'] = $valueMap[$validated['lainlainnilai']];
         }
 
+        if ($request->hasFile('pdfFile')) {
+            $file = $request->file('pdfFile');
+            $filename = 'evaluasi_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('evaluasi_pdf', $filename, 'public');
+            $validated['file_pdf'] = $path;
+        }
+
         EvaluasiMitraKinerja::create($validated);
 
         $rekap = RekapKerjaSama::find($validated['rekap_id']);
@@ -85,6 +95,7 @@ class EvaluasiMitraKinerjaController extends Controller
 
         return redirect()->back()->with('success', 'Evaluasi berhasil disimpan');
     }
+
     public function delete($id)
     {
         try {
@@ -147,7 +158,27 @@ class EvaluasiMitraKinerjaController extends Controller
     {
         $evaluasi = EvaluasiMitraKinerja::where('idkinerja', $id)->firstOrFail();
 
-        // Konversi nilai radio (misalnya "Sangat Tinggi") ke angka
+        // Validasi input
+        $validated = $request->validate([
+            'integritas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'keahlian' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'komunikasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'kerjasamatim' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'pengembangandiri' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'kreativitas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'bahasaasing' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'teknologi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'manajerial' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'analisis' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'laporan' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'inovasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'lainlainlabel' => 'nullable|string|max:255',
+            'lainlainnilai' => 'nullable|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'komentar' => 'nullable|string',
+            'pdfFile' => 'nullable|file|mimes:pdf|max:5120', // 5MB
+        ]);
+
+        // Konversi nilai teks ke angka
         $map = [
             'Sangat Tinggi' => 5,
             'Tinggi' => 4,
@@ -156,25 +187,48 @@ class EvaluasiMitraKinerjaController extends Controller
             'Sangat Kurang' => 1
         ];
 
-        // Simpan ke DB
-        $evaluasi->update([
-            'integritas' => $map[$request->integritas] ?? null,
-            'keahlian' => $map[$request->keahlian] ?? null,
-            'komunikasi' => $map[$request->komunikasi] ?? null,
-            'kerjasamatim' => $map[$request->kerjasamatim] ?? null,
-            'pengembangandiri' => $map[$request->pengembangandiri] ?? null,
-            'kreativitas' => $map[$request->kreativitas] ?? null,
-            'bahasaasing' => $map[$request->bahasaasing] ?? null,
-            'teknologi' => $map[$request->teknologi] ?? null,
-            'manajerial' => $map[$request->manajerial] ?? null,
-            'analisis' => $map[$request->analisis] ?? null,
-            'laporan' => $map[$request->laporan] ?? null,
-            'inovasi' => $map[$request->inovasi] ?? null,
-            'lainlainlabel' => $request->lainlainlabel,
-            'lainlainnilai' => $map[$request->lainlainnilai] ?? null,
-            'komentar' => $request->komentar,
-        ]);
+        // Konversi nilai teks ke angka
+        foreach (
+            [
+                'integritas',
+                'keahlian',
+                'komunikasi',
+                'kerjasamatim',
+                'pengembangandiri',
+                'kreativitas',
+                'bahasaasing',
+                'teknologi',
+                'manajerial',
+                'analisis',
+                'laporan',
+                'inovasi',
+                'lainlainnilai'
+            ] as $field
+        ) {
+            if (isset($validated[$field])) {
+                $validated[$field] = $map[$validated[$field]] ?? null;
+            }
+        }
 
-        return redirect()->route('EvaluasiMitraKinerja.index')->with('success', 'Evaluasi berhasil diperbarui.');
+        // Handle file upload
+        if ($request->hasFile('pdfFile')) {
+            // Hapus file lama jika ada
+            if ($evaluasi->file_pdf && Storage::exists('public/' . $evaluasi->file_pdf)) {
+                Storage::delete('public/' . $evaluasi->file_pdf);
+            }
+
+            // Upload file baru
+            $file = $request->file('pdfFile');
+            $filename = 'eval_' . time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.pdf';
+            $path = $file->storeAs('public/evaluasi_pdf', $filename);
+            $validated['file_pdf'] = str_replace('public/', '', $path);
+        }
+
+        // Update data
+        $evaluasi->update($validated);
+
+        return redirect()
+            ->route('EvaluasiMitraKinerja.index')
+            ->with('success', 'Evaluasi berhasil diperbarui.');
     }
 }

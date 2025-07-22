@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EvaluasiMitra;
 use App\Models\RekapKerjaSama;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EvaluasiMitraController extends Controller
 {
@@ -58,6 +59,7 @@ class EvaluasiMitraController extends Controller
             'lainlainnilai' => 'nullable|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
 
             'komentar' => 'nullable|string',
+            'pdfFile' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
         // Convert text values to numbers before saving
@@ -76,6 +78,13 @@ class EvaluasiMitraController extends Controller
 
         if (isset($validated['lainlainnilai'])) {
             $validated['lainlainnilai'] = $valueMap[$validated['lainlainnilai']];
+        }
+
+        if ($request->hasFile('pdfFile')) {
+            $file = $request->file('pdfFile');
+            $filename = 'evaluasi_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('evaluasi_pdf', $filename, 'public');
+            $validated['file_pdf'] = $path;
         }
 
         EvaluasiMitra::create($validated);
@@ -143,7 +152,27 @@ class EvaluasiMitraController extends Controller
     {
         $evaluasi = EvaluasiMitra::where('idmitra', $id)->firstOrFail();
 
-        // Konversi nilai radio (misalnya "Sangat Tinggi") ke angka
+        // Validasi input
+        $validated = $request->validate([
+            'integritas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'keahlian' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'komunikasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'kerjasamatim' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'pengembangandiri' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'kreativitas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'bahasaasing' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'teknologi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'manajerial' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'analisis' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'laporan' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'inovasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'lainlainlabel' => 'nullable|string|max:255',
+            'lainlainnilai' => 'nullable|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'komentar' => 'nullable|string',
+            'pdfFile' => 'nullable|file|mimes:pdf|max:5120', // 5MB
+        ]);
+
+        // Konversi nilai teks ke angka
         $map = [
             'Sangat Tinggi' => 5,
             'Tinggi' => 4,
@@ -152,29 +181,48 @@ class EvaluasiMitraController extends Controller
             'Sangat Kurang' => 1
         ];
 
-        // Find the evaluation record
-        $evaluasi = EvaluasiMitra::findOrFail($id);
+        // Handle file upload PDF
+        if ($request->hasFile('pdfFile')) {
+            // Hapus file lama jika ada
+            if ($evaluasi->file_pdf && Storage::exists('public/' . $evaluasi->file_pdf)) {
+                Storage::delete('public/' . $evaluasi->file_pdf);
+            }
 
-        // Update the record
-        $evaluasi->update([
-            'integritas' => $map[$request->integritas] ?? null,
-            'keahlian' => $map[$request->keahlian] ?? null,
-            'komunikasi' => $map[$request->komunikasi] ?? null,
-            'kerjasamatim' => $map[$request->kerjasamatim] ?? null,
-            'pengembangandiri' => $map[$request->pengembangandiri] ?? null,
-            'kreativitas' => $map[$request->kreativitas] ?? null,
-            'bahasaasing' => $map[$request->bahasaasing] ?? null,
-            'teknologi' => $map[$request->teknologi] ?? null,
-            'manajerial' => $map[$request->manajerial] ?? null,
-            'analisis' => $map[$request->analisis] ?? null,
-            'laporan' => $map[$request->laporan] ?? null,
-            'inovasi' => $map[$request->inovasi] ?? null,
-            'lainlainlabel' => $request->lainlainlabel,
-            'lainlainnilai' => $map[$request->lainlainnilai] ?? null,
-            'komentar' => $request->komentar,
-        ]);
+            // Upload file baru
+            $file = $request->file('pdfFile');
+            $filename = 'eval_mitra_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('public/evaluasi_mitra', $filename);
+            $validated['file_pdf'] = str_replace('public/', '', $path);
+        }
 
-        return redirect()->route('EvaluasiMitra.index')
+        // Konversi nilai teks ke angka
+        foreach (
+            [
+                'integritas',
+                'keahlian',
+                'komunikasi',
+                'kerjasamatim',
+                'pengembangandiri',
+                'kreativitas',
+                'bahasaasing',
+                'teknologi',
+                'manajerial',
+                'analisis',
+                'laporan',
+                'inovasi',
+                'lainlainnilai'
+            ] as $field
+        ) {
+            if (isset($validated[$field])) {
+                $validated[$field] = $map[$validated[$field]] ?? null;
+            }
+        }
+
+        // Update data
+        $evaluasi->update($validated);
+
+        return redirect()
+            ->route('EvaluasiMitra.index')
             ->with('success', 'Evaluasi mitra berhasil diperbarui');
     }
 }

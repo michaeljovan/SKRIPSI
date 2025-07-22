@@ -137,9 +137,17 @@
                                         <td>{{ Str::limit($item->komentar, 30) }}</td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                                <a href="#" class="btn btn-sm btn-info" title="Detail">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
+                                               @if ($item->file_pdf)
+                                                    <a href="{{ $item->pdf_url }}" target="_blank"
+                                                        class="btn btn-sm btn-info" title="Detail">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                @else
+                                                    <button class="btn btn-sm btn-secondary" title="Tidak ada dokumen"
+                                                        disabled>
+                                                        <i class="bi bi-eye-slash"></i>
+                                                    </button>
+                                                @endif
                                                 <a href="{{ route('EvaluasiMitra.edit', ['id' => $item->idmitra]) }}"
                                                     class="btn btn-sm btn-warning" title="Edit">
                                                     <i class="bi bi-pencil"></i>

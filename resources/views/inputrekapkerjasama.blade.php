@@ -150,7 +150,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label ">Jenis Kerja Sama</label>
+                                <label class="form-label">Jenis Kerja Sama</label>
                                 <div class="border border-secondary rounded p-3 shadow-sm">
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" id="jenis1"
@@ -172,6 +172,45 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Section Parent Document - Selalu Tampil -->
+                            <div class="mt-3">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="card-title mb-0">Dokumen Induk</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="parentDocument" class="form-label">Pilih Dokumen
+                                                    Induk</label>
+                                                <select class="form-select" id="parentDocument" name="parent_id">
+                                                    <!-- Opsi akan diisi via JavaScript -->
+                                                </select>
+                                                <div class="form-text">Untuk MoA pilih MoU induk, untuk IA pilih
+                                                    MoU/MoA induk</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="parentMitra" class="form-label">Mitra Kerja Sama</label>
+                                                <input type="text" class="form-control" id="parentMitra"
+                                                    name="parentMitra" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label for="parentJudul" class="form-label">Judul Kerja Sama</label>
+                                                <input type="text" class="form-control" id="parentJudul"
+                                                    name="parentJudul" readonly>
+                                            </div>
+                                        </div>
+                                        <div id="noParentDocAlert" class="alert alert-info mt-3"
+                                            style="display: none;">
+                                            Tidak diperlukan dokumen induk untuk MoU
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                         <!-- Row 4 -->
                         <div class="row mb-3">
@@ -217,7 +256,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="inKind" class="form-label">In Kind</label>
-                                <textarea class="form-control" id="inKind" name="inKind" rows="2"></textarea>
+                                <textarea class="form-control" id="inKind" name="inKind" rows="2" placeholder="Diisi dengan angka"></textarea>
                             </div>
                         </div>
 
@@ -225,11 +264,13 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="totalInKind" class="form-label">Total In Kind (Rp)</label>
-                                <input type="text" class="form-control" id="totalInKind" name="totalInKind">
+                                <input type="text" class="form-control" id="totalInKind" name="totalInKind"
+                                    placeholder="Diisi dengan angka">
                             </div>
                             <div class="col-md-6">
                                 <label for="inCash" class="form-label">In Cash (Rp)</label>
-                                <input type="text" class="form-control" id="inCash" name="inCash">
+                                <input type="text" class="form-control" id="inCash" name="inCash"
+                                    placeholder="Diisi dengan angka">
                             </div>
                         </div>
 
@@ -237,12 +278,13 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="totalInCash" class="form-label">Total In Cash (Rp)</label>
-                                <input type="text" class="form-control" id="totalInCash" name="totalInCash">
+                                <input type="text" class="form-control" id="totalInCash" name="totalInCash"
+                                    placeholder="Diisi dengan angka">
                             </div>
                             <div class="col-md-6">
                                 <label for="jumlahImplementasi" class="form-label">Jumlah Implementasi</label>
                                 <input type="text" class="form-control" id="jumlahImplementasi"
-                                    name="jumlahImplementasi">
+                                    name="jumlahImplementasi" placeholder="Diisi dengan angka">
                             </div>
                         </div>
 
@@ -441,6 +483,91 @@
                     }
                 });
             });
+        });
+
+        //jeniskerja samainduk
+        document.addEventListener('DOMContentLoaded', function() {
+            const jenisRadios = document.querySelectorAll('input[name="jenisKerjaSama"]');
+            const parentSelect = document.getElementById('parentDocument');
+            const parentMitra = document.getElementById('parentMitra');
+            const parentJudul = document.getElementById('parentJudul');
+            const noParentAlert = document.getElementById('noParentDocAlert');
+
+            async function loadParentOptions(jenis) {
+                parentSelect.innerHTML = '';
+                parentMitra.value = '';
+                parentJudul.value = '';
+
+                if (jenis === 'MoU') {
+                    // MOU boleh tanpa induk, tampilkan pilihan "Tidak Ada Induk"
+                    parentSelect.disabled = false;
+                    noParentAlert.style.display = 'none';
+                    try {
+                        const response = await fetch(`/api/dokumen-induk?jenis=MoU`);
+                        const data = await response.json();
+
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            option.textContent = `${item.no_dokumen} - ${item.judul_kerja_sama}`;
+                            option.dataset.mitra = item.mitra_kerja_sama;
+                            option.dataset.judul = item.judul_kerja_sama;
+                            parentSelect.appendChild(option);
+                        });
+                    } catch (error) {
+                        console.error('Gagal memuat dokumen induk:', error);
+                    }
+                } else if (jenis === 'MoA' || jenis === 'IA') {
+                    parentSelect.disabled = false;
+                    noParentAlert.style.display = 'none';
+
+                    try {
+                        const response = await fetch(`/api/dokumen-induk?jenis=${jenis}`);
+                        const data = await response.json();
+
+                        parentSelect.innerHTML = '';
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            option.textContent = `${item.no_dokumen} - ${item.judul_kerja_sama}`;
+                            option.dataset.mitra = item.mitra_kerja_sama;
+                            option.dataset.judul = item.judul_kerja_sama;
+                            parentSelect.appendChild(option);
+                        });
+                    } catch (error) {
+                        console.error('Gagal memuat dokumen induk:', error);
+                    }
+                }
+            }
+
+            jenisRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    loadParentOptions(this.value);
+                });
+            });
+
+            parentSelect.addEventListener('change', function() {
+                const selected = this.options[this.selectedIndex];
+
+                if (selected.value === 'none') {
+                    this.value = ''; 
+                    parentMitra.value = '';
+                    parentJudul.value = '';
+                    parentMitra.disabled = true;
+                    parentJudul.disabled = true;
+                } else {
+                    parentMitra.disabled = false;
+                    parentJudul.disabled = false;
+                    parentMitra.value = selected.dataset.mitra || '';
+                    parentJudul.value = selected.dataset.judul || '';
+                }
+            });
+
+            // Jalankan saat halaman load, jika radio sudah terpilih
+            const checkedJenis = document.querySelector('input[name="jenisKerjaSama"]:checked');
+            if (checkedJenis) {
+                loadParentOptions(checkedJenis.value);
+            }
         });
     </script>
 </body>

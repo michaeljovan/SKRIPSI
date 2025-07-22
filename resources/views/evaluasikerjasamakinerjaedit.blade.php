@@ -84,8 +84,9 @@
                     <h5 class="mb-0">Edit Evaluasi Kepuasan Mitra Kinerja</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('EvaluasiMitraKinerja.update', $evaluasi->idkinerja ?? '') }}"
-                        method="POST">
+                    <form method="POST"
+                        action="{{ route('EvaluasiMitraKinerja.update', $evaluasi->idkinerja ?? '') }}"
+                        enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <div class="mb-4">
@@ -131,27 +132,24 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="integritas"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->integritas == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->integritas == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="integritas"
-                                                    value="Tinggi"
-                                                    {{ $evaluasi->integritas == 'Tinggi' ? 'checked' : '' }}>
+                                                    value="Tinggi" {{ $evaluasi->integritas == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="integritas"
-                                                    value="Cukup"
-                                                    {{ $evaluasi->integritas == 'Cukup' ? 'checked' : '' }}>
+                                                    value="Cukup" {{ $evaluasi->integritas == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="integritas"
-                                                    value="Kurang"
-                                                    {{ $evaluasi->integritas == 'Kurang' ? 'checked' : '' }}>
+                                                    value="Kurang" {{ $evaluasi->integritas == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="integritas"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->integritas == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->integritas == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
 
@@ -160,27 +158,24 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="keahlian"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->keahlian == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->keahlian == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="keahlian"
-                                                    value="Tinggi"
-                                                    {{ $evaluasi->keahlian == 'Tinggi' ? 'checked' : '' }}>
+                                                    value="Tinggi" {{ $evaluasi->keahlian == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="keahlian"
-                                                    value="Cukup"
-                                                    {{ $evaluasi->keahlian == 'Cukup' ? 'checked' : '' }}>
+                                                    value="Cukup" {{ $evaluasi->keahlian == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="keahlian"
-                                                    value="Kurang"
-                                                    {{ $evaluasi->keahlian == 'Kurang' ? 'checked' : '' }}>
+                                                    value="Kurang" {{ $evaluasi->keahlian == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="keahlian"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->keahlian == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->keahlian == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
 
@@ -189,27 +184,24 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="komunikasi"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->komunikasi == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->komunikasi == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="komunikasi"
-                                                    value="Tinggi"
-                                                    {{ $evaluasi->komunikasi == 'Tinggi' ? 'checked' : '' }}>
+                                                    value="Tinggi" {{ $evaluasi->komunikasi == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="komunikasi"
-                                                    value="Cukup"
-                                                    {{ $evaluasi->komunikasi == 'Cukup' ? 'checked' : '' }}>
+                                                    value="Cukup" {{ $evaluasi->komunikasi == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="komunikasi"
-                                                    value="Kurang"
-                                                    {{ $evaluasi->komunikasi == 'Kurang' ? 'checked' : '' }}>
+                                                    value="Kurang" {{ $evaluasi->komunikasi == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="komunikasi"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->komunikasi == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->komunikasi == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
 
@@ -218,27 +210,27 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kerjasamatim"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->kerjasamatim == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->kerjasamatim == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kerjasamatim"
                                                     value="Tinggi"
-                                                    {{ $evaluasi->kerjasamatim == 'Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->kerjasamatim == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kerjasamatim"
                                                     value="Cukup"
-                                                    {{ $evaluasi->kerjasamatim == 'Cukup' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->kerjasamatim == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kerjasamatim"
                                                     value="Kurang"
-                                                    {{ $evaluasi->kerjasamatim == 'Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->kerjasamatim == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kerjasamatim"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->kerjasamatim == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->kerjasamatim == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
 
@@ -247,111 +239,105 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio"
                                                     name="pengembangandiri" value="Sangat Tinggi" required
-                                                    {{ $evaluasi->pengembangandiri == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->pengembangandiri == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio"
                                                     name="pengembangandiri" value="Tinggi"
-                                                    {{ $evaluasi->pengembangandiri == 'Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->pengembangandiri == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio"
                                                     name="pengembangandiri" value="Cukup"
-                                                    {{ $evaluasi->pengembangandiri == 'Cukup' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->pengembangandiri == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio"
                                                     name="pengembangandiri" value="Kurang"
-                                                    {{ $evaluasi->pengembangandiri == 'Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->pengembangandiri == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio"
                                                     name="pengembangandiri" value="Sangat Kurang"
-                                                    {{ $evaluasi->pengembangandiri == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->pengembangandiri == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td>Kreativitas</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kreativitas"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->kreativitas == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->kreativitas == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kreativitas"
-                                                    value="Tinggi"
-                                                    {{ $evaluasi->kreativitas == 'Tinggi' ? 'checked' : '' }}>
+                                                    value="Tinggi" {{ $evaluasi->kreativitas == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kreativitas"
-                                                    value="Cukup"
-                                                    {{ $evaluasi->kreativitas == 'Cukup' ? 'checked' : '' }}>
+                                                    value="Cukup" {{ $evaluasi->kreativitas == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kreativitas"
-                                                    value="Kurang"
-                                                    {{ $evaluasi->kreativitas == 'Kurang' ? 'checked' : '' }}>
+                                                    value="Kurang" {{ $evaluasi->kreativitas == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kreativitas"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->kreativitas == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->kreativitas == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
+
                                         <tr>
-                                            <td>Kemampuan Menggunakan Bahasa Asing (Contoh : Bahasa Inggris)</td>
+                                            <td>Kemampuan Menggunakan Bahasa Asing (Contoh: Bahasa Inggris)</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="bahasaasing"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->bahasaasing == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->bahasaasing == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Tinggi"
-                                                    {{ $evaluasi->bahasaasing == 'Tinggi' ? 'checked' : '' }}>
+                                                    value="Tinggi" {{ $evaluasi->bahasaasing == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Cukup"
-                                                    {{ $evaluasi->bahasaasing == 'Cukup' ? 'checked' : '' }}>
+                                                    value="Cukup" {{ $evaluasi->bahasaasing == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Kurang"
-                                                    {{ $evaluasi->bahasaasing == 'Kurang' ? 'checked' : '' }}>
+                                                    value="Kurang" {{ $evaluasi->bahasaasing == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="bahasaasing"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->bahasaasing == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->bahasaasing == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td>Penggunaan Alat/Teknologi Modern (Teknologi IT)</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="teknologi"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->teknologi == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->teknologi == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Tinggi"
-                                                    {{ $evaluasi->teknologi == 'Tinggi' ? 'checked' : '' }}>
+                                                    value="Tinggi" {{ $evaluasi->teknologi == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Cukup"
-                                                    {{ $evaluasi->teknologi == 'Cukup' ? 'checked' : '' }}>
+                                                    value="Cukup" {{ $evaluasi->teknologi == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Kurang"
-                                                    {{ $evaluasi->teknologi == 'Kurang' ? 'checked' : '' }}>
+                                                    value="Kurang" {{ $evaluasi->teknologi == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="teknologi"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->teknologi == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->teknologi == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
                                         <tr>
@@ -359,27 +345,27 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="manajerial"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->manajerial == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->manajerial == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="manajerial"
                                                     value="Tinggi"
-                                                    {{ $evaluasi->manajerial == 'Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->manajerial == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="manajerial"
                                                     value="Cukup"
-                                                    {{ $evaluasi->manajerial == 'Cukup' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->manajerial == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="manajerial"
                                                     value="Kurang"
-                                                    {{ $evaluasi->manajerial == 'Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->manajerial == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="manajerial"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->manajerial == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->manajerial == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
                                         <tr>
@@ -387,27 +373,27 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="analisis"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->analisis == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->analisis == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="analisis"
                                                     value="Tinggi"
-                                                    {{ $evaluasi->analisis == 'Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->analisis == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="analisis"
                                                     value="Cukup"
-                                                    {{ $evaluasi->analisis == 'Cukup' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->analisis == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="analisis"
                                                     value="Kurang"
-                                                    {{ $evaluasi->analisis == 'Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->analisis == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="analisis"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->analisis == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->analisis == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
                                         <tr>
@@ -415,27 +401,27 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="laporan"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->laporan == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->laporan == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="laporan"
                                                     value="Tinggi"
-                                                    {{ $evaluasi->laporan == 'Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->laporan == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="laporan"
                                                     value="Cukup"
-                                                    {{ $evaluasi->laporan == 'Cukup' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->laporan == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="laporan"
                                                     value="Kurang"
-                                                    {{ $evaluasi->laporan == 'Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->laporan == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="laporan"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->laporan == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->laporan == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
                                         <tr>
@@ -443,27 +429,27 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="inovasi"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->inovasi == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->inovasi == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="inovasi"
                                                     value="Tinggi"
-                                                    {{ $evaluasi->inovasi == 'Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->inovasi == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="inovasi"
                                                     value="Cukup"
-                                                    {{ $evaluasi->inovasi == 'Cukup' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->inovasi == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="inovasi"
                                                     value="Kurang"
-                                                    {{ $evaluasi->inovasi == 'Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->inovasi == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="inovasi"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->inovasi == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->inovasi == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
                                         <tr>
@@ -472,27 +458,27 @@
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="lainlainnilai"
                                                     value="Sangat Tinggi" required
-                                                    {{ $evaluasi->lainlainnilai == 'Sangat Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->lainlainnilai == 5 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="lainlainnilai"
                                                     value="Tinggi"
-                                                    {{ $evaluasi->lainlainnilai == 'Tinggi' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->lainlainnilai == 4 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="lainlainnilai"
                                                     value="Cukup"
-                                                    {{ $evaluasi->lainlainnilai == 'Cukup' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->lainlainnilai == 3 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="lainlainnilai"
                                                     value="Kurang"
-                                                    {{ $evaluasi->lainlainnilai == 'Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->lainlainnilai == 2 ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="lainlainnilai"
                                                     value="Sangat Kurang"
-                                                    {{ $evaluasi->lainlainnilai == 'Sangat Kurang' ? 'checked' : '' }}>
+                                                    {{ $evaluasi->lainlainnilai == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -507,6 +493,12 @@
                                     style="height: 100px">{{ $evaluasi->komentar ?? '' }}</textarea>
                                 <label for="komentar" class="text-muted">Masukkan saran atau komentar Anda</label>
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pdfFile" class="form-label">Unggah Dokumen PDF (Opsional)</label>
+                            <input class="form-control" type="file" id="pdfFile" name="pdfFile"
+                                accept=".pdf">
+                            <div class="form-text">Maksimal ukuran file: 5MB</div>
                         </div>
                         <div class="d-flex justify-content-end gap-2">
                             <button type="reset" class="btn btn-outline-secondary">Reset</button>
