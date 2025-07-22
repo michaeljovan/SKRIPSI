@@ -50,6 +50,13 @@ class RekapKerjaSamaController extends Controller
             $query->whereDate('tanggal_selesai', '<=', $request->tanggal_selesai);
         }
 
+        
+        if ($request->has('bentuk_kerja_sama')) {
+            foreach ((array) $request->bentuk_kerja_sama as $bentuk) {
+                $query->where('bentuk_kerja_sama', 'LIKE', '%' . trim($bentuk) . '%');
+            }
+        }
+
         $rekapKerjaSama = $query->get();
 
         return view('datadokumenkerjasama', compact('rekapKerjaSama'));

@@ -24,6 +24,9 @@ Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post')
 // Autentikasi Routes
 Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
 
+    Route::get('/chart-kategori-per-unit', [RekapKerjaSamaController::class, 'chartKategoriPerUnit']);
+    Route::get('/dashboard/filter-kategori', [DashboardController::class, 'filterKategori']);
+
     // routes/api.php
     Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
     // Dashboard
@@ -97,6 +100,9 @@ Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
 });
 
 Route::middleware(['auth', 'cekrole:dekanat'])->group(function () {
+    Route::get('/chart-kategori-per-unit', [RekapKerjaSamaController::class, 'chartKategoriPerUnit']);
+    Route::get('/dashboard/filter-kategori', [DashboardController::class, 'filterKategori']);
+
     Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
 
     Route::prefix('superadmin')->group(function () {
@@ -110,6 +116,9 @@ Route::middleware(['auth', 'cekrole:dekanat'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
+    Route::get('/chart-kategori-per-unit', [RekapKerjaSamaController::class, 'chartKategoriPerUnit']);
+    Route::get('/dashboard/filter-kategori', [DashboardController::class, 'filterKategori']);
+
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });

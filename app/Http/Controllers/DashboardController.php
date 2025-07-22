@@ -120,11 +120,47 @@ class DashboardController extends Controller
             $lineChartData[$unitName] = $yearData;
         }
 
+        $kategoriData = [];
+
+        foreach ($orderedUnits as $unit) {
+            $nasional = RekapKerjaSama::where('unit', $unit)->where('kategori', 'Nasional')->count();
+            $internasional = RekapKerjaSama::where('unit', $unit)->where('kategori', 'Internasional')->count();
+
+            $kategoriData[] = [
+                'unit' => $unit,
+                'nasional' => $nasional,
+                'internasional' => $internasional,
+            ];
+        }
+
         $expiringAgreements = RekapKerjaSama::where('tanggal_selesai', '>=', now()) // Hanya yang belum kadaluarsa
             ->orderBy('tanggal_selesai', 'asc') // Urutkan dari yang paling dekat
             ->take(5) // Ambil 5 teratas
             ->get();
 
+
+
+        $bentukData = RekapKerjaSama::select(
+            'unit',
+            DB::raw("SUM(CASE WHEN bentuk_kerja_sama LIKE '%Pendidikan%' THEN 1 ELSE 0 END) as pendidikan"),
+            DB::raw("SUM(CASE WHEN bentuk_kerja_sama LIKE '%Penelitian%' THEN 1 ELSE 0 END) as penelitian"),
+            DB::raw("SUM(CASE WHEN bentuk_kerja_sama LIKE '%Pengabdian%' THEN 1 ELSE 0 END) as pengabdian")
+        )
+            ->whereIn('unit', $orderedUnits)
+            ->groupBy('unit')
+            ->get();
+
+        $bentukPerUnitChart = [];
+
+        foreach ($orderedUnits as $unit) {
+            $data = $bentukData->firstWhere('unit', $unit);
+            $bentukPerUnitChart[] = [
+                'unit' => $unit,
+                'pendidikan' => $data ? (int)$data->pendidikan : 0,
+                'penelitian' => $data ? (int)$data->penelitian : 0,
+                'pengabdian' => $data ? (int)$data->pengabdian : 0,
+            ];
+        }
 
         return view('dashboard', compact(
             'mitraaktif',
@@ -134,9 +170,31 @@ class DashboardController extends Controller
             'lineChartData',
             'jenisTerbanyak',
             'jenisTersedikit',
-            'expiringAgreements'
+            'expiringAgreements',
+            'kategoriData',
+            'bentukPerUnitChart'
         ));
     }
+
+
+    public function filterKategori(Request $request)
+    {
+        $year = $request->query('year');
+
+        $data = RekapKerjaSama::selectRaw("
+            unit,
+            SUM(CASE WHEN kategori = 'Nasional' THEN 1 ELSE 0 END) AS nasional,
+            SUM(CASE WHEN kategori = 'Internasional' THEN 1 ELSE 0 END) AS internasional
+        ")
+            ->when($year !== 'all', function ($query) use ($year) {
+                $query->whereYear('tanggal_mulai', $year);
+            })
+            ->groupBy('unit')
+            ->get();
+
+        return response()->json($data);
+    }
+
 
     public function filterByYear(Request $request)
     {

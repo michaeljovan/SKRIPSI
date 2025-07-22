@@ -279,6 +279,27 @@
                                 </option>
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bentuk Kerja Sama</label><br>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="bentuk_kerja_sama[]"
+                                    value="Pendidikan"
+                                    {{ in_array('Pendidikan', (array) request('bentuk_kerja_sama')) ? 'checked' : '' }}>
+                                <label class="form-check-label">Pendidikan</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="bentuk_kerja_sama[]"
+                                    value="Penelitian"
+                                    {{ in_array('Penelitian', (array) request('bentuk_kerja_sama')) ? 'checked' : '' }}>
+                                <label class="form-check-label">Penelitian</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="bentuk_kerja_sama[]"
+                                    value="Pengabdian"
+                                    {{ in_array('Pengabdian', (array) request('bentuk_kerja_sama')) ? 'checked' : '' }}>
+                                <label class="form-check-label">Pengabdian</label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
