@@ -81,9 +81,7 @@ class EvaluasiMitraController extends Controller
         }
 
         if ($request->hasFile('pdfFile')) {
-            $file = $request->file('pdfFile');
-            $filename = 'evaluasi_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('evaluasi_pdf', $filename, 'public');
+            $path = $request->file('pdfFile')->store('evaluasi_pdf', 'public');
             $validated['file_pdf'] = $path;
         }
 

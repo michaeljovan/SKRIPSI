@@ -28,7 +28,6 @@ class EvaluasiMitraKinerjaController extends Controller
     }
     public function store(Request $request)
     {
-        // Map text values to numbers
         $valueMap = [
             'Sangat Tinggi' => 5,
             'Tinggi' => 4,
@@ -42,7 +41,6 @@ class EvaluasiMitraKinerjaController extends Controller
             'nodok' => 'required|string|max:255',
             'mitra' => 'required|string|max:255',
 
-            // Change validation to accept the text values
             'integritas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'keahlian' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'komunikasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
@@ -63,38 +61,43 @@ class EvaluasiMitraKinerjaController extends Controller
             'pdfFile' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        // Convert text values to numbers before saving
-        $validated['integritas'] = $valueMap[$validated['integritas']];
-        $validated['keahlian'] = $valueMap[$validated['keahlian']];
-        $validated['komunikasi'] = $valueMap[$validated['komunikasi']];
-        $validated['kerjasamatim'] = $valueMap[$validated['kerjasamatim']];
-        $validated['pengembangandiri'] = $valueMap[$validated['pengembangandiri']];
-        $validated['kreativitas'] = $valueMap[$validated['kreativitas']];
-        $validated['bahasaasing'] = $valueMap[$validated['bahasaasing']];
-        $validated['teknologi'] = $valueMap[$validated['teknologi']];
-        $validated['manajerial'] = $valueMap[$validated['manajerial']];
-        $validated['analisis'] = $valueMap[$validated['analisis']];
-        $validated['laporan'] = $valueMap[$validated['laporan']];
-        $validated['inovasi'] = $valueMap[$validated['inovasi']];
+        // Konversi nilai teks ke angka
+        foreach (
+            [
+                'integritas',
+                'keahlian',
+                'komunikasi',
+                'kerjasamatim',
+                'pengembangandiri',
+                'kreativitas',
+                'bahasaasing',
+                'teknologi',
+                'manajerial',
+                'analisis',
+                'laporan',
+                'inovasi'
+            ] as $field
+        ) {
+            $validated[$field] = $valueMap[$validated[$field]];
+        }
 
         if (isset($validated['lainlainnilai'])) {
             $validated['lainlainnilai'] = $valueMap[$validated['lainlainnilai']];
         }
 
         if ($request->hasFile('pdfFile')) {
-            $file = $request->file('pdfFile');
-            $filename = 'evaluasi_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('evaluasi_pdf', $filename, 'public');
+            $path = $request->file('pdfFile')->store('evaluasi_pdf', 'public');
             $validated['file_pdf'] = $path;
         }
 
         EvaluasiMitraKinerja::create($validated);
 
-        $rekap = RekapKerjaSama::find($validated['rekap_id']);
-        $rekap->update(['is_kinerja' => true]);
+        RekapKerjaSama::where('id', $validated['rekap_id'])
+            ->update(['is_kinerja' => true]);
 
         return redirect()->back()->with('success', 'Evaluasi berhasil disimpan');
     }
+
 
     public function delete($id)
     {

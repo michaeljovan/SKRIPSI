@@ -61,9 +61,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra</a>
                     </div>
                 </div>
             </div>
@@ -126,14 +129,21 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ asset('storage/' . $item->dokumen_path) }}"
-                                                class="btn btn-sm btn-info" target="_blank" title="Lihat Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
+                                            @if (
+                                                $item->laporanPelaksanaan &&
+                                                    $item->laporanPelaksanaan->dokumen_kegiatan &&
+                                                    file_exists(public_path('storage/' . $item->laporanPelaksanaan->dokumen_kegiatan)))
+                                                <a href="{{ asset('storage/' . $item->laporanPelaksanaan->dokumen_kegiatan) }}"
+                                                    class="btn btn-sm btn-info" target="_blank" title="Lihat Dokumen">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            @endif
+
                                             <a href="{{ route('pelaksanaankerjasama.edit', $item->laporanPelaksanaan->id) }}"
                                                 class="btn btn-sm btn-warning" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
+
                                             <form
                                                 action="{{ route('pelaksanaankerjasama.destroy', $item->laporanPelaksanaan->id) }}"
                                                 method="POST" class="d-inline" onsubmit="return confirmDelete()">

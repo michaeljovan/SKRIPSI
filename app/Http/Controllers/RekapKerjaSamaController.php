@@ -348,4 +348,18 @@ class RekapKerjaSamaController extends Controller
             return back()->withErrors($e->getMessage());
         }
     }
+
+    public function lihatPDF($id)
+    {
+        $rekap = RekapKerjaSama::findOrFail($id);
+        $disk = Storage::disk('public');
+
+        if (!$disk->exists($rekap->dokumen_path)) {
+            abort(404);
+        }
+
+        return response($disk->get($rekap->dokumen_path), 200, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
 }

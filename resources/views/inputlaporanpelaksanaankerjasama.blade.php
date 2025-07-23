@@ -60,9 +60,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra</a>
                     </div>
                 </div>
             </div>
@@ -150,12 +153,16 @@
                 <label for="hasil_pelaksanaan" class="form-label required-field">Deskripsi Hasil Pelaksanaan</label>
                 <textarea class="form-control" id="hasil_pelaksanaan" name="hasil_pelaksanaan" rows="5" required></textarea>
             </div>
-
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="tautan_kegiatan" class="form-label">Tautan Link Kegiatan</label>
-                    <input type="url" class="form-control" id="tautan_kegiatan" name="tautan_kegiatan"
+                    <input type="url" class="form-control" id="tautan_kegiatan" name="tautan_link_kegiatan"
                         placeholder="https://example.com">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="dokumen_kegiatan" class="form-label">Upload Dokumen (PDF)</label>
+                    <input type="file" class="form-control" id="dokumen_kegiatan" name="dokumen_kegiatan"
+                        accept=".pdf">
                 </div>
             </div>
         </div>
@@ -188,7 +195,7 @@
             submitButton.addEventListener('click', function(e) {
                 e.preventDefault();
 
-                // Validate form first
+                // Validate HTML5 form
                 if (!form.checkValidity()) {
                     form.reportValidity();
                     return;
@@ -205,8 +212,52 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Submit the form
-                        form.submit();
+                        const formData = new FormData(form);
+
+                        fetch(form.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'input[name="_token"]').value,
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(data => Promise.reject(data));
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Laporan pelaksanaan berhasil disimpan',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.reload(); // atau redirect
+                                });
+                            })
+                            .catch(error => {
+                                if (error.errors) {
+                                    const errorList = Object.values(error.errors).map(err =>
+                                        `<li>${err}</li>`).join('');
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Validasi Gagal!',
+                                        html: `<ul>${errorList}</ul>`,
+                                        confirmButtonText: 'OK'
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Terjadi Kesalahan',
+                                        text: 'Tidak dapat menyimpan data.'
+                                    });
+                                }
+                            });
                     }
                 });
             });

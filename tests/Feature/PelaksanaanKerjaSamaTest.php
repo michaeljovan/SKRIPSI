@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Models\PelaksanaanKerjaSama;
 use App\Models\RekapKerjaSama;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -12,89 +11,82 @@ class PelaksanaanKerjaSamaTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @var \App\Models\RekapKerjaSama */
-    protected $rekap;
-
-    /** @var array */
-    protected $payload;
-
-    /** @var \App\Models\PelaksanaanKerjaSama|null */
-    protected $data;
-
     protected function setUp(): void
     {
         parent::setUp();
-
-        $user = User::factory()->create(['role' => 'staff']);
+        $user = User::factory()->create();
         $this->actingAs($user);
+    }
 
-        $this->rekap = RekapKerjaSama::factory()->create();
+    public function test_berhasil_input_dengan_data_lengkap()
+    {
+        $rekap = RekapKerjaSama::factory()->create();
 
-        $this->payload = [
-            'rekap_id' => $this->rekap->id,
-            'ruang_lingkup' => 'Penelitian bersama bidang AI',
-            'dosen_terlibat' => 'Dr. Rudi Santoso',
+        $response = $this->post('/pelaksanaankerjasama', [
+            'rekap_id' => $rekap->id,
+            'ruang_lingkup' => 'Pengabdian masyarakat',
+            'dosen_terlibat' => 'Dr. Budi',
             'mahasiswa_terlibat' => 'Andi, Budi',
-            'anggaran_ukdw' => 10000000,
-            'hasil_pelaksanaan' => 'Telah dilakukan workshop dan implementasi sistem.',
-            'tautan_kegiatan' => 'https://example.com/kegiatan-ai',
-        ];
+            'anggaran_ukdw' => 1000000,
+            'hasil_pelaksanaan' => 'Berjalan lancar',
+            'tautan_link_kegiatan' => 'https://example.com/kegiatan',
+        ]);
 
-        $this->post(route('pelaksanaankerjasama.store'), $this->payload);
-        $this->data = PelaksanaanKerjaSama::where('idrekap', $this->rekap->id)->first();
+        $response->assertRedirect(); 
+        $this->assertDatabaseHas('pelaksanaankerjasama', [
+            'idrekap' => $rekap->id,
+            'ruang_lingkup' => 'Pengabdian masyarakat',
+        ]);
     }
 
-    public function test_ruang_lingkup_berhasil_terinput()
+    public function test_gagal_input_kosongkan_form()
     {
-        $this->assertEquals(
-            $this->payload['ruang_lingkup'],
-            $this->data->ruang_lingkup,
-            'ruang_lingkup berhasil diinput'
-        );
+        $response = $this->postJson(route('pelaksanaankerjasama.store'), []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'rekap_id',
+            'ruang_lingkup',
+            'dosen_terlibat',
+            'mahasiswa_terlibat',
+            'anggaran_ukdw',
+            'hasil_pelaksanaan',
+        ]);
     }
 
-    public function test_dosen_terlibat_berhasil_terinput()
+    public function test_input_anggaran_dengan_huruf()
     {
-        $this->assertEquals(
-            $this->payload['dosen_terlibat'],
-            $this->data->dosen_terlibat,
-            'dosen_terlibat berhasil diinput'
-        );
+        $rekap = RekapKerjaSama::factory()->create();
+
+        $response = $this->postJson(route('pelaksanaankerjasama.store'), [
+            'rekap_id' => $rekap->id,
+            'ruang_lingkup' => 'Pengabdian masyarakat',
+            'dosen_terlibat' => 'Dosen A',
+            'mahasiswa_terlibat' => 'Mahasiswa B',
+            'anggaran_ukdw' => 'satu juta',
+            'hasil_pelaksanaan' => 'Kegiatan berjalan baik',
+            'tautan_link_kegiatan' => 'https://youtube.com/kegiatan',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['anggaran_ukdw']);
     }
 
-    public function test_mahasiswa_terlibat_berhasil_terinput()
+    public function test_input_tautan_tidak_valid()
     {
-        $this->assertEquals(
-            $this->payload['mahasiswa_terlibat'],
-            $this->data->mahasiswa_terlibat,
-            'mahasiswa_terlibat berhasil diinput'
-        );
-    }
+        $rekap = RekapKerjaSama::factory()->create();
 
-    public function test_anggaran_ukdw_berhasil_terinput()
-    {
-        $this->assertEquals(
-            (string) $this->payload['anggaran_ukdw'],
-            $this->data->anggaran_ukdw,
-            'anggaran_ukdw berhasil diinput'
-        );
-    }
+        $response = $this->postJson(route('pelaksanaankerjasama.store'), [
+            'rekap_id' => $rekap->id,
+            'ruang_lingkup' => 'Penelitian',
+            'dosen_terlibat' => 'Dosen A',
+            'mahasiswa_terlibat' => 'Mahasiswa B',
+            'anggaran_ukdw' => 2000000,
+            'hasil_pelaksanaan' => 'Kegiatan berhasil',
+            'tautan_link_kegiatan' => 'ini bukan link',
+        ]);
 
-    public function test_hasil_pelaksanaan_berhasil_terinput()
-    {
-        $this->assertEquals(
-            $this->payload['hasil_pelaksanaan'],
-            $this->data->hasil_pelaksanaan,
-            'hasil_pelaksanaan berhasil diinput'
-        );
-    }
-
-    public function test_tautan_kegiatan_berhasil_terinput()
-    {
-        $this->assertEquals(
-            $this->payload['tautan_kegiatan'],
-            $this->data->tautan_link_kegiatan,
-            'tautan_kegiatan berhasil diinput'
-        );
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['tautan_link_kegiatan']);
     }
 }

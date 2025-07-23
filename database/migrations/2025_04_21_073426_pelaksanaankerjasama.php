@@ -14,13 +14,8 @@ return new class extends Migration
         Schema::create('pelaksanaankerjasama', function (Blueprint $table) {
             $table->id();
 
-
             $table->unsignedBigInteger('idrekap');
-
-            $table->foreign('idrekap')
-                    ->references('id')
-                    ->on('rekapkerjasama')
-                    ->onDelete('cascade');
+            $table->foreign('idrekap')->references('id')->on('rekapkerjasama')->onDelete('cascade');
 
             $table->text('ruang_lingkup');
             $table->string('dosen_terlibat');
@@ -28,6 +23,7 @@ return new class extends Migration
             $table->text('anggaran_ukdw')->nullable();
             $table->text('hasil_pelaksanaan')->nullable();
             $table->text('tautan_link_kegiatan');
+            $table->string('dokumen_kegiatan')->nullable();
             $table->timestamps();
         });
     }

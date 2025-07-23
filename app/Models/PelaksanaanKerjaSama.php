@@ -19,6 +19,7 @@ class PelaksanaanKerjaSama extends Model
         'anggaran_ukdw',
         'hasil_pelaksanaan',
         'tautan_link_kegiatan',
+        'dokumen_kegiatan',
     ];
 
     // app/Models/PelaksanaanKerjaSama.php

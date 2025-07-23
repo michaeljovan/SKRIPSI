@@ -20,6 +20,7 @@ Route::get('/', function () {
 Route::get('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post');
 
+Route::get('/rekapkerjasama/{id}/pdf', [RekapKerjaSamaController::class, 'lihatPDF'])->name('rekapkerjasama.pdf');
 
 // Autentikasi Routes
 Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
@@ -122,3 +123,5 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
+
+

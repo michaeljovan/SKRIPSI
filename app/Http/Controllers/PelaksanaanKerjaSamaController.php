@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\PelaksanaanKerjaSama;
 use App\Models\RekapKerjaSama;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 
 class PelaksanaanKerjaSamaController extends Controller
 {
@@ -37,31 +39,61 @@ class PelaksanaanKerjaSamaController extends Controller
                 'mahasiswa_terlibat' => 'required|string',
                 'anggaran_ukdw' => 'required|numeric',
                 'hasil_pelaksanaan' => 'required|string',
-                'tautan_kegiatan' => 'nullable|url',
+                'tautan_link_kegiatan' => 'nullable|url',
+                'dokumen_kegiatan' => 'nullable|file|mimes:pdf|max:5120', // max 5MB
+            ], [
+                'anggaran_ukdw.numeric' => 'Anggaran UKDW harus berupa angka',
+                'tautan_link_kegiatan.url' => 'Tautan kegiatan harus berupa URL yang valid',
+                'dokumen_kegiatan.mimes' => 'Dokumen kegiatan harus berupa file PDF',
+                'dokumen_kegiatan.max' => 'Ukuran file maksimal 5MB',
             ]);
 
-            // Clean currency values
+            // Hilangkan titik dari anggaran (jika ada)
             $validatedData['anggaran_ukdw'] = str_replace('.', '', $validatedData['anggaran_ukdw']);
 
+            // Simpan file PDF jika ada
+            $filePath = null;
+            if ($request->hasFile('dokumen_kegiatan')) {
+                $file = $request->file('dokumen_kegiatan');
+                $filePath = $file->store('dokumen_kegiatan', 'public'); // simpan di storage/app/public/dokumen_kegiatan
+            }
+
+            // Simpan ke database
             PelaksanaanKerjaSama::create([
                 'idrekap' => $validatedData['rekap_id'],
                 'ruang_lingkup' => $validatedData['ruang_lingkup'],
                 'dosen_terlibat' => $validatedData['dosen_terlibat'],
                 'mahasiswa_terlibat' => $validatedData['mahasiswa_terlibat'],
                 'anggaran_ukdw' => $validatedData['anggaran_ukdw'],
+                'tautan_link_kegiatan' => $validatedData['tautan_link_kegiatan'],
                 'hasil_pelaksanaan' => $validatedData['hasil_pelaksanaan'],
-                'tautan_link_kegiatan' => $validatedData['tautan_kegiatan'],
+                'dokumen_kegiatan' => $filePath, // simpan path-nya
             ]);
 
+            // Update status laporan
             RekapKerjaSama::findOrFail($validatedData['rekap_id'])->update([
                 'is_laporan' => true,
             ]);
 
-            return redirect()->back()->with('success', 'Laporan pelaksanaan berhasil disimpan');
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Laporan pelaksanaan berhasil disimpan'], 200);
+            }
+
+            return redirect()->route('pelaksanaankerjasama.index')->with('success', 'Laporan pelaksanaan berhasil disimpan');
+        } catch (ValidationException $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['errors' => $e->errors()], 422);
+            }
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+            }
+            return back()->with('error', 'Terjadi kesalahan saat menyimpan data.')->withInput();
         }
     }
+
+
 
     public function edit($id)
     {
@@ -85,17 +117,34 @@ class PelaksanaanKerjaSamaController extends Controller
             'mahasiswa_terlibat' => 'nullable',
             'anggaran_ukdw' => 'required|numeric',
             'hasil_pelaksanaan' => 'required',
-            'tautan_link_kegiatan' => 'nullable|url'
+            'tautan_link_kegiatan' => 'nullable|url',
+            'dokumen_kegiatan' => 'nullable|file|mimes:pdf|max:5120', // max 5MB
+        ], [
+            'tautan_link_kegiatan.url' => 'Tautan kegiatan harus berupa URL yang valid',
+            'dokumen_kegiatan.mimes' => 'Dokumen kegiatan harus berupa file PDF',
+            'dokumen_kegiatan.max' => 'Ukuran file maksimal 5MB',
         ]);
 
-        // Format angka (remove dots if using thousand separators)
+        // Format angka
         if ($request->anggaran_ukdw) {
             $validated['anggaran_ukdw'] = str_replace('.', '', $request->anggaran_ukdw);
         }
 
         $pelaksanaan = PelaksanaanKerjaSama::findOrFail($id);
-        $pelaksanaan->update($validated);
 
+        // Handle file upload
+        if ($request->hasFile('dokumen_kegiatan')) {
+            // Hapus file lama jika ada
+            if ($pelaksanaan->dokumen_kegiatan && Storage::disk('public')->exists($pelaksanaan->dokumen_kegiatan)) {
+                Storage::disk('public')->delete($pelaksanaan->dokumen_kegiatan);
+            }
+
+            // Simpan file baru
+            $file = $request->file('dokumen_kegiatan');
+            $validated['dokumen_kegiatan'] = $file->store('dokumen_kegiatan', 'public');
+        }
+
+        $pelaksanaan->update($validated);
 
         return redirect()->route('pelaksanaankerjasama.index')
             ->with('success', 'Data berhasil diperbarui!');

@@ -60,9 +60,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra</a>
                     </div>
                 </div>
             </div>
@@ -83,7 +86,8 @@
                 </div>
             </div>
 
-            <form id="editForm" action="{{ route('pelaksanaankerjasama.update', $pelaksanaan->id) }}" method="POST">
+            <form id="editForm" action="{{ route('pelaksanaankerjasama.update', $pelaksanaan->id) }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
@@ -160,16 +164,32 @@
                     <div class="mb-3">
                         <label for="hasil_pelaksanaan" class="form-label required-field">Deskripsi Hasil
                             Pelaksanaan</label>
-                        <textarea class="form-control" id="hasil_pelaksanaan" name="hasil_pelaksanaan" rows="5" required>
-                            {{ $pelaksanaan->hasil_pelaksanaan }}
-                        </textarea>
+                        <textarea class="form-control" id="hasil_pelaksanaan" name="hasil_pelaksanaan" rows="5" required>{{ old('hasil_pelaksanaan', $pelaksanaan->hasil_pelaksanaan) }}</textarea>
                     </div>
 
                     <div class="row">
+                        <!-- Tautan kegiatan -->
                         <div class="col-md-6 mb-3">
                             <label for="tautan_link_kegiatan" class="form-label">Tautan Link Kegiatan</label>
                             <input type="url" class="form-control" id="tautan_link_kegiatan"
-                                name="tautan_link_kegiatan" value="{{ $pelaksanaan->tautan_link_kegiatan }}">
+                                name="tautan_link_kegiatan"
+                                value="{{ old('tautan_link_kegiatan', $pelaksanaan->tautan_link_kegiatan) }}">
+                        </div>
+
+                        <!-- Upload PDF -->
+                        <div class="col-md-6 mb-3">
+                            <label for="dokumen_kegiatan" class="form-label">Upload Ulang Dokumen (PDF)</label>
+                            <input type="file" class="form-control" id="dokumen_kegiatan" name="dokumen_kegiatan"
+                                accept=".pdf">
+
+                            @if ($pelaksanaan->dokumen_kegiatan)
+                                <div class="mt-2">
+                                    <a href="{{ asset('storage/' . $pelaksanaan->dokumen_kegiatan) }}"
+                                        target="_blank">
+                                        📄 Lihat Dokumen Saat Ini
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

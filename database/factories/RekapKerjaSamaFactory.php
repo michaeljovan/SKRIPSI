@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\RekapKerjaSama;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Storage;
 
 class RekapKerjaSamaFactory extends Factory
 {
@@ -37,5 +38,20 @@ class RekapKerjaSamaFactory extends Factory
             'is_kinerja' => $this->faker->boolean(),
             'is_mitra' => $this->faker->boolean(),
         ];
+    }
+
+    public function withPdf(string $fileName = null)
+    {
+        return $this->afterCreating(function (RekapKerjaSama $rekap) use ($fileName) {
+            $fileName = $fileName ?? 'test_' . uniqid() . '.pdf';
+            $filePath = 'dokumen/' . $fileName;
+
+            // Simpan dummy PDF ke fake storage
+            Storage::disk('public')->put($filePath, 'Isi Dummy PDF');
+
+            $rekap->update([
+                'dokumen_path' => $filePath,
+            ]);
+        });
     }
 }
