@@ -14,9 +14,9 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
-        <!-- Add these to your head section if not already present -->
         <link rel="stylesheet" href="{{ asset('CSS/sweetalert2.min.css') }}">
         <script src="{{ asset('JS/sweetalert2.all.min.js') }}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
 
     <body>
@@ -216,7 +216,7 @@
             tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form id="changePasswordForm" method="POST">
+                    <form id="changePasswordForm" method="POST" action="{{ route('superadmin.change_password') }}">
                         @csrf
                         <div class="modal-header">
                             <h5 class="modal-title" id="EditPass">Ganti Password</h5>
@@ -343,7 +343,38 @@
                         // Jika valid, submit form
                         const form = this.closest('.modal').querySelector('form');
                         if (form) {
-                            form.submit();
+                            const formData = new FormData(form);
+
+                            fetch("{{ route('superadmin.change_password') }}", {
+                                    method: "POST",
+                                    headers: {
+                                        "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value
+                                    },
+                                    body: formData
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Berhasil',
+                                            text: 'Password berhasil diubah!',
+                                            confirmButtonColor: '#3085d6',
+                                        }).then(() => {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Gagal',
+                                            text: data.message,
+                                            confirmButtonColor: '#d33',
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error("Error:", error);
+                                });
                         }
                     }
                 });
@@ -436,82 +467,6 @@
                 document.getElementById('userId').value = userId;
             });
 
-            // Handle form submission
-            document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const formData = new FormData(this);
-                const successToast = new bootstrap.Toast(document.getElementById('successToast'));
-                const toastMessage = document.getElementById('toastMessage');
-
-                fetch("{{ route('superadmin.change_password') }}", {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json',
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update and show success toast
-                            toastMessage.textContent = data.message || 'Password berhasil diubah!';
-                            document.querySelector('#successToast .toast-body').classList.remove('bg-danger');
-                            document.querySelector('#successToast .toast-body').classList.add('bg-success');
-                            successToast.show();
-
-                            // Set timer to hide after 3 seconds
-                            setTimeout(() => {
-                                successToast.hide();
-                            }, 2000);
-
-                            // Close the modal
-                            var modal = bootstrap.Modal.getInstance(document.getElementById('staticBackdrop'));
-                            modal.hide();
-
-                            // Reset the form
-                            this.reset();
-                        } else {
-                            // Show error message in the same toast but with different style
-                            const toastBody = document.querySelector('#successToast .toast-body');
-                            toastBody.classList.remove('bg-success');
-                            toastBody.classList.add('bg-danger');
-                            toastMessage.textContent = data.message || 'Password gagal diubah!';
-                            successToast.show();
-
-                            // Set timer to hide after 3 seconds
-                            setTimeout(() => {
-                                successToast.hide();
-                            }, 3000);
-
-                            // Reset style after hiding
-                            successToast._element.addEventListener('hidden.bs.toast', function() {
-                                toastBody.classList.remove('bg-danger');
-                                toastBody.classList.add('bg-success');
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        const toastBody = document.querySelector('#successToast .toast-body');
-                        toastBody.classList.remove('bg-success');
-                        toastBody.classList.add('bg-danger');
-                        toastMessage.textContent = 'Terjadi kesalahan saat mengubah password';
-                        successToast.show();
-
-                        // Set timer to hide after 3 seconds
-                        setTimeout(() => {
-                            successToast.hide();
-                        }, 2000);
-
-                        // Reset style after hiding
-                        successToast._element.addEventListener('hidden.bs.toast', function() {
-                            toastBody.classList.remove('bg-danger');
-                            toastBody.classList.add('bg-success');
-                        });
-                    });
-            });
             // Sidebar Toggle
             document.addEventListener('DOMContentLoaded', function() {
                 const sidebar = document.getElementById('sidebar');

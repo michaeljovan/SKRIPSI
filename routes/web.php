@@ -26,9 +26,9 @@ Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
 
     Route::get('/chart-kategori-per-unit', [RekapKerjaSamaController::class, 'chartKategoriPerUnit']);
     Route::get('/dashboard/filter-kategori', [DashboardController::class, 'filterKategori']);
-
-    // routes/api.php
     Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
+    Route::get('/cek-nodokumen', [RekapKerjaSamaController::class, 'cekNoDokumen'])->name('cek.no_dokumen');
+
     // Dashboard
     Route::get('/dashboard', function () {
         $rekap = App\Models\RekapKerjaSama::with('laporanPelaksanaan')->paginate(10);
@@ -102,8 +102,8 @@ Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
 Route::middleware(['auth', 'cekrole:dekanat'])->group(function () {
     Route::get('/chart-kategori-per-unit', [RekapKerjaSamaController::class, 'chartKategoriPerUnit']);
     Route::get('/dashboard/filter-kategori', [DashboardController::class, 'filterKategori']);
-
     Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
+    Route::get('/cek-nodokumen', [RekapKerjaSamaController::class, 'cekNoDokumen'])->name('cek.no_dokumen');
 
     Route::prefix('superadmin')->group(function () {
         Route::get('/', [SuperAdminController::class, 'index'])->name('superadmin');
@@ -118,7 +118,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/dokumen-induk', [RekapKerjaSamaController::class, 'getDokumenInduk'])->name('api.dokumen_induk');
     Route::get('/chart-kategori-per-unit', [RekapKerjaSamaController::class, 'chartKategoriPerUnit']);
     Route::get('/dashboard/filter-kategori', [DashboardController::class, 'filterKategori']);
-
+    Route::get('/cek-nodokumen', [RekapKerjaSamaController::class, 'cekNoDokumen'])->name('cek.no_dokumen');
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });

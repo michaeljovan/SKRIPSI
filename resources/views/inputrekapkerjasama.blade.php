@@ -101,6 +101,7 @@
                             <div class="col-md-6">
                                 <label for="noDokumen" class="form-label">No Dokumen</label>
                                 <input type="text" class="form-control" id="noDokumen" name="noDokumen" required>
+                                <div id="noDokumenError" class="text-danger mt-1" style="display: none;"></div>
                             </div>
                             <div class="col-md-6">
                                 <label for="unit" class="form-label">Unit</label>
@@ -351,69 +352,100 @@
                     }
                 });
             });
+        });
 
-            // Form submission with SweetAlert
-            document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
-                e.preventDefault();
+        // Form submission with SweetAlert
+        document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-                // Validate checkboxes first
-                const checkboxes = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
-                if (checkboxes.length === 0) {
-                    document.getElementById('bentukKerjaSamaError').style.display = 'block';
-                    return;
-                } else {
-                    document.getElementById('bentukKerjaSamaError').style.display = 'none';
-                }
-
-                const form = this;
-                const formData = new FormData(form);
-
+            const checkboxes = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
+            if (checkboxes.length === 0) {
                 Swal.fire({
-                    title: 'Memproses...',
-                    html: 'Sedang menyimpan data kerja sama',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Pilih minimal satu bentuk kerja sama.'
                 });
+                return;
+            }
 
-                fetch(form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                throw err;
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
+            const form = this;
+            const formData = new FormData(form);
+            const noDokumen = document.getElementById('noDokumen').value;
+
+            fetch(`{{ route('cek.no_dokumen') }}?no_dokumen=${encodeURIComponent(noDokumen)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.exists) {
+                        Swal.fire({
+                            title: 'Gagal',
+                            text: 'No Dokumen sudah terdaftar.',
+                            icon: 'warning'
+                        });
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Memproses...',
+                        html: 'Sedang menyimpan data kerja sama',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(async response => {
+                            const data = await response.json();
+
+                            if (!response.ok) {
+                                if (data.errors) {
+                                    const firstErrorKey = Object.keys(data.errors)[0];
+                                    const firstErrorMessage = data.errors[firstErrorKey][0];
+
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Cek kembali input form anda',
+                                        text: firstErrorMessage
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message ||
+                                            'Terjadi kesalahan saat menyimpan.'
+                                    });
+                                }
+
+                                throw new Error('Cek kembali input form anda');
+                            }
+                            return data;
+                        })
+                        .then(data => {
                             Swal.fire({
                                 title: 'Berhasil!',
-                                text: data.message || 'Data kerja sama berhasil disimpan',
+                                text: data.message ||
+                                    'Data kerja sama berhasil disimpan',
                                 icon: 'success'
                             }).then(() => {
                                 window.location.href = data.redirect ||
                                     '{{ route('data_kerja_sama') }}';
                             });
-                        } else {
-                            throw new Error(data.message || 'Gagal menyimpan data');
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: error.message || 'Terjadi kesalahan saat menyimpan data',
-                            icon: 'error'
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.message || 'Cek kembali form anda',
+                                icon: 'error'
+                            });
+                            console.error('AJAX error:', error);
                         });
-                        console.error('Error:', error);
-                    });
-            });
+                });
         });
 
         // Hitung Masa Berlaku
@@ -517,7 +549,8 @@
                         data.forEach(item => {
                             const option = document.createElement('option');
                             option.value = item.id;
-                            option.textContent = `${item.no_dokumen} - ${item.judul_kerja_sama}`;
+                            option.textContent =
+                                `${item.no_dokumen} - ${item.judul_kerja_sama}`;
                             option.dataset.mitra = item.mitra_kerja_sama;
                             option.dataset.judul = item.judul_kerja_sama;
                             parentSelect.appendChild(option);
@@ -537,7 +570,8 @@
                         data.forEach(item => {
                             const option = document.createElement('option');
                             option.value = item.id;
-                            option.textContent = `${item.no_dokumen} - ${item.judul_kerja_sama}`;
+                            option.textContent =
+                                `${item.no_dokumen} - ${item.judul_kerja_sama}`;
                             option.dataset.mitra = item.mitra_kerja_sama;
                             option.dataset.judul = item.judul_kerja_sama;
                             parentSelect.appendChild(option);
@@ -577,7 +611,7 @@
                 loadParentOptions(checkedJenis.value);
             }
         });
-
     </script>
 </body>
+
 </html>

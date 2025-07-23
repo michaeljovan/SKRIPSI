@@ -65,11 +65,7 @@ class RekapKerjaSamaSeeder extends Seeder
                 $bentuk = $faker->randomElement($bentukKerjaSama);
                 $mitra = $faker->randomElement($perusahaan).' '.$faker->company.' '.$faker->randomElement($bidangUsaha);
 
-                $inKind = $faker->boolean(70) ? implode(', ', $faker->randomElements([
-                    'Pelatihan', 'Sertifikasi', 'Software', 'Hardware',
-                    'Konsultasi', 'Beasiswa', 'Akomodasi', 'Alat Laboratorium'
-                ], $faker->numberBetween(1, 3))) : null;
-
+                $inKind = $faker->boolean(60) ? $faker->numberBetween(5000000, 500000000) : null;
                 $inCash = $faker->boolean(60) ? $faker->numberBetween(5000000, 500000000) : null;
 
                 RekapKerjaSama::create([

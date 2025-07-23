@@ -11,7 +11,7 @@ class LoginTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function user_can_login_with_valid_credentials()
+    public function pengguna_dapat_login_dengan_kredensial_valid()
     {
         $user = User::factory()->create([
             'email' => 'xxx@gmail.com',
@@ -28,7 +28,7 @@ class LoginTest extends TestCase
     }
 
     /** @test */
-    public function user_cannot_login_without_email_and_password()
+    public function pengguna_tidak_dapat_login_tanpa_email_dan_password()
     {
         $response = $this->post('/login', [
             'user' => '',
@@ -40,7 +40,7 @@ class LoginTest extends TestCase
     }
 
     /** @test */
-    public function user_cannot_login_with_unregistered_email()
+    public function pengguna_tidak_dapat_login_dengan_email_yang_tidak_terdaftar()
     {
         $response = $this->post('/login', [
             'user' => 'unregistered@gmail.com',
@@ -52,7 +52,7 @@ class LoginTest extends TestCase
     }
 
     /** @test */
-    public function user_cannot_login_with_wrong_password()
+    public function pengguna_tidak_dapat_login_dengan_password_salah()
     {
         User::factory()->create([
             'email' => 'xxx@gmail.com',

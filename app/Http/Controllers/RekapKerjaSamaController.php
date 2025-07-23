@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class RekapKerjaSamaController extends Controller
 {
@@ -50,7 +51,7 @@ class RekapKerjaSamaController extends Controller
             $query->whereDate('tanggal_selesai', '<=', $request->tanggal_selesai);
         }
 
-        
+
         if ($request->has('bentuk_kerja_sama')) {
             foreach ((array) $request->bentuk_kerja_sama as $bentuk) {
                 $query->where('bentuk_kerja_sama', 'LIKE', '%' . trim($bentuk) . '%');
@@ -60,6 +61,12 @@ class RekapKerjaSamaController extends Controller
         $rekapKerjaSama = $query->get();
 
         return view('datadokumenkerjasama', compact('rekapKerjaSama'));
+    }
+
+    public function cekNoDokumen(Request $request)
+    {
+        $exists = RekapKerjaSama::where('no_dokumen', $request->no_dokumen)->exists();
+        return response()->json(['exists' => $exists]);
     }
 
 
@@ -83,7 +90,7 @@ class RekapKerjaSamaController extends Controller
                 'tanggalMulai' => 'required|date|before_or_equal:tanggalSelesai',
                 'tanggalSelesai' => 'required|date|after_or_equal:tanggalMulai',
                 'kategori' => 'required|string|in:nasional,internasional',
-                'inKind' => 'nullable|string',
+                'inKind' => 'nullable|numeric',
                 'totalInKind' => 'nullable|numeric',
                 'inCash' => 'nullable|numeric',
                 'totalInCash' => 'nullable|numeric',
@@ -137,7 +144,7 @@ class RekapKerjaSamaController extends Controller
                 'tanggal_selesai' => $request->tanggalSelesai,
                 'masa_berlaku' => $duration,
                 'kategori' => $request->kategori,
-                'in_kind' => $request->inKind,
+                'in_kind' => $request->totalInKind ? str_replace(',', '', $request->totalInKind) : null,
                 'total_in_kind' => $request->totalInKind ? str_replace(',', '', $request->totalInKind) : null,
                 'in_cash' => $request->inCash ? str_replace(',', '', $request->inCash) : null,
                 'total_in_cash' => $request->totalInCash ? str_replace(',', '', $request->totalInCash) : null,
@@ -152,6 +159,11 @@ class RekapKerjaSamaController extends Controller
                 'message' => 'Data kerja sama berhasil disimpan!',
                 'redirect' => route('data_kerja_sama')
             ]);
+        } catch (ValidationException $e) {
+            // Kembalikan response 422 agar sesuai dengan test
+            return response()->json([
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -159,8 +171,6 @@ class RekapKerjaSamaController extends Controller
             ], 500);
         }
     }
-
-
 
     public function getDokumenInduk(Request $request)
     {
@@ -191,7 +201,6 @@ class RekapKerjaSamaController extends Controller
 
         return response()->json($dokumen);
     }
-
 
 
     public function delete($id)
@@ -232,7 +241,21 @@ class RekapKerjaSamaController extends Controller
     public function edit($id)
     {
         $rekap = RekapKerjaSama::findOrFail($id);
-        return view('editrekapkerjasama', compact('rekap'));
+
+        // Ambil dokumen induk yang sesuai jenisnya, hindari dirinya sendiri
+        $dokumenInduk = collect(); // default kosong
+
+        if ($rekap->jenis_kerja_sama === 'MoA') {
+            $dokumenInduk = RekapKerjaSama::where('jenis_kerja_sama', 'MoU')
+                ->where('id', '!=', $rekap->id)
+                ->get();
+        } elseif ($rekap->jenis_kerja_sama === 'IA') {
+            $dokumenInduk = RekapKerjaSama::whereIn('jenis_kerja_sama', ['MoU', 'MoA'])
+                ->where('id', '!=', $rekap->id)
+                ->get();
+        }
+
+        return view('editrekapkerjasama', compact('rekap', 'dokumenInduk'));
     }
 
     public function update(Request $request, $id)
@@ -254,39 +277,37 @@ class RekapKerjaSamaController extends Controller
                 'tanggalSelesai' => 'required|date|after_or_equal:tanggalMulai',
                 'kategori' => 'required|in:nasional,internasional',
                 'dokumenPendukung' => 'nullable|file|mimes:pdf|max:5120',
+                'parent_id' => 'nullable|exists:rekapkerjasama,id'
             ]);
 
-            // Calculate duration
-            $startDate = new \DateTime($request->tanggalMulai);
-            $endDate = new \DateTime($request->tanggalSelesai);
-            $duration = $endDate->diff($startDate)->days + 1;
+            // Hitung masa berlaku
+            $duration = (new \DateTime($request->tanggalMulai))->diff(new \DateTime($request->tanggalSelesai))->days + 1;
 
-            // Handle file upload if new file is provided
+            // Handle file upload
             $filePath = $rekap->dokumen_path;
             if ($request->hasFile('dokumenPendukung')) {
-                // Delete old file if exists
-                if ($rekap->dokumen_path) {
+                if ($rekap->dokumen_path && Storage::disk('public')->exists($rekap->dokumen_path)) {
                     Storage::disk('public')->delete($rekap->dokumen_path);
                 }
-
-                // Store new file
-                $file = $request->file('dokumenPendukung');
-                // $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->store('dokumen_kerja_sama', 'public');
+                $filePath = $request->file('dokumenPendukung')->store('dokumen_kerja_sama', 'public');
             }
 
-            // Convert bentukKerjaSama array to string if needed
-            $bentukKerjaSama = is_array($request->bentukKerjaSama)
-                ? implode(', ', $request->bentukKerjaSama)
-                : $request->bentukKerjaSama;
+            // Ambil dokumen induk (jika ada) untuk menyimpan nomor dokumen induknya
+            $parentId = $request->parent_id;
+            $noDokInduk = null;
 
-            // Update record
+            if ($parentId) {
+                $parent = RekapKerjaSama::find($parentId);
+                $noDokInduk = $parent ? $parent->no_dokumen : null;
+            }
+
+            // Simpan data
             $rekap->update([
                 'no_dokumen' => $request->noDokumen,
                 'unit' => $request->unit,
                 'mitra_kerja_sama' => $request->mitraKerjaSama,
                 'judul_kerja_sama' => $request->judulKerjaSama,
-                'bentuk_kerja_sama' => $bentukKerjaSama,
+                'bentuk_kerja_sama' => implode(', ', $request->bentukKerjaSama),
                 'jenis_kerja_sama' => $request->jenisKerjaSama,
                 'pihak_ukdw' => $request->pihakUKDW,
                 'pihak_mitra' => $request->pihakMitra,
@@ -294,15 +315,16 @@ class RekapKerjaSamaController extends Controller
                 'tanggal_selesai' => $request->tanggalSelesai,
                 'masa_berlaku' => $duration,
                 'kategori' => $request->kategori,
-                'in_kind' => $request->inKind,
+                'in_kind' => $request->InKind ? str_replace(['.', ','], '', $request->InKind) : null,
                 'total_in_kind' => $request->totalInKind ? str_replace(['.', ','], '', $request->totalInKind) : null,
                 'in_cash' => $request->inCash ? str_replace(['.', ','], '', $request->inCash) : null,
                 'total_in_cash' => $request->totalInCash ? str_replace(['.', ','], '', $request->totalInCash) : null,
                 'jumlah_implementasi' => $request->jumlahImplementasi,
                 'dokumen_path' => $filePath,
+                'parent_id' => $parentId,
+                'no_dokumen_induk' => $noDokInduk,
             ]);
 
-            // Return JSON response for AJAX requests
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -313,7 +335,6 @@ class RekapKerjaSamaController extends Controller
 
             return redirect()->route('data_kerja_sama')->with('success', 'Data kerja sama berhasil diperbarui!');
         } catch (\Exception $e) {
-            // Return JSON error for AJAX requests
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,

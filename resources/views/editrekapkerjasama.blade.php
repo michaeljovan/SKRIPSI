@@ -61,9 +61,12 @@
                     <div class="submenu-item">
                         <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
                         <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan Mitra</a>
+                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
+                            Kerja Sama</a>
+                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra (Kinerja Mahasiswa/Dosen)</a>
+                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
+                            Mitra</a>
                     </div>
                 </div>
             </div>
@@ -181,7 +184,7 @@
                                 <label class="form-label">Jenis Kerja Sama</label>
                                 <div class="border border-secondary rounded p-3 shadow-sm">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" id="jenis1"
+                                        <input class="form-check-input jenis-radio" type="radio" id="jenis1"
                                             name="jenisKerjaSama" value="MoU"
                                             {{ old('jenisKerjaSama', $rekap->jenis_kerja_sama) == 'MoU' ? 'checked' : '' }}
                                             required>
@@ -189,18 +192,65 @@
                                             Understanding)</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" id="jenis2"
+                                        <input class="form-check-input jenis-radio" type="radio" id="jenis2"
                                             name="jenisKerjaSama" value="MoA"
-                                            {{ old('jenisKerjaSama', $rekap->jenis_kerja_sama) == 'MoA' ? 'checked' : '' }}>
+                                            {{ old('jenisKerjaSama', $rekap->jenis_kerja_sama) == 'MoA' ? 'checked' : '' }}
+                                            required>
                                         <label class="form-check-label" for="jenis2">MoA (Memorandum of
                                             Agreement)</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" id="jenis3"
+                                        <input class="form-check-input jenis-radio" type="radio" id="jenis3"
                                             name="jenisKerjaSama" value="IA"
-                                            {{ old('jenisKerjaSama', $rekap->jenis_kerja_sama) == 'IA' ? 'checked' : '' }}>
+                                            {{ old('jenisKerjaSama', $rekap->jenis_kerja_sama) == 'IA' ? 'checked' : '' }}
+                                            required>
                                         <label class="form-check-label" for="jenis3">IA (Implementing
                                             Agreement)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="card-title mb-0">Dokumen Induk</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="parentDocument" class="form-label">Pilih Dokumen
+                                                Induk</label>
+                                            <select class="form-select" id="parentDocument" name="parent_id">
+                                                <option value="">-- Pilih Dokumen Induk --</option>
+                                                @foreach ($dokumenInduk as $dokumen)
+                                                    <option value="{{ $dokumen->id }}"
+                                                        data-mitra="{{ $dokumen->nama_mitra }}"
+                                                        data-judul="{{ $dokumen->judul_kerja_sama }}"
+                                                        {{ $rekap->parent_id == $dokumen->id ? 'selected' : '' }}>
+                                                        {{ $dokumen->jenis_kerja_sama }} -
+                                                        {{ $dokumen->judul_kerja_sama }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <div class="form-text">Untuk MoA pilih MoU induk, untuk IA pilih
+                                                MoU/MoA induk</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="parentMitra" class="form-label">Mitra Kerja Sama</label>
+                                            <input type="text" class="form-control" id="parentMitra"
+                                                name="parentMitra" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="parentJudul" class="form-label">Judul Kerja Sama</label>
+                                            <input type="text" class="form-control" id="parentJudul"
+                                                name="parentJudul" readonly>
+                                        </div>
+                                    </div>
+                                    <div id="noParentDocAlert" class="alert alert-info mt-3" style="display: none;">
+                                        Tidak diperlukan dokumen induk untuk MoU
                                     </div>
                                 </div>
                             </div>
@@ -308,7 +358,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
 
                         <!-- Submit Button -->
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
@@ -349,24 +399,75 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Reset the form
                         document.getElementById('kerjaSamaForm').reset();
-
-                        // Show success message
-                        Swal.fire(
-                            'Berhasil!',
-                            'Form telah berhasil direset ke nilai awal.',
-                            'success'
-                        );
+                        Swal.fire('Berhasil!', 'Form telah berhasil direset ke nilai awal.',
+                            'success');
                     }
                 });
             });
+
+            // Jenis Kerja Sama radio logic (MoU, MoA, IA)
+            const jenisRadios = document.querySelectorAll('.jenis-radio');
+            const dokumenIndukCard = document.getElementById('dokumenIndukCard');
+            const alertInfo = document.getElementById('noParentDocAlert');
+            const parentSelect = document.getElementById('parentDocument');
+            const parentMitra = document.getElementById('parentMitra');
+            const parentJudul = document.getElementById('parentJudul');
+
+            // Fungsi untuk update dokumen induk berdasarkan jenis kerja sama
+            function updateDokumenInduk(jenis) {
+                if (jenis === 'MoU') {
+                    dokumenIndukCard.style.display = 'block';
+                    alertInfo.style.display = 'block';
+                    parentSelect.innerHTML = `<option value="none">Tidak Ada Induk</option>`;
+                    parentMitra.value = '-';
+                    parentJudul.value = '-';
+                } else if (jenis === 'MoA' || jenis === 'IA') {
+                    dokumenIndukCard.style.display = 'block';
+                    alertInfo.style.display = 'none';
+
+                    fetch(`/get-dokumen-induk?jenis=${jenis}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            parentSelect.innerHTML = '<option value="">-- Pilih Dokumen Induk --</option>';
+                            data.forEach(doc => {
+                                const opt = document.createElement('option');
+                                opt.value = doc.id;
+                                opt.textContent = `[${doc.no_dokumen}] - ${doc.judul_kerja_sama}`;
+                                opt.dataset.mitra = doc.mitra_kerja_sama;
+                                opt.dataset.judul = doc.judul_kerja_sama;
+                                parentSelect.appendChild(opt);
+                            });
+
+                            // Reset mitra dan judul
+                            parentMitra.value = '';
+                            parentJudul.value = '';
+                        });
+                } else {
+                    dokumenIndukCard.style.display = 'none';
+                    parentSelect.innerHTML = '';
+                    parentMitra.value = '';
+                    parentJudul.value = '';
+                }
+            }
+
+            // Event listener untuk radio jenis kerja sama
+            jenisRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateDokumenInduk(this.value);
+                });
+            });
+
+            // Trigger saat halaman pertama kali dibuka (edit form)
+            const selectedRadio = document.querySelector('.jenis-radio:checked');
+            if (selectedRadio) {
+                updateDokumenInduk(selectedRadio.value);
+            }
 
             // Form submission with SweetAlert
             document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // Validate checkboxes first
                 const checkboxes = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
                 if (checkboxes.length === 0) {
                     document.getElementById('bentukKerjaSamaError').style.display = 'block';
@@ -425,7 +526,7 @@
                     });
             });
 
-            // Hitung Masa Berlaku
+            // Hitung masa berlaku
             const tanggalMulai = document.getElementById('tanggalMulai');
             const tanggalSelesai = document.getElementById('tanggalSelesai');
             const masaBerlaku = document.getElementById('masaBerlaku');
@@ -434,50 +535,33 @@
                 if (tanggalMulai.value && tanggalSelesai.value) {
                     const startDate = new Date(tanggalMulai.value);
                     const endDate = new Date(tanggalSelesai.value);
-
-                    // Calculate difference in milliseconds
                     const diffTime = Math.abs(endDate - startDate);
-
-                    // Convert to days
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                    // Add 1 day to include both start and end dates
                     masaBerlaku.value = diffDays + 1;
                 } else {
                     masaBerlaku.value = '';
                 }
             }
 
-            // Add event listeners to both date inputs
             tanggalMulai.addEventListener('change', calculateDuration);
             tanggalSelesai.addEventListener('change', calculateDuration);
+            calculateDuration();
 
-            // Calculate on page load if dates are already set
-            if (tanggalMulai.value && tanggalSelesai.value) {
-                calculateDuration();
-            }
-        });
-
-        // Sidebar toggle functionality
-        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const mainContent = document.getElementById('mainContent');
             const toggleIcon = document.getElementById('toggleIcon');
 
-            // Toggle sidebar
             sidebarToggle.addEventListener('click', function() {
                 if (window.innerWidth < 992) {
-                    // Mobile behavior
                     sidebar.classList.toggle('show');
                     sidebarToggle.classList.toggle('show');
                 } else {
-                    // Desktop behavior
                     sidebar.classList.toggle('collapsed');
                     sidebarToggle.classList.toggle('collapsed');
                     mainContent.classList.toggle('full-width');
 
-                    // Toggle icon
                     if (sidebar.classList.contains('collapsed')) {
                         toggleIcon.classList.remove('bi-list');
                         toggleIcon.classList.add('bi-chevron-right');
@@ -488,7 +572,6 @@
                 }
             });
 
-            // Auto-close sidebar on mobile when clicking a link
             const navLinks = document.querySelectorAll('.menu-link, .submenu-link');
             navLinks.forEach(link => {
                 link.addEventListener('click', function() {

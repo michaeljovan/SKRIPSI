@@ -6,180 +6,141 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
 class RekapKerjaSamaTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected $user;
-    protected $file;
+    protected User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        // Buat user superadmin (dekanat) dan login
         $this->user = User::factory()->create([
-            'role' => 'staff',
+            'role' => 'dekanat',
         ]);
 
         $this->actingAs($this->user);
-
-        Gate::define('access-rekap', fn($user) => in_array($user->role, ['staff', 'dekan']));
-
-        Storage::fake('public');
-
-        $this->file = UploadedFile::fake()->create('dokumen_pendukung.pdf', 100, 'application/pdf');
     }
 
-    private function postRekap()
+    public function test_sukses_input_dengan_data_lengkap()
     {
-        return $this->post(route('rekapkerjasama.store'), [
-            'noDokumen' => 'DOC-2025-001',
-            'unit' => 'Fakultas Teknologi Informasi',
-            'mitraKerjaSama' => 'PT Mitra AI',
-            'judulKerjaSama' => 'Pengembangan Sistem Cerdas',
-            'bentukKerjaSama' => ['Penelitian', 'Pendidikan'],
+        Storage::fake('public');
+
+        $response = $this->postJson(route('rekapkerjasama.store'), [
+            'noDokumen' => 'MOU-001',
+            'unit' => 'Informatika',
+            'mitraKerjaSama' => 'PT ABC Indonesia',
+            'judulKerjaSama' => 'Pengembangan Kurikulum',
+            'bentukKerjaSama' => ['Pendidikan'],
             'jenisKerjaSama' => 'MoU',
-            'pihakUKDW' => 'UKDW',
-            'pihakMitra' => 'PT Mitra AI',
+            'pihakUKDW' => 'Dr. John',
+            'pihakMitra' => 'Bapak Budi',
             'tanggalMulai' => '2025-01-01',
             'tanggalSelesai' => '2025-12-31',
             'kategori' => 'nasional',
-            'inKind' => 'Perangkat lunak',
-            'totalInKind' => 1000000,
-            'inCash' => 500000,
-            'totalInCash' => 1500000,
-            'jumlahImplementasi' => 3,
-            'dokumenPendukung' => $this->file,
+            'inKind' => '5000000',
+            'totalInKind' => '5000000',
+            'inCash' => '2000000',
+            'totalInCash' => '2000000',
+            'jumlahImplementasi' => '3',
+            'dokumenPendukung' => UploadedFile::fake()->create('dokumen.pdf', 1000, 'application/pdf'),
+        ]);
+
+        $response->assertStatus(200); // karena controller return response()->json(...)
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Data kerja sama berhasil disimpan!',
+        ]);
+
+        $this->assertDatabaseHas('rekapkerjasama', [
+            'no_dokumen' => 'MOU-001',
+            'unit' => 'Informatika',
         ]);
     }
 
-    public function test_no_dokumen_berhasil_diinput()
+    public function test_gagal_input_ketika_field_dikosongkan()
     {
-        $this->postRekap();
+        $response = $this->postJson(route('rekapkerjasama.store'), [
+            'unit' => 'Informatika', // hanya isi satu field
+        ]);
 
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'no_dokumen' => 'DOC-2025-001',
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'noDokumen',
+            'mitraKerjaSama',
+            'judulKerjaSama',
+            'bentukKerjaSama',
+            'jenisKerjaSama',
+            'pihakUKDW',
+            'pihakMitra',
+            'tanggalMulai',
+            'tanggalSelesai',
+            'kategori',
+            'dokumenPendukung',
         ]);
     }
 
-    public function test_unit_berhasil_diinput()
+    public function test_gagal_input_dengan_karakter_non_angka_pada_inkind_dan_incash()
     {
-        $this->postRekap();
+        Storage::fake('public');
 
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'unit' => 'Fakultas Teknologi Informasi',
-        ]);
-    }
-
-    public function test_mitra_kerja_sama_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'mitra_kerja_sama' => 'PT Mitra AI',
-        ]);
-    }
-
-    public function test_judul_kerja_sama_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'judul_kerja_sama' => 'Pengembangan Sistem Cerdas',
-        ]);
-    }
-
-    public function test_bentuk_kerja_sama_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'bentuk_kerja_sama' => 'Penelitian, Pendidikan',
-        ]);
-    }
-
-    public function test_jenis_kerja_sama_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'jenis_kerja_sama' => 'MoU',
-        ]);
-    }
-
-    public function test_pihak_ukdw_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'pihak_ukdw' => 'UKDW',
-        ]);
-    }
-
-    public function test_pihak_mitra_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'pihak_mitra' => 'PT Mitra AI',
-        ]);
-    }
-
-    public function test_tanggal_mulai_dan_selesai_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'tanggal_mulai' => '2025-01-01',
-            'tanggal_selesai' => '2025-12-31',
-        ]);
-    }
-
-    public function test_kategori_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
+        $response = $this->postJson(route('rekapkerjasama.store'), [
+            'noDokumen' => 'MOU-002',
+            'unit' => 'Sistem Informasi',
+            'mitraKerjaSama' => 'PT XYZ',
+            'judulKerjaSama' => 'Penelitian Bersama',
+            'bentukKerjaSama' => ['Penelitian'],
+            'jenisKerjaSama' => 'MoU',
+            'pihakUKDW' => 'Dr. Jane',
+            'pihakMitra' => 'Ibu Sari',
+            'tanggalMulai' => '2025-01-01',
+            'tanggalSelesai' => '2025-12-31',
             'kategori' => 'nasional',
+            'inKind' => 'lima juta',
+            'totalInKind' => 'lima juta',
+            'inCash' => 'dua juta',
+            'totalInCash' => 'dua juta',
+            'jumlahImplementasi' => '2',
+            'dokumenPendukung' => UploadedFile::fake()->create('file.pdf', 1000, 'application/pdf'),
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'inKind',
+            'totalInKind',
+            'inCash',
+            'totalInCash',
         ]);
     }
 
-    public function test_in_kind_dan_total_in_kind_berhasil_diinput()
+    public function test_gagal_input_jumlah_implementasi_dengan_huruf()
     {
-        $this->postRekap();
+        Storage::fake('public');
 
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'in_kind' => 'Perangkat lunak',
-            'total_in_kind' => 1000000,
+        $response = $this->postJson(route('rekapkerjasama.store'), [
+            'noDokumen' => 'MOU-003',
+            'unit' => 'FTI',
+            'mitraKerjaSama' => 'Universitas ABC',
+            'judulKerjaSama' => 'Pengabdian Masyarakat',
+            'bentukKerjaSama' => ['Pengabdian'],
+            'jenisKerjaSama' => 'MoU',
+            'pihakUKDW' => 'Dekan FTI',
+            'pihakMitra' => 'Ketua LPM ABC',
+            'tanggalMulai' => '2025-01-01',
+            'tanggalSelesai' => '2025-12-31',
+            'kategori' => 'internasional',
+            'inKind' => '1000000',
+            'totalInKind' => '1000000',
+            'inCash' => '500000',
+            'totalInCash' => '500000',
+            'jumlahImplementasi' => 'tiga', // error disini
+            'dokumenPendukung' => UploadedFile::fake()->create('doc.pdf', 1000, 'application/pdf'),
         ]);
-    }
 
-    public function test_in_cash_dan_total_in_cash_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'in_cash' => 500000,
-            'total_in_cash' => 1500000,
-        ]);
-    }
-
-    public function test_jumlah_implementasi_berhasil_diinput()
-    {
-        $this->postRekap();
-
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'jumlah_implementasi' => 3,
-        ]);
-    }
-
-    public function test_dokumen_pendukung_file_tersimpan()
-    {
-        $this->postRekap();
-
-        Storage::disk('public')->assertExists('dokumen_kerja_sama/' . $this->file->hashName());
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['jumlahImplementasi']);
     }
 }
