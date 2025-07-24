@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User; // Pastikan model User di-import
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -16,7 +16,7 @@ class LoginController extends Controller
     public function loginPost(Request $request)
     {
         $request->validate([
-            'user' => 'required|email', // Validasi format email
+            'user' => 'required|email', 
             'password' => 'required',
         ]);
 
@@ -25,7 +25,7 @@ class LoginController extends Controller
 
         if (!$user) {
             return back()->withErrors([
-                'user' => 'Email tidak terdaftar', // Pesan error spesifik untuk email
+                'user' => 'Email tidak terdaftar',
             ])->withInput($request->only('user'));
         }
 
@@ -39,7 +39,7 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'password' => 'Password salah', // Pesan error spesifik untuk password
+            'password' => 'Password salah',
         ])->withInput($request->only('user'));
     }
 
