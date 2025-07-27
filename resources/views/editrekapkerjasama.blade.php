@@ -308,7 +308,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="inKind" class="form-label">In Kind</label>
-                                <textarea class="form-control" id="inKind" name="inKind" rows="2">{{ old('inKind', $rekap->in_kind) }}</textarea>
+                                <textarea class="form-control" id="inKind" name="in_kind" rows="2">{{ old('in_kind', $rekap->in_kind) }}</textarea>
                             </div>
                         </div>
 

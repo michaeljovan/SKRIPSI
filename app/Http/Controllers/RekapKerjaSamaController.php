@@ -315,7 +315,7 @@ class RekapKerjaSamaController extends Controller
                 'tanggal_selesai' => $request->tanggalSelesai,
                 'masa_berlaku' => $duration,
                 'kategori' => $request->kategori,
-                'in_kind' => $request->InKind ? str_replace(['.', ','], '', $request->InKind) : null,
+                'in_kind' => $request->in_kind ? str_replace(['.', ','], '', $request->in_kind) : null,
                 'total_in_kind' => $request->totalInKind ? str_replace(['.', ','], '', $request->totalInKind) : null,
                 'in_cash' => $request->inCash ? str_replace(['.', ','], '', $request->inCash) : null,
                 'total_in_cash' => $request->totalInCash ? str_replace(['.', ','], '', $request->totalInCash) : null,
