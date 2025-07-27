@@ -16,24 +16,26 @@ class RekapKerjaSamaFactory extends Factory
         $end = (clone $start)->modify('+1 year');
 
         return [
+            'parent_id' => null,
+            'no_dokumen_induk' => null,
             'no_dokumen' => strtoupper('DOC-' . $this->faker->unique()->bothify('###??')),
-            'unit' => $this->faker->word(),
+            'unit' => $this->faker->randomElement(['Fakultas Teknologi Informasi', 'Informatika', 'Sistem Informasi']),
             'mitra_kerja_sama' => $this->faker->company(),
             'judul_kerja_sama' => $this->faker->sentence(3),
-            'bentuk_kerja_sama' => $this->faker->randomElement(['MoU', 'MoA', 'IA']),
-            'jenis_kerja_sama' => $this->faker->randomElement(['Akademik', 'Non-akademik']),
-            'pihak_ukdw' => $this->faker->name(),
-            'pihak_mitra' => $this->faker->name(),
-            'tanggal_mulai' => $start,
-            'tanggal_selesai' => $end,
+            'bentuk_kerja_sama' => $this->faker->randomElement(['MoU', 'MoA', 'IA']), // valid array
+            'jenis_kerja_sama' => $this->faker->randomElement(['Pendidikan', 'Penelitian', 'Pengabdian']), // valid enum
+            'pihak_ukdw' => $this->faker->company(),
+            'pihak_mitra' => $this->faker->company(),
+            'tanggal_mulai' => $start->format('Y-m-d'),
+            'tanggal_selesai' => $end->format('Y-m-d'),
             'masa_berlaku' => $this->faker->numberBetween(1, 5),
-            'kategori' => $this->faker->randomElement(['Dalam Negeri', 'Luar Negeri']),
+            'kategori' => $this->faker->randomElement(['Nasional', 'Internasional']), // valid enum
             'in_kind' => $this->faker->randomFloat(2, 0, 10000),
             'total_in_kind' => $this->faker->randomFloat(2, 0, 20000),
             'in_cash' => $this->faker->randomFloat(2, 0, 15000),
             'total_in_cash' => $this->faker->randomFloat(2, 0, 25000),
             'jumlah_implementasi' => $this->faker->numberBetween(0, 10),
-            'dokumen_path' => 'files/dokumen_' . $this->faker->unique()->uuid . '.pdf',
+            'dokumen_path' => 'dokumen/' . $this->faker->unique()->uuid . '.pdf',
             'is_laporan' => $this->faker->boolean(),
             'is_kinerja' => $this->faker->boolean(),
             'is_mitra' => $this->faker->boolean(),
@@ -43,11 +45,10 @@ class RekapKerjaSamaFactory extends Factory
     public function withPdf(string $fileName = null)
     {
         return $this->afterCreating(function (RekapKerjaSama $rekap) use ($fileName) {
-            $fileName = $fileName ?? 'test_' . uniqid() . '.pdf';
+            $fileName = $fileName ?? 'dummy_' . uniqid() . '.pdf';
             $filePath = 'dokumen/' . $fileName;
 
-            // Simpan dummy PDF ke fake storage
-            Storage::disk('public')->put($filePath, 'Isi Dummy PDF');
+            Storage::disk('public')->put($filePath, 'Isi dummy file PDF');
 
             $rekap->update([
                 'dokumen_path' => $filePath,
