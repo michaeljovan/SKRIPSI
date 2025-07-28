@@ -12,7 +12,7 @@ class LoginUnitTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_email_checking_logic()
+    public function verifikasi_untuk_email_login()
     {
         $user = User::factory()->create(['email' => 'admin@example.com']);
 
@@ -22,7 +22,7 @@ class LoginUnitTest extends TestCase
         $this->assertEquals($user->email, $fetchedUser->email);
     }
 
-    public function test_password_verification_logic()
+    public function verifikasi_untuk_password_login()
     {
         $password = 'secret123';
         $user = User::factory()->create([

@@ -262,14 +262,14 @@
                                     <table class="table table-hover table-striped">
                                         <thead>
                                             <tr>
-                                                <th>#</th>
-                                                <th>Mitra Kerja Sama</th>
-                                                <th>Judul Kerja Sama</th>
-                                                <th>Unit</th>
-                                                <th>Tanggal Mulai</th>
-                                                <th>Tanggal Berakhir</th>
-                                                <th>Sisa Hari</th>
-                                                <th>Status</th>
+                                                <th  class="fw-bold">#</th>
+                                                <th  class="fw-bold">Mitra Kerja Sama</th>
+                                                <th  class="fw-bold">Judul Kerja Sama</th>
+                                                <th  class="fw-bold">Unit</th>
+                                                <th  class="fw-bold">Tanggal Mulai</th>
+                                                <th  class="fw-bold">Tanggal Berakhir</th>
+                                                <th  class="fw-bold">Sisa Hari</th>
+                                                <th  class="fw-bold">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>

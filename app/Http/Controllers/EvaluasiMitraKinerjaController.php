@@ -21,6 +21,20 @@ class EvaluasiMitraKinerjaController extends Controller
         return view('evaluasikerjasamakinerja', ['evaluasi' => $evaluasi]);
     }
 
+
+    // buat testing unit
+    private function mapNilai($value)
+    {
+        $valueMap = [
+            'Sangat Tinggi' => 5,
+            'Tinggi' => 4,
+            'Cukup' => 3,
+            'Kurang' => 2,
+            'Sangat Kurang' => 1
+        ];
+        return $valueMap[$value] ?? null;
+    }
+
     public function create($id)
     {
         $rekap = RekapKerjaSama::findOrFail($id);

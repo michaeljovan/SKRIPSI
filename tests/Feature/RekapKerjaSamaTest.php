@@ -36,9 +36,16 @@ class RekapKerjaSamaTest extends TestCase
             'tanggalMulai' => '2024-01-01',
             'tanggalSelesai' => '2024-12-31',
             'kategori' => 'nasional',
+            'in_kind' => 0,
+            'total_in_kind' => 0,
+            'in_cash' => 0,
+            'total_in_cash' => 0,
+            'jumlahImplementasi' => 2,
             'dokumenPendukung' => $dokumen,
             'parent_id' => 'none',
         ]);
+
+
 
 
         $response->assertStatus(200);
@@ -112,8 +119,15 @@ class RekapKerjaSamaTest extends TestCase
             'tanggalMulai' => '2024-01-01',
             'tanggalSelesai' => '2024-12-31',
             'kategori' => 'nasional',
+            'in_kind' => 0,
+            'total_in_kind' => 0,
+            'in_cash' => 0,
+            'total_in_cash' => 0,
+            'jumlahImplementasi' => 3,
             'dokumenPendukung' => $newFile,
         ]);
+
+
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('rekapkerjasama', [

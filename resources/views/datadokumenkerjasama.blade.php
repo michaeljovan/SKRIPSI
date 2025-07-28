@@ -323,7 +323,7 @@
                             </select>
                         </div>
 
-                        <div class="col-md-4 mb-3">
+                        {{-- <div class="col-md-4 mb-3">
                             <label for="is_laporan" class="form-label">Status Laporan</label>
                             <select class="form-select" id="is_laporan" name="is_laporan">
                                 <option value="">Semua</option>
@@ -332,7 +332,7 @@
                                 <option value="0" {{ request('is_laporan') == '0' ? 'selected' : '' }}>Belum
                                     Dilaporkan</option>
                             </select>
-                        </div>
+                        </div> --}}
                     </div>
 
                     <div class="row">

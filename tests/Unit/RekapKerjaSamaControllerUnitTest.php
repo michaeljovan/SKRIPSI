@@ -1,194 +1,260 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Http\Controllers;
 
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\RekapKerjaSama;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\RekapKerjaSamaController;
+use App\Services\RekapKerjaSamaService;
+use Mockery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class RekapKerjaSamaControllerUnitTest extends TestCase
 {
+    protected $controller;
+    protected $serviceMock;
+    protected $user;
+
     use RefreshDatabase;
 
-    protected function actingAsDekanat()
+    protected function setUp(): void
     {
-        $user = User::factory()->create(['role' => 'dekanat']);
-        $this->actingAs($user);
+        parent::setUp();
+
+        $this->serviceMock = Mockery::mock(RekapKerjaSamaService::class);
+        $this->controller = new RekapKerjaSamaController($this->serviceMock);
+
+        // Create and authenticate a test user
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     /** @test */
-    public function dapat_menampilkan_index_data()
+    public function menampilkan_data_dokumen_kerja_sama()
     {
-        $this->actingAsDekanat();
-        $response = $this->get('/rekapkerjasama');
+        $mockData = RekapKerjaSama::factory()->count(5)->create();
+
+        $response = $this->get(route('data_kerja_sama'));
+
         $response->assertStatus(200);
+        $response->assertViewIs('datadokumenkerjasama');
+        $response->assertViewHas('rekapKerjaSama');
     }
 
+
     /** @test */
-    public function dapat_menampilkan_form_create()
+    public function mengecek_apakah_dokumen_sudah_ada()
     {
-        $this->actingAsDekanat();
-        $this->get('/rekapkerjasama/create')->assertStatus(200);
+        // Create a document that should exist
+        RekapKerjaSama::factory()->create(['no_dokumen' => '12345']);
+
+        $response = $this->get(route('cek.no_dokumen', ['no_dokumen' => '12345']));
+
+        $response->assertStatus(200);
+        $response->assertJson(['exists' => true]);
     }
 
-    /** @test */
-    /** @test */
-    public function dapat_menyimpan_data_rekap_kerja_sama()
-    {
-        $this->actingAsDekanat();
 
+    /** @test */
+    public function melakukan_input_kerja_sama_baru()
+    {
         Storage::fake('public');
+
+        $file = UploadedFile::fake()->create('document.pdf', 1024);
+
+
+        $uniqueNoDokumen = 'DOC-' . uniqid();
 
         $data = [
-            'noDokumen' => 'DOC-001',
-            'unit' => 'Fakultas Teknologi Informasi',
-            'mitraKerjaSama' => 'PT. Mitra Hebat',
-            'judulKerjaSama' => 'Kerja Sama Penelitian AI',
-            'bentukKerjaSama' => ['Penelitian'], // Sesuai validasi in:Penelitian,Pendidikan,Pengabdian
-            'jenisKerjaSama' => 'MoU', // Sesuai validasi in:MoU,MoA,IA
-            'pihakUKDW' => 'UKDW',
-            'pihakMitra' => 'PT. Mitra Hebat',
-            'tanggalMulai' => '2024-01-01',
-            'tanggalSelesai' => '2025-01-01',
-            'kategori' => 'nasional', // Sesuai validasi in:nasional,internasional
-            'inKind' => 10000,
-            'totalInKind' => 20000,
-            'inCash' => 15000,
-            'totalInCash' => 25000,
-            'jumlahImplementasi' => 3,
-            'dokumenPendukung' => UploadedFile::fake()->create('file.pdf', 100),
-        ];
-
-        $response = $this->post('/rekapkerjasama', $data);
-
-        $response->assertStatus(200); // karena controller return response()->json()
-        $this->assertDatabaseHas('rekapkerjasama', [
-            'no_dokumen' => 'DOC-001',
-            'judul_kerja_sama' => 'Kerja Sama Penelitian AI',
-        ]);
-    }
-
-
-    /** @test */
-    public function dapat_mengambil_data_rekap_kerja_sama_untuk_diedit()
-    {
-        $this->actingAsDekanat();
-        $rekap = RekapKerjaSama::factory()->create();
-        $this->get("/rekapkerjasama/{$rekap->id}/edit")->assertStatus(200);
-    }
-
-    /** @test */
-    public function dapat_melihat_pdf_dokumen()
-    {
-        $this->actingAsDekanat();
-        Storage::fake('public');
-        $rekap = RekapKerjaSama::factory()->withPdf()->create();
-
-        $this->get("/rekapkerjasama/{$rekap->id}/pdf")->assertStatus(200);
-    }
-
-    /** @test */
-    public function test_dapat_update_data_rekap_kerja_sama()
-    {
-        $this->actingAsDekanat();
-
-        // Buat data awal
-        $rekap = RekapKerjaSama::factory()->create([
-            'judul_kerja_sama' => 'Lama',
-            'dokumen_path' => 'dokumen_kerja_sama/file.pdf',
-        ]);
-
-        Storage::fake('public');
-        $file = UploadedFile::fake()->create('file.pdf', 100, 'application/pdf');
-
-        $data = [
-            'noDokumen' => $rekap->no_dokumen,
-            'unit' => $rekap->unit,
-            'mitraKerjaSama' => $rekap->mitra_kerja_sama,
-            'judulKerjaSama' => 'Baru', // perubahan
-            'bentukKerjaSama' => ['Penelitian'],
+            'noDokumen' => $uniqueNoDokumen,
+            'unit' => 'FIK',
+            'mitraKerjaSama' => 'PT ABC',
+            'judulKerjaSama' => 'Kerja Sama Pendidikan',
+            'bentukKerjaSama' => ['Pendidikan'],
             'jenisKerjaSama' => 'MoU',
-            'pihakUKDW' => $rekap->pihak_ukdw,
-            'pihakMitra' => $rekap->pihak_mitra,
-            'tanggalMulai' => $rekap->tanggal_mulai->format('Y-m-d'),
-            'tanggalSelesai' => $rekap->tanggal_selesai->format('Y-m-d'),
+            'pihakUKDW' => 'Rektor',
+            'pihakMitra' => 'Direktur',
+            'tanggalMulai' => '2023-01-01',
+            'tanggalSelesai' => '2023-12-31',
             'kategori' => 'nasional',
+            'inKind' => '1000000',
+            'totalInKind' => '1000000',
+            'inCash' => '500000',
+            'totalInCash' => '500000',
+            'jumlahImplementasi' => 1,
             'dokumenPendukung' => $file,
+            'parent_id' => 'none',
         ];
 
-        $this->put("/rekapkerjasama/{$rekap->id}", $data)->assertRedirect();
+        $response = $this->post(route('rekapkerjasama.store'), $data);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Data kerja sama berhasil disimpan!'
+        ]);
 
         $this->assertDatabaseHas('rekapkerjasama', [
-            'id' => $rekap->id,
-            'judul_kerja_sama' => 'Baru',
+            'no_dokumen' => $uniqueNoDokumen,
+            'judul_kerja_sama' => 'Kerja Sama Pendidikan'
         ]);
     }
 
-
     /** @test */
-    public function dapat_menghapus_data_rekap_kerja_sama()
+    public function validasi_untuk_kerja_sama_baru()
     {
-        $this->actingAsDekanat();
-        $rekap = RekapKerjaSama::factory()->create();
+        $response = $this->post(route('rekapkerjasama.store'), []);
 
-        $this->delete("/rekapkerjasama/{$rekap->id}")
-            ->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'message' => 'Data berhasil dihapus!'
-            ]);
-
-        $this->assertDatabaseMissing('rekapkerjasama', [
-            'id' => $rekap->id
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'noDokumen',
+            'unit',
+            'mitraKerjaSama',
+            'judulKerjaSama',
+            'bentukKerjaSama',
+            'jenisKerjaSama',
+            'pihakUKDW',
+            'pihakMitra',
+            'tanggalMulai',
+            'tanggalSelesai',
+            'kategori',
+            'dokumenPendukung'
         ]);
     }
 
-
     /** @test */
-    public function dapat_mengambil_data_dokumen_induk()
+    public function validasi_menghapus_kerja_sama()
     {
-        $this->actingAsDekanat();
+        Storage::fake('public');
+        $file = UploadedFile::fake()->create('document.pdf', 1024);
+        $path = $file->store('dokumen_kerja_sama', 'public');
 
-        RekapKerjaSama::factory()->create([
-            'no_dokumen' => 'INDUK-123',
-            'jenis_kerja_sama' => 'MoU',
+        $kerjaSama = RekapKerjaSama::factory()->create([
+            'dokumen_path' => $path
         ]);
 
-        $this->get('/api/dokumen-induk?jenis=IA')
-            ->assertStatus(200)
-            ->assertJsonFragment(['no_dokumen' => 'INDUK-123']);
-    }
+        $response = $this->delete(route('rekapkerjasama.delete', $kerjaSama->id));
 
-
-
-    /** @test */
-    public function route_data_return_200()
-    {
-        $this->actingAsDekanat();
-        $this->get('/rekapkerjasama')->assertStatus(200);
-    }
-
-    /** @test */
-    /** @test */
-    public function dapat_mengecek_ketersediaan_nomor_dokumen()
-    {
-        $this->actingAsDekanat();
-
-        RekapKerjaSama::factory()->create([
-            'no_dokumen' => 'DOC-777',
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Data berhasil dihapus!'
         ]);
 
-        // Cek nomor yang sudah ada => exists: true
-        $this->get('/cek-nodokumen?no_dokumen=DOC-777')
-            ->assertStatus(200)
-            ->assertJson(['exists' => true]);
+        $this->assertDatabaseMissing('rekapkerjasama', ['id' => $kerjaSama->id]);
+        Storage::disk('public')->assertMissing($path);
+    }
 
-        // Cek nomor yang belum ada => exists: false
-        $this->get('/cek-nodokumen?no_dokumen=DOC-999')
-            ->assertStatus(200)
-            ->assertJson(['exists' => false]);
+    /** @test */
+    public function validasi_dokumen_induk_dapat_tertampil()
+    {
+        $mou = RekapKerjaSama::factory()->create(['jenis_kerja_sama' => 'MoU']);
+        $moa = RekapKerjaSama::factory()->create(['jenis_kerja_sama' => 'MoA']);
+
+        // Test for MoA
+        $response = $this->get(route('api.dokumen_induk', ['jenis' => 'MoA']));
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['no_dokumen' => $mou->no_dokumen]);
+
+        // Test for IA
+        $response = $this->get(route('api.dokumen_induk', ['jenis' => 'IA']));
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['no_dokumen' => $mou->no_dokumen]);
+        $response->assertJsonFragment(['no_dokumen' => $moa->no_dokumen]);
+
+        // Test for invalid jenis
+        $response = $this->get(route('api.dokumen_induk', ['jenis' => 'INVALID']));
+        $response->assertStatus(400);
+    }
+
+    /** @test */
+    public function validasi_edit_kerja_sama_dapat_terambil()
+    {
+        $kerjaSama = RekapKerjaSama::factory()->create(['jenis_kerja_sama' => 'MoA']);
+
+        $response = $this->get(route('rekapkerjasama.edit', $kerjaSama->id));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('editrekapkerjasama');
+        $response->assertViewHas('rekap', $kerjaSama);
+    }
+
+    /** @test */
+    public function validasi_untuk_mengirim_edit_kerja_sama()
+    {
+        Storage::fake('public');
+
+        $parent = RekapKerjaSama::factory()->create(['jenis_kerja_sama' => 'MoU']);
+
+        $kerjaSama = RekapKerjaSama::factory()->create();
+
+        $data = [
+            'noDokumen' => 'DOC-UPDATED',
+            'unit' => 'FIK Updated',
+            'mitraKerjaSama' => 'PT ABC Updated',
+            'judulKerjaSama' => 'Kerja Sama Updated',
+            'bentukKerjaSama' => ['Penelitian'],
+            'jenisKerjaSama' => 'MoA',
+            'pihakUKDW' => 'Rektor Updated',
+            'pihakMitra' => 'Direktur Updated',
+            'tanggalMulai' => '2023-01-01',
+            'tanggalSelesai' => '2023-12-31',
+            'kategori' => 'internasional',
+            'in_kind' => '2000000',
+            'totalInKind' => '2000000',
+            'inCash' => '1000000',
+            'totalInCash' => '1000000',
+            'jumlahImplementasi' => 2,
+            'parent_id' => $parent->id,
+            '_token' => csrf_token(),
+        ];
+
+        $response = $this->put(route('rekapkerjasama.update', $kerjaSama->id), $data);
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('data_kerja_sama'));
+        $this->assertDatabaseHas('rekapkerjasama', [
+            'id' => $kerjaSama->id,
+            'no_dokumen' => 'DOC-UPDATED'
+        ]);
+    }
+
+    /** @test */
+    public function valdasi_menampilkan_pdf()
+    {
+        Storage::fake('public');
+        $file = UploadedFile::fake()->create('document.pdf', 1024, 'application/pdf');
+        $path = $file->store('dokumen_kerja_sama', 'public');
+
+        $kerjaSama = RekapKerjaSama::factory()->create([
+            'dokumen_path' => $path
+        ]);
+
+        $response = $this->get(route('rekapkerjasama.pdf', $kerjaSama->id));
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    /** @test */
+    public function validasi_jika_pdf_kosong()
+    {
+        $kerjaSama = RekapKerjaSama::factory()->create([
+            'dokumen_path' => 'non-existent-path.pdf'
+        ]);
+
+        $response = $this->get(route('rekapkerjasama.pdf', $kerjaSama->id));
+        $response->assertStatus(404);
     }
 }
