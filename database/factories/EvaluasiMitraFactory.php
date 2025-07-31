@@ -25,15 +25,7 @@ class EvaluasiMitraFactory extends Factory
             'pengembangandiri' => rand(1, 5),
             'kreativitas' => rand(1, 5),
             'bahasaasing' => rand(1, 5),
-            'teknologi' => rand(1, 5),
-            'manajerial' => rand(1, 5),
-            'analisis' => rand(1, 5),
-            'laporan' => rand(1, 5),
-            'inovasi' => rand(1, 5),
 
-            'lainlainlabel' => $this->faker->optional()->word(),
-            'lainlainnilai' => $this->faker->optional()->numberBetween(1, 5),
-            'komentar' => $this->faker->optional()->sentence(),
             'file_pdf' => 'evaluasi_pdf/dummy.pdf',
         ];
     }

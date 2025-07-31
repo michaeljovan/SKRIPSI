@@ -133,9 +133,9 @@ class DashboardController extends Controller
             ];
         }
 
-        $expiringAgreements = RekapKerjaSama::where('tanggal_selesai', '>=', now()) // Hanya yang belum kadaluarsa
-            ->orderBy('tanggal_selesai', 'asc') // Urutkan dari yang paling dekat
-            ->take(5) // Ambil 5 teratas
+        $expiringAgreements = RekapKerjaSama::where('tanggal_selesai', '>=', now())
+            ->orderBy('tanggal_selesai', 'asc')
+            ->take(5)
             ->get();
 
 

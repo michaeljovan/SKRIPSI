@@ -92,20 +92,13 @@
                                     <th>No</th>
                                     <th style="min-width: 180px;">No Dokumen</th>
                                     <th style="min-width: 180px;">Mitra</th>
-                                    <th style="min-width: 180px;">Integritas</th>
-                                    <th style="min-width: 180px;">Keahlian</th>
-                                    <th style="min-width: 180px;">Komunikasi</th>
-                                    <th style="min-width: 180px;">Kerja Sama Tim</th>
-                                    <th style="min-width: 180px;">Pengembangan Diri</th>
-                                    <th style="min-width: 180px;">Kreativitas</th>
-                                    <th style="min-width: 180px;">Bahasa Asing</th>
-                                    <th style="min-width: 180px;">Teknologi</th>
-                                    <th style="min-width: 180px;">Manajerial</th>
-                                    <th style="min-width: 180px;">Analisis</th>
-                                    <th style="min-width: 180px;">Laporan</th>
-                                    <th style="min-width: 180px;">Inovasi</th>
-                                    <th style="min-width: 180px;">Lain-lain</th>
-                                    <th style="min-width: 180px;">Komentar</th>
+                                    <th style="min-width: 300px;">Pelaksanaan kegiatan kerja sama sesuai dengan dokumen perjanjian</th>
+                                    <th style="min-width: 300px;">Pelaksanaan kegiatan kerja sama sesuai dengan harapan</th>
+                                    <th style="min-width: 300px;">Kegiatan kerja sama memberikan benefit bagi institusi</th>
+                                    <th style="min-width: 300px;">Terbina komunikasi yang baik antara FTI UKDW dengan mitra</th>
+                                    <th style="min-width: 300px;">Tujuan yang diharapkan dari kerja sama berhasil dicapai</th>
+                                    <th style="min-width: 300px;">Kegiatan kerja sama berjalan dengan memuaskan</th>
+                                    <th style="min-width: 300px;">Bersedia melanjutkan kerja sama kembali di masa mendatang</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -122,19 +115,6 @@
                                         <td>{{ $item->pengembangandiri_text }}</td>
                                         <td>{{ $item->kreativitas_text }}</td>
                                         <td>{{ $item->bahasaasing_text }}</td>
-                                        <td>{{ $item->teknologi_text }}</td>
-                                        <td>{{ $item->manajerial_text }}</td>
-                                        <td>{{ $item->analisis_text }}</td>
-                                        <td>{{ $item->laporan_text }}</td>
-                                        <td>{{ $item->inovasi_text }}</td>
-                                        <td>
-                                            @if ($item->lainlainlabel)
-                                                {{ $item->lainlainlabel }} ({{ $item->lainlainnilai }})
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td>{{ Str::limit($item->komentar, 30) }}</td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
                                                @if ($item->file_pdf)

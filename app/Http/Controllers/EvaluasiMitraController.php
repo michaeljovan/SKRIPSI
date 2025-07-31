@@ -49,16 +49,7 @@ class EvaluasiMitraController extends Controller
             'pengembangandiri' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'kreativitas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'bahasaasing' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'teknologi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'manajerial' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'analisis' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'laporan' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'inovasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
 
-            'lainlainlabel' => 'nullable|string|max:255',
-            'lainlainnilai' => 'nullable|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-
-            'komentar' => 'nullable|string',
             'pdfFile' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
@@ -70,15 +61,6 @@ class EvaluasiMitraController extends Controller
         $validated['pengembangandiri'] = $valueMap[$validated['pengembangandiri']];
         $validated['kreativitas'] = $valueMap[$validated['kreativitas']];
         $validated['bahasaasing'] = $valueMap[$validated['bahasaasing']];
-        $validated['teknologi'] = $valueMap[$validated['teknologi']];
-        $validated['manajerial'] = $valueMap[$validated['manajerial']];
-        $validated['analisis'] = $valueMap[$validated['analisis']];
-        $validated['laporan'] = $valueMap[$validated['laporan']];
-        $validated['inovasi'] = $valueMap[$validated['inovasi']];
-
-        if (isset($validated['lainlainnilai'])) {
-            $validated['lainlainnilai'] = $valueMap[$validated['lainlainnilai']];
-        }
 
         if ($request->hasFile('pdfFile')) {
             $path = $request->file('pdfFile')->store('evaluasi_pdf', 'public');
@@ -159,14 +141,7 @@ class EvaluasiMitraController extends Controller
             'pengembangandiri' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'kreativitas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'bahasaasing' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'teknologi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'manajerial' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'analisis' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'laporan' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'inovasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'lainlainlabel' => 'nullable|string|max:255',
-            'lainlainnilai' => 'nullable|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'komentar' => 'nullable|string',
+
             'pdfFile' => 'nullable|file|mimes:pdf|max:5120', // 5MB
         ]);
 
@@ -203,12 +178,7 @@ class EvaluasiMitraController extends Controller
                 'pengembangandiri',
                 'kreativitas',
                 'bahasaasing',
-                'teknologi',
-                'manajerial',
-                'analisis',
-                'laporan',
-                'inovasi',
-                'lainlainnilai'
+
             ] as $field
         ) {
             if (isset($validated[$field])) {

@@ -123,7 +123,7 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Integritas (Etika dan Moral)</td>
+                                            <td>Pelaksanaan kegiatan kerja sama sesuai dengan dokumen perjanjian</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="integritas"
                                                     value="Sangat Tinggi" required>
@@ -147,7 +147,7 @@
                                         </tr>
 
                                         <tr>
-                                            <td>Keahlian Berdasarkan Bidang ilmu (Profresionalisme)</td>
+                                            <td>Pelaksanaan kegiatan kerja sama sesuai dengan harapan</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="keahlian"
                                                     value="Sangat Tinggi" required>
@@ -171,7 +171,7 @@
                                         </tr>
 
                                         <tr>
-                                            <td>Komunikasi</td>
+                                            <td>Kegiatan kerja sama memberikan benefit bagi institusi </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="komunikasi"
                                                     value="Sangat Tinggi" required>
@@ -195,7 +195,7 @@
                                         </tr>
 
                                         <tr>
-                                            <td>Kerja Sama Tim</td>
+                                            <td>Terbina komunikasi yang baik antara FTI UKDW dengan mitra</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kerjasamatim"
                                                     value="Sangat Tinggi" required>
@@ -219,7 +219,7 @@
                                         </tr>
 
                                         <tr>
-                                            <td>Pengembangan Diri</td>
+                                            <td>Tujuan yang diharapkan dari kerja sama berhasil dicapai</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio"
                                                     name="pengembangandiri" value="Sangat Tinggi" required>
@@ -242,7 +242,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Kreativitas</td>
+                                            <td>Kegiatan kerja sama berjalan dengan memuaskan</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kreativitas"
                                                     value="Sangat Tinggi" required>
@@ -265,7 +265,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Kemampuan Menggunakan Bahasa Asing (Contoh : Bahasa Inggris)</td>
+                                            <td>Bersedia melanjutkan kerja sama kembali di masa mendatang</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="bahasaasing"
                                                     value="Sangat Tinggi" required>
@@ -284,161 +284,12 @@
                                             </td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Penggunaan Alat/Teknologi Modern (Teknologi IT)</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Kemampuan Manajerial</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Kemampuan Melakukan Analisis</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Menulis Laporan</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Inovasi / Kreativitas</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Lain-lain, Sebutkan ....... <input type="text"
-                                                    name="lainlainlabel"></td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
                                                     value="Sangat Kurang">
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <h6 class="border-bottom pb-2">Komentar Tambahan</h6>
-                            <div class="form-floating">
-                                <textarea class="form-control" placeholder="Tulis komentar Anda di sini" id="komentar" name="komentar"
-                                    style="height: 100px"></textarea>
-                                <label for="komentar" class="text-muted">Masukkan saran atau komentar Anda</label>
-                            </div>
-
                         </div>
                         <div class="mb-3">
                             <label for="pdfFile" class="form-label">Unggah Dokumen PDF (Opsional)</label>

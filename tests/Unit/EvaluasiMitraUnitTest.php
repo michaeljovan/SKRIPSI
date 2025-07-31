@@ -40,12 +40,6 @@ class EvaluasiMitraUnitTest extends TestCase
             'pengembangandiri' => 'Tinggi',
             'kreativitas' => 'Tinggi',
             'bahasaasing' => 'Tinggi',
-            'teknologi' => 'Tinggi',
-            'manajerial' => 'Tinggi',
-            'analisis' => 'Tinggi',
-            'laporan' => 'Tinggi',
-            'inovasi' => 'Tinggi',
-            'komentar' => 'Bagus',
         ]);
 
         $file = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
@@ -81,11 +75,6 @@ class EvaluasiMitraUnitTest extends TestCase
             'pengembangandiri' => 'Tinggi',
             'kreativitas' => 'Tinggi',
             'bahasaasing' => 'Tinggi',
-            'teknologi' => 'Tinggi',
-            'manajerial' => 'Tinggi',
-            'analisis' => 'Tinggi',
-            'laporan' => 'Tinggi',
-            'inovasi' => 'Tinggi',
         ]);
 
         $response = $controller->update($request, $eval->idmitra);

@@ -53,21 +53,12 @@ class EvaluasiMitraIntegratedTest extends TestCase
             'pengembangandiri' => 'Tinggi',
             'kreativitas' => 'Kurang',
             'bahasaasing' => 'Cukup',
-            'teknologi' => 'Sangat Kurang',
-            'manajerial' => 'Tinggi',
-            'analisis' => 'Tinggi',
-            'laporan' => 'Tinggi',
-            'inovasi' => 'Cukup',
-            'lainlainlabel' => 'Inisiatif',
-            'lainlainnilai' => 'Cukup',
-            'komentar' => 'Perlu pengembangan.',
             'pdfFile' => $file,
         ]);
 
         $response->assertRedirect(route('EvaluasiMitra.index'));
         $this->assertDatabaseHas('evaluasimitra', [
             'idmitra' => $evaluasi->idmitra,
-            'komentar' => 'Perlu pengembangan.',
         ]);
     }
 

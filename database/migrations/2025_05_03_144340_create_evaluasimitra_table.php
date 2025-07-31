@@ -26,13 +26,6 @@ return new class extends Migration
             $table->string('pengembangandiri');
             $table->string('kreativitas');
             $table->string('bahasaasing');
-            $table->string('teknologi');
-            $table->string('manajerial');
-            $table->string('analisis');
-            $table->string('laporan');
-            $table->string('inovasi');
-            $table->string('lainlainlabel')->nullable();
-            $table->string('lainlainnilai')->nullable();
 
             $table->text('komentar')->nullable();
             $table->string('file_pdf')->nullable();
