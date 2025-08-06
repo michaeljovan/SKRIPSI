@@ -58,6 +58,13 @@ class RekapKerjaSamaController extends Controller
                 $query->where('bentuk_kerja_sama', 'LIKE', '%' . trim($bentuk) . '%');
             }
         }
+        if ($request->filled('mitra')) {
+            $query->where('mitra_kerja_sama', 'like', '%' . $request->mitra . '%');
+        }
+
+        if ($request->filled('judul')) {
+            $query->where('judul_kerja_sama', 'like', '%' . $request->judul . '%');
+        }
 
         return view('datadokumenkerjasama', ['rekapKerjaSama' => $query->get()]);
     }
@@ -159,18 +166,26 @@ class RekapKerjaSamaController extends Controller
     public function getDokumenInduk(Request $request)
     {
         $jenis = $request->input('jenis');
-        if (!in_array($jenis, ['MoU', 'MoA', 'IA'])) return response()->json([], 400);
 
+        // Validasi jenis
+        if (!in_array($jenis, ['MoU', 'MoA', 'IA'])) {
+            return response()->json([], 400);
+        }
+
+        // Tentukan dokumen induk yang valid
         $allowed = match ($jenis) {
             'MoA' => ['MoU'],
             'IA' => ['MoU', 'MoA'],
             default => [],
         };
 
+        // Ambil data dari DB
         $dokumen = RekapKerjaSama::whereIn('jenis_kerja_sama', $allowed)
             ->select('id', 'no_dokumen', 'judul_kerja_sama', 'mitra_kerja_sama')
-            ->latest()->get();
+            ->latest()
+            ->get();
 
+        // Tambahkan opsi "Tidak Ada Induk" di awal
         $dokumen->prepend((object)[
             'id' => 'none',
             'no_dokumen' => 'Tidak Ada Induk',
@@ -180,6 +195,7 @@ class RekapKerjaSamaController extends Controller
 
         return response()->json($dokumen);
     }
+
 
     public function create()
     {
@@ -192,13 +208,20 @@ class RekapKerjaSamaController extends Controller
 
         $dokumenInduk = collect();
         if ($rekap->jenis_kerja_sama === 'MoA') {
-            $dokumenInduk = RekapKerjaSama::where('jenis_kerja_sama', 'MoU')->where('id', '!=', $rekap->id)->get();
+            $dokumenInduk = RekapKerjaSama::where('jenis_kerja_sama', 'MoU')
+                ->where('id', '!=', $rekap->id)
+                ->get();
         } elseif ($rekap->jenis_kerja_sama === 'IA') {
-            $dokumenInduk = RekapKerjaSama::whereIn('jenis_kerja_sama', ['MoU', 'MoA'])->where('id', '!=', $rekap->id)->get();
+            $dokumenInduk = RekapKerjaSama::whereIn('jenis_kerja_sama', ['MoU', 'MoA'])
+                ->where('id', '!=', $rekap->id)
+                ->get();
         }
 
-        return view('editrekapkerjasama', compact('rekap', 'dokumenInduk'));
+        $dokumenIndukId = $rekap->parent_id ?? null;
+
+        return view('editrekapkerjasama', compact('rekap', 'dokumenInduk', 'dokumenIndukId'));
     }
+
 
     public function update(Request $request, $id)
     {

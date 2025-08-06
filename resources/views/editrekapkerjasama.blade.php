@@ -184,191 +184,184 @@
                                 <label class="form-label">Jenis Kerja Sama</label>
                                 <div class="border border-secondary rounded p-3 shadow-sm">
                                     <div class="form-check">
-                                        <input class="form-check-input jenis-radio" type="radio" id="jenis1"
+                                        <input class="form-check-input" type="radio" id="jenis1"
                                             name="jenisKerjaSama" value="MoU"
-                                            {{ old('jenisKerjaSama', $rekap->jenis_kerja_sama) == 'MoU' ? 'checked' : '' }}
-                                            required>
-                                        <label class="form-check-label" for="jenis1">MoU (Memorandum of
-                                            Understanding)</label>
+                                            {{ $rekap->jenis_kerja_sama === 'MoU' ? 'checked' : '' }} required>
+                                        <label class="form-check-label" for="jenis1">
+                                            MoU (Memorandum of Understanding)
+                                        </label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input jenis-radio" type="radio" id="jenis2"
+                                        <input class="form-check-input" type="radio" id="jenis2"
                                             name="jenisKerjaSama" value="MoA"
-                                            {{ old('jenisKerjaSama', $rekap->jenis_kerja_sama) == 'MoA' ? 'checked' : '' }}
-                                            required>
-                                        <label class="form-check-label" for="jenis2">MoA (Memorandum of
-                                            Agreement)</label>
+                                            {{ $rekap->jenis_kerja_sama === 'MoA' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="jenis2">
+                                            MoA (Memorandum of Agreement)
+                                        </label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input jenis-radio" type="radio" id="jenis3"
+                                        <input class="form-check-input" type="radio" id="jenis3"
                                             name="jenisKerjaSama" value="IA"
-                                            {{ old('jenisKerjaSama', $rekap->jenis_kerja_sama) == 'IA' ? 'checked' : '' }}
-                                            required>
-                                        <label class="form-check-label" for="jenis3">IA (Implementing
-                                            Agreement)</label>
+                                            {{ $rekap->jenis_kerja_sama === 'IA' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="jenis3">
+                                            IA (Implementing Agreement)
+                                        </label>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="mt-3">
-                            <div class="card">
-                                <div class="card-header bg-light">
-                                    <h6 class="card-title mb-0">Dokumen Induk</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label for="parentDocument" class="form-label">Pilih Dokumen
-                                                Induk</label>
-                                            <select class="form-select" id="parentDocument" name="parent_id">
-                                                <option value="">-- Pilih Dokumen Induk --</option>
-                                                @foreach ($dokumenInduk as $dokumen)
-                                                    <option value="{{ $dokumen->id }}"
-                                                        data-mitra="{{ $dokumen->nama_mitra }}"
-                                                        data-judul="{{ $dokumen->judul_kerja_sama }}"
-                                                        {{ $rekap->parent_id == $dokumen->id ? 'selected' : '' }}>
-                                                        {{ $dokumen->jenis_kerja_sama }} -
-                                                        {{ $dokumen->judul_kerja_sama }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            <div class="form-text">Untuk MoA pilih MoU induk, untuk IA pilih
-                                                MoU/MoA induk</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="parentMitra" class="form-label">Mitra Kerja Sama</label>
-                                            <input type="text" class="form-control" id="parentMitra"
-                                                name="parentMitra" readonly>
-                                        </div>
+                            <!-- Section Parent Document -->
+                            <div class="mt-3">
+                                <div class="mt-3" id="dokumenIndukCard">
+                                    <div class="card-header bg-light">
+                                        <h6 class="card-title mb-0">Dokumen Induk</h6>
                                     </div>
-                                    <div class="row mt-3">
-                                        <div class="col-md-6">
-                                            <label for="parentJudul" class="form-label">Judul Kerja Sama</label>
-                                            <input type="text" class="form-control" id="parentJudul"
-                                                name="parentJudul" readonly>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="parentDocument" class="form-label">Pilih Dokumen
+                                                    Induk</label>
+                                                <select class="form-select" id="parentDocument" name="parent_id"
+                                                    data-selected-id="{{ $rekap->parent_id }}">
+                                                    <!-- Opsi akan diisi via JavaScript -->
+                                                </select>
+                                                <div class="form-text">Untuk MoA pilih MoU induk, untuk IA pilih
+                                                    MoU/MoA induk</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="parentMitra" class="form-label">Mitra Kerja Sama</label>
+                                                <input type="text" class="form-control" id="parentMitra"
+                                                    name="parentMitra" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label for="parentJudul" class="form-label">Judul Kerja Sama</label>
+                                                <input type="text" class="form-control" id="parentJudul"
+                                                    name="parentJudul" readonly>
+                                            </div>
+                                        </div>
+                                        <div id="noParentDocAlert" class="alert alert-info mt-3"
+                                            style="display: none;">
+                                            Tidak diperlukan dokumen induk untuk MoU
                                         </div>
                                     </div>
-                                    <div id="noParentDocAlert" class="alert alert-info mt-3" style="display: none;">
-                                        Tidak diperlukan dokumen induk untuk MoU
+                                </div>
+                            </div>
+
+                            <!-- Row 4 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="pihakUKDW" class="form-label">Pihak UKDW</label>
+                                    <input type="text" class="form-control" id="pihakUKDW" name="pihakUKDW"
+                                        value="{{ old('pihakUKDW', $rekap->pihak_ukdw) }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="pihakMitra" class="form-label">Pihak Mitra</label>
+                                    <input type="text" class="form-control" id="pihakMitra" name="pihakMitra"
+                                        value="{{ old('pihakMitra', $rekap->pihak_mitra) }}" required>
+                                </div>
+                            </div>
+
+                            <!-- Row 5 -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="tanggalMulai" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" class="form-control" id="tanggalMulai" name="tanggalMulai"
+                                        value="{{ old('tanggalMulai', $rekap->tanggal_mulai->format('Y-m-d')) }}"
+                                        required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="tanggalSelesai" class="form-label">Tanggal Selesai</label>
+                                    <input type="date" class="form-control" id="tanggalSelesai"
+                                        name="tanggalSelesai"
+                                        value="{{ old('tanggalSelesai', $rekap->tanggal_selesai->format('Y-m-d')) }}"
+                                        required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="masaBerlaku" class="form-label">Masa Berlaku (Hari)</label>
+                                    <input type="text" class="form-control" id="masaBerlaku" name="masaBerlaku"
+                                        value="{{ old('masaBerlaku', $rekap->masa_berlaku) }}" placeholder="Otomatis"
+                                        readonly>
+                                </div>
+                            </div>
+
+                            <!-- Row 6 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="kategori" class="form-label">Kategori</label>
+                                    <select class="form-select" id="kategori" name="kategori" required>
+                                        <option value="" disabled>Pilih Kategori</option>
+                                        <option value="nasional"
+                                            {{ old('kategori', $rekap->kategori) == 'nasional' ? 'selected' : '' }}>
+                                            Nasional</option>
+                                        <option value="internasional"
+                                            {{ old('kategori', $rekap->kategori) == 'internasional' ? 'selected' : '' }}>
+                                            Internasional</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="inKind" class="form-label">In Kind</label>
+                                    <textarea class="form-control" id="inKind" name="in_kind" rows="2">{{ old('in_kind', $rekap->in_kind) }}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- Row 7 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="totalInKind" class="form-label">Total In Kind (Rp)</label>
+                                    <input type="text" class="form-control" id="totalInKind" name="totalInKind"
+                                        value="{{ old('totalInKind', $rekap->total_in_kind) }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="inCash" class="form-label">In Cash (Rp)</label>
+                                    <input type="text" class="form-control" id="inCash" name="inCash"
+                                        value="{{ old('inCash', $rekap->in_cash) }}">
+                                </div>
+                            </div>
+
+                            <!-- Row 8 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="totalInCash" class="form-label">Total In Cash (Rp)</label>
+                                    <input type="text" class="form-control" id="totalInCash" name="totalInCash"
+                                        value="{{ old('totalInCash', $rekap->total_in_cash) }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="jumlahImplementasi" class="form-label">Jumlah Implementasi</label>
+                                    <input type="text" class="form-control" id="jumlahImplementasi"
+                                        name="jumlahImplementasi"
+                                        value="{{ old('jumlahImplementasi', $rekap->jumlah_implementasi) }}">
+                                </div>
+                            </div>
+
+                            <!-- Row 9 -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label for="dokumenPendukung" class="form-label">Upload Dokumen Pendukung
+                                        (PDF)</label>
+                                    <input type="file" class="form-control" id="dokumenPendukung"
+                                        name="dokumenPendukung" accept=".pdf">
+                                    <div class="form-text">Maksimal ukuran file 5MB. File saat ini:
+                                        @if ($rekap->dokumen_path)
+                                            <a href="{{ asset('storage/' . $rekap->dokumen_path) }}"
+                                                target="_blank">Lihat Dokumen</a>
+                                        @else
+                                            Tidak ada dokumen
+                                        @endif
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Row 4 -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="pihakUKDW" class="form-label">Pihak UKDW</label>
-                                <input type="text" class="form-control" id="pihakUKDW" name="pihakUKDW"
-                                    value="{{ old('pihakUKDW', $rekap->pihak_ukdw) }}" required>
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <button type="reset" class="btn btn-secondary me-md-2">
+                                    <i class="bi bi-x-circle"></i> Reset
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Simpan Perubahan
+                                </button>
                             </div>
-                            <div class="col-md-6">
-                                <label for="pihakMitra" class="form-label">Pihak Mitra</label>
-                                <input type="text" class="form-control" id="pihakMitra" name="pihakMitra"
-                                    value="{{ old('pihakMitra', $rekap->pihak_mitra) }}" required>
-                            </div>
-                        </div>
-
-                        <!-- Row 5 -->
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="tanggalMulai" class="form-label">Tanggal Mulai</label>
-                                <input type="date" class="form-control" id="tanggalMulai" name="tanggalMulai"
-                                    value="{{ old('tanggalMulai', $rekap->tanggal_mulai->format('Y-m-d')) }}"
-                                    required>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="tanggalSelesai" class="form-label">Tanggal Selesai</label>
-                                <input type="date" class="form-control" id="tanggalSelesai" name="tanggalSelesai"
-                                    value="{{ old('tanggalSelesai', $rekap->tanggal_selesai->format('Y-m-d')) }}"
-                                    required>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="masaBerlaku" class="form-label">Masa Berlaku (Hari)</label>
-                                <input type="text" class="form-control" id="masaBerlaku" name="masaBerlaku"
-                                    value="{{ old('masaBerlaku', $rekap->masa_berlaku) }}" placeholder="Otomatis"
-                                    readonly>
-                            </div>
-                        </div>
-
-                        <!-- Row 6 -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="kategori" class="form-label">Kategori</label>
-                                <select class="form-select" id="kategori" name="kategori" required>
-                                    <option value="" disabled>Pilih Kategori</option>
-                                    <option value="nasional"
-                                        {{ old('kategori', $rekap->kategori) == 'nasional' ? 'selected' : '' }}>
-                                        Nasional</option>
-                                    <option value="internasional"
-                                        {{ old('kategori', $rekap->kategori) == 'internasional' ? 'selected' : '' }}>
-                                        Internasional</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="inKind" class="form-label">In Kind</label>
-                                <textarea class="form-control" id="inKind" name="in_kind" rows="2">{{ old('in_kind', $rekap->in_kind) }}</textarea>
-                            </div>
-                        </div>
-
-                        <!-- Row 7 -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="totalInKind" class="form-label">Total In Kind (Rp)</label>
-                                <input type="text" class="form-control" id="totalInKind" name="totalInKind"
-                                    value="{{ old('totalInKind', $rekap->total_in_kind) }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="inCash" class="form-label">In Cash (Rp)</label>
-                                <input type="text" class="form-control" id="inCash" name="inCash"
-                                    value="{{ old('inCash', $rekap->in_cash) }}">
-                            </div>
-                        </div>
-
-                        <!-- Row 8 -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="totalInCash" class="form-label">Total In Cash (Rp)</label>
-                                <input type="text" class="form-control" id="totalInCash" name="totalInCash"
-                                    value="{{ old('totalInCash', $rekap->total_in_cash) }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="jumlahImplementasi" class="form-label">Jumlah Implementasi</label>
-                                <input type="text" class="form-control" id="jumlahImplementasi"
-                                    name="jumlahImplementasi"
-                                    value="{{ old('jumlahImplementasi', $rekap->jumlah_implementasi) }}">
-                            </div>
-                        </div>
-
-                        <!-- Row 9 -->
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label for="dokumenPendukung" class="form-label">Upload Dokumen Pendukung
-                                    (PDF)</label>
-                                <input type="file" class="form-control" id="dokumenPendukung"
-                                    name="dokumenPendukung" accept=".pdf">
-                                <div class="form-text">Maksimal ukuran file 5MB. File saat ini:
-                                    @if ($rekap->dokumen_path)
-                                        <a href="{{ asset('storage/' . $rekap->dokumen_path) }}"
-                                            target="_blank">Lihat Dokumen</a>
-                                    @else
-                                        Tidak ada dokumen
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <!-- Submit Button -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="reset" class="btn btn-secondary me-md-2">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Simpan Perubahan
-                            </button>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -405,51 +398,6 @@
                     }
                 });
             });
-
-            // Jenis Kerja Sama radio logic (MoU, MoA, IA)
-            const jenisRadios = document.querySelectorAll('.jenis-radio');
-            const dokumenIndukCard = document.getElementById('dokumenIndukCard');
-            const alertInfo = document.getElementById('noParentDocAlert');
-            const parentSelect = document.getElementById('parentDocument');
-            const parentMitra = document.getElementById('parentMitra');
-            const parentJudul = document.getElementById('parentJudul');
-
-            // Fungsi untuk update dokumen induk berdasarkan jenis kerja sama
-            function updateDokumenInduk(jenis) {
-                if (jenis === 'MoU') {
-                    dokumenIndukCard.style.display = 'block';
-                    alertInfo.style.display = 'block';
-                    parentSelect.innerHTML = `<option value="none">Tidak Ada Induk</option>`;
-                    parentMitra.value = '-';
-                    parentJudul.value = '-';
-                } else if (jenis === 'MoA' || jenis === 'IA') {
-                    dokumenIndukCard.style.display = 'block';
-                    alertInfo.style.display = 'none';
-
-                    fetch(`/get-dokumen-induk?jenis=${jenis}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            parentSelect.innerHTML = '<option value="">-- Pilih Dokumen Induk --</option>';
-                            data.forEach(doc => {
-                                const opt = document.createElement('option');
-                                opt.value = doc.id;
-                                opt.textContent = `[${doc.no_dokumen}] - ${doc.judul_kerja_sama}`;
-                                opt.dataset.mitra = doc.mitra_kerja_sama;
-                                opt.dataset.judul = doc.judul_kerja_sama;
-                                parentSelect.appendChild(opt);
-                            });
-
-                            // Reset mitra dan judul
-                            parentMitra.value = '';
-                            parentJudul.value = '';
-                        });
-                } else {
-                    dokumenIndukCard.style.display = 'none';
-                    parentSelect.innerHTML = '';
-                    parentMitra.value = '';
-                    parentJudul.value = '';
-                }
-            }
 
             // Event listener untuk radio jenis kerja sama
             jenisRadios.forEach(radio => {
@@ -581,6 +529,86 @@
                     }
                 });
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const jenisRadios = document.querySelectorAll('input[name="jenisKerjaSama"]');
+            const parentSelect = document.getElementById('parentDocument');
+            const parentMitra = document.getElementById('parentMitra');
+            const parentJudul = document.getElementById('parentJudul');
+            const noParentAlert = document.getElementById('noParentDocAlert');
+
+            async function loadParentOptions(jenis) {
+                parentSelect.innerHTML = '';
+                parentMitra.value = '';
+                parentJudul.value = '';
+
+                if (jenis === 'MoU') {
+                    parentSelect.disabled = false;
+                    noParentAlert.style.display = 'block';
+                    return;
+                }
+
+                noParentAlert.style.display = 'none';
+                let fetchJenis = jenis === 'MoA' ? 'MoU' : (jenis === 'IA' ? 'MoU,MoA' : '');
+                try {
+                    const response = await fetch(`/api/dokumen-induk?jenis=${jenis}`);
+                    const data = await response.json();
+
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = `${item.no_dokumen} - ${item.judul_kerja_sama}`;
+                        option.dataset.mitra = item.mitra_kerja_sama;
+                        option.dataset.judul = item.judul_kerja_sama;
+                        parentSelect.appendChild(option);
+                    });
+
+                    // Pilih dokumen induk jika sudah ada (edit mode)
+                    const selectedId = parentSelect.dataset.selectedId;
+                    if (selectedId) {
+                        const selectedOption = Array.from(parentSelect.options).find(option => option.value ===
+                            selectedId);
+                        if (selectedOption) {
+                            parentSelect.value = selectedId;
+                            parentMitra.value = selectedOption.dataset.mitra || '';
+                            parentJudul.value = selectedOption.dataset.judul || '';
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('Gagal memuat dokumen induk:', error);
+                }
+            }
+
+            jenisRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    loadParentOptions(this.value);
+                });
+            });
+
+            parentSelect.addEventListener('change', function() {
+                const selected = this.options[this.selectedIndex];
+
+                if (!selected || selected.value === 'none') {
+                    this.value = '';
+                    parentMitra.value = '';
+                    parentJudul.value = '';
+                    parentMitra.disabled = true;
+                    parentJudul.disabled = true;
+                } else {
+                    parentMitra.disabled = false;
+                    parentJudul.disabled = false;
+                    parentMitra.value = selected.dataset.mitra || '';
+                    parentJudul.value = selected.dataset.judul || '';
+                }
+            });
+
+            // Saat halaman dimuat
+            const checkedJenis = document.querySelector('input[name="jenisKerjaSama"]:checked');
+            if (checkedJenis) {
+                loadParentOptions(checkedJenis.value);
+            }
         });
     </script>
 </body>

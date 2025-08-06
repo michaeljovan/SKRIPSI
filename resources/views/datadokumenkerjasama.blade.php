@@ -302,7 +302,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="mb-3">
                         <label for="judul" class="form-label">Judul Kerja Sama</label>
                         <input type="text" class="form-control" id="judul" name="judul"

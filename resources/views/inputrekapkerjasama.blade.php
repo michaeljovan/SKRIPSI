@@ -176,7 +176,7 @@
 
                             <!-- Section Parent Document - Selalu Tampil -->
                             <div class="mt-3">
-                                <div class="card">
+                                <div class="mt-3" id="dokumenIndukCard">
                                     <div class="card-header bg-light">
                                         <h6 class="card-title mb-0">Dokumen Induk</h6>
                                     </div>
