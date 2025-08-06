@@ -76,6 +76,8 @@ class EvaluasiMitraKinerjaController extends Controller
             'pdfFile' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
+        // dd($validated); // ← Tambahkan di sini untuk mengecek isi input yang tervalidasi
+
         // Konversi nilai teks ke angka
         foreach (
             [
@@ -94,11 +96,9 @@ class EvaluasiMitraKinerjaController extends Controller
                 'lainlainnilai'
             ] as $field
         ) {
-            $validated[$field] = $valueMap[$validated[$field]];
-        }
-
-        if (isset($validated['lainlainnilai'])) {
-            $validated['lainlainnilai'] = $valueMap[$validated['lainlainnilai']];
+            if (isset($validated[$field]) && isset($valueMap[$validated[$field]])) {
+                $validated[$field] = $valueMap[$validated[$field]];
+            }
         }
 
         if ($request->hasFile('pdfFile')) {

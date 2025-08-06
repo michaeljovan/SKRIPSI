@@ -121,7 +121,6 @@
                                                                 data-user-name="{{ $user->name }}">
                                                                 <i class="bi bi-pencil"></i>
                                                             </button>
-
                                                             @if ($user->id !== Auth::id())
                                                                 <button class="btn btn-outline-danger delete-user-btn"
                                                                     title="Delete" data-user-id="{{ $user->id }}">
