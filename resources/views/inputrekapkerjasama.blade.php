@@ -270,8 +270,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="inCash" class="form-label">In Cash (Rp)</label>
-                                <input type="text" class="form-control" id="inCash" name="inCash"
-                                    placeholder="Diisi dengan angka">
+                                <textarea class="form-control" id="inCash" name="inCash" rows="2" placeholder="Diisi dengan angka"></textarea>
                             </div>
                         </div>
 

@@ -40,7 +40,7 @@ class EvaluasiMitraKinerjaController extends Controller
         $rekap = RekapKerjaSama::findOrFail($id);
         return view('inputevaluasikerjasamakinerja', compact('rekap'));
     }
-      
+
     public function store(Request $request)
     {
         $valueMap = [
@@ -90,7 +90,8 @@ class EvaluasiMitraKinerjaController extends Controller
                 'manajerial',
                 'analisis',
                 'laporan',
-                'inovasi'
+                'inovasi',
+                'lainlainnilai'
             ] as $field
         ) {
             $validated[$field] = $valueMap[$validated[$field]];

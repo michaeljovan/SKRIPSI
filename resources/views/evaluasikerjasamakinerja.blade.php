@@ -130,7 +130,7 @@
                                         <td>{{ $item->inovasi_text }}</td>
                                         <td>
                                             @if ($item->lainlainlabel)
-                                                {{ $item->lainlainlabel }} ({{ $item->lainlainnilai }})
+                                                {{ $item->lainlainlabel }} ({{ $item->lainlainnilai_text }})
                                             @else
                                                 -
                                             @endif

@@ -124,7 +124,7 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Integritas (Etika dan Moral)</td>
+                                            <td>Pelaksanaan kegiatan kerja sama sesuai dengan dokumen perjanjian</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="integritas"
                                                     value="Sangat Tinggi" required
@@ -150,7 +150,7 @@
                                         </tr>
 
                                         <tr>
-                                            <td>Keahlian Berdasarkan Bidang ilmu (Profresionalisme)</td>
+                                            <td>Pelaksanaan kegiatan kerja sama sesuai dengan harapan</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="keahlian"
                                                     value="Sangat Tinggi" required
@@ -176,7 +176,7 @@
                                         </tr>
 
                                         <tr>
-                                            <td>Komunikasi</td>
+                                            <td>Kegiatan kerja sama memberikan benefit bagi institusi</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="komunikasi"
                                                     value="Sangat Tinggi" required
@@ -202,7 +202,7 @@
                                         </tr>
 
                                         <tr>
-                                            <td>Kerja Sama Tim</td>
+                                            <td>Terbina komunikasi yang baik antara FTI UKDW dengan mitra</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kerjasamatim"
                                                     value="Sangat Tinggi" required
@@ -231,7 +231,7 @@
                                         </tr>
 
                                         <tr>
-                                            <td>Pengembangan Diri</td>
+                                            <td>Tujuan yang diharapkan dari kerja sama berhasil dicapai</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio"
                                                     name="pengembangandiri" value="Sangat Tinggi" required
@@ -259,7 +259,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Kreativitas</td>
+                                            <td>Kegiatan kerja sama berjalan dengan memuaskan</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="kreativitas"
                                                     value="Sangat Tinggi" required
@@ -284,7 +284,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Kemampuan Menggunakan Bahasa Asing (Contoh : Bahasa Inggris)</td>
+                                            <td>Bersedia melanjutkan kerja sama kembali di masa mendatang</td>
                                             <td class="text-center">
                                                 <input class="form-check-input" type="radio" name="bahasaasing"
                                                     value="Sangat Tinggi" required
@@ -308,173 +308,18 @@
                                                     {{ $evaluasi->bahasaasing == 1 ? 'checked' : '' }}>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>Penggunaan Alat/Teknologi Modern (Teknologi IT)</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Sangat Tinggi" required
-                                                    {{ $evaluasi->teknologi == 5 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Tinggi" {{ $evaluasi->teknologi == 4 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Cukup" {{ $evaluasi->teknologi == 3 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Kurang" {{ $evaluasi->teknologi == 2 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="teknologi"
-                                                    value="Sangat Kurang"
-                                                    {{ $evaluasi->teknologi == 1 ? 'checked' : '' }}>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Kemampuan Manajerial</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Sangat Tinggi" required
-                                                    {{ $evaluasi->manajerial == 5 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Tinggi" {{ $evaluasi->manajerial == 4 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Cukup" {{ $evaluasi->manajerial == 3 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Kurang" {{ $evaluasi->manajerial == 2 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="manajerial"
-                                                    value="Sangat Kurang"
-                                                    {{ $evaluasi->manajerial == 1 ? 'checked' : '' }}>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Kemampuan Melakukan Analisis</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Sangat Tinggi" required
-                                                    {{ $evaluasi->analisis == 5 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Tinggi" {{ $evaluasi->analisis == 4 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Cukup" {{ $evaluasi->analisis == 3 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Kurang" {{ $evaluasi->analisis == 2 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="analisis"
-                                                    value="Sangat Kurang"
-                                                    {{ $evaluasi->analisis == 1 ? 'checked' : '' }}>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Menulis Laporan</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Sangat Tinggi" required
-                                                    {{ $evaluasi->laporan == 5 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Tinggi" {{ $evaluasi->laporan == 4 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Cukup" {{ $evaluasi->laporan == 3 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Kurang" {{ $evaluasi->laporan == 2 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="laporan"
-                                                    value="Sangat Kurang"
-                                                    {{ $evaluasi->laporan == 1 ? 'checked' : '' }}>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Inovasi / Kreativitas</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Sangat Tinggi" required
-                                                    {{ $evaluasi->inovasi == 5 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Tinggi" {{ $evaluasi->inovasi == 4 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Cukup" {{ $evaluasi->inovasi == 3 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Kurang" {{ $evaluasi->inovasi == 2 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="inovasi"
-                                                    value="Sangat Kurang"
-                                                    {{ $evaluasi->inovasi == 1 ? 'checked' : '' }}>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Lain-lain, Sebutkan ....... <input type="text" name="lainlainlabel"
-                                                    value="{{ $evaluasi->lainlainlabel ?? '' }}"></td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Sangat Tinggi" required
-                                                    {{ $evaluasi->lainlainnilai == 5 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Tinggi"
-                                                    {{ $evaluasi->lainlainnilai == 4 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Cukup"
-                                                    {{ $evaluasi->lainlainnilai == 3 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Kurang"
-                                                    {{ $evaluasi->lainlainnilai == 2 ? 'checked' : '' }}>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="lainlainnilai"
-                                                    value="Sangat Kurang"
-                                                    {{ $evaluasi->lainlainnilai == 1 ? 'checked' : '' }}>
-                                            </td>
-                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-
-                        <div class="mb-4">
+                        {{-- <div class="mb-4">
                             <h6 class="border-bottom pb-2">Komentar Tambahan</h6>
                             <div class="form-floating">
                                 <textarea class="form-control" placeholder="Tulis komentar Anda di sini" id="komentar" name="komentar"
                                     style="height: 100px">{{ $evaluasi->komentar ?? '' }}</textarea>
                                 <label for="komentar" class="text-muted">Masukkan saran atau komentar Anda</label>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="mb-3">
                             <label for="pdfFile" class="form-label">Unggah Dokumen PDF (Opsional)</label>
                             <input class="form-control" type="file" id="pdfFile" name="pdfFile"

@@ -82,11 +82,11 @@
             <div class="container-fluid">
                 <div class="row mb-4">
                     <div class="col-12">
-                        <h2>User Management</h2>
+                        <h2>Manajemen User</h2>
                     </div>
                 </div>
                 <div class="row">
-                    <!-- Users Table Column -->
+                    <!-- kolom tabel user-->
                     <div class="col-md-6">
                         <div class="card shadow-sm">
                             <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -121,10 +121,13 @@
                                                                 data-user-name="{{ $user->name }}">
                                                                 <i class="bi bi-pencil"></i>
                                                             </button>
-                                                            <button class="btn btn-outline-danger delete-user-btn"
-                                                                title="Delete" data-user-id="{{ $user->id }}">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
+
+                                                            @if ($user->id !== Auth::id())
+                                                                <button class="btn btn-outline-danger delete-user-btn"
+                                                                    title="Delete" data-user-id="{{ $user->id }}">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            @endif
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -135,7 +138,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Create User Form Column -->
+                    <!-- kolom buat user -->
                     <div class="col-md-6">
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-white">
@@ -211,7 +214,7 @@
         <footer class="fixed-bottom py-2 text-center text-white">
             <p class="mb-0">&copy; Fakultas Teknologi Informasi.</p>
         </footer>
-        <!-- Modal for Edit Password -->
+        <!-- Modal Edit Password -->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
             tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -270,7 +273,7 @@
                 </div>
             </div>
         </div>
-        <!-- Toast Notification Container - Centered -->
+        <!-- Toast -->
         <div class="position-fixed top-50 start-50 translate-middle" style="z-index: 11">
             <div id="successToast" class="toast align-items-center" role="alert" aria-live="assertive"
                 aria-atomic="true">
