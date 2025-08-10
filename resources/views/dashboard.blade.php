@@ -262,14 +262,14 @@
                                     <table class="table table-hover table-striped">
                                         <thead>
                                             <tr>
-                                                <th  class="fw-bold">#</th>
-                                                <th  class="fw-bold">Mitra Kerja Sama</th>
-                                                <th  class="fw-bold">Judul Kerja Sama</th>
-                                                <th  class="fw-bold">Unit</th>
-                                                <th  class="fw-bold">Tanggal Mulai</th>
-                                                <th  class="fw-bold">Tanggal Berakhir</th>
-                                                <th  class="fw-bold">Sisa Hari</th>
-                                                <th  class="fw-bold">Status</th>
+                                                <th class="fw-bold">#</th>
+                                                <th class="fw-bold">Mitra Kerja Sama</th>
+                                                <th class="fw-bold">Judul Kerja Sama</th>
+                                                <th class="fw-bold">Unit</th>
+                                                <th class="fw-bold">Tanggal Mulai</th>
+                                                <th class="fw-bold">Tanggal Berakhir</th>
+                                                <th class="fw-bold">Sisa Hari</th>
+                                                <th class="fw-bold">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -453,7 +453,6 @@
             renderChart(allChartData);
 
 
-            // === CHART 2: Line Chart (5 Tahun Terakhir) ===
             var lineChartData = @json($lineChartData);
 
             function renderLineChart(data) {
@@ -467,7 +466,17 @@
                         title: "Tahun"
                     },
                     axisY: {
-                        title: "Jumlah Kerja Sama"
+                        title: "Jumlah Kerja Sama",
+                        stripLines: [{
+                            value: 5,
+                            label: "Minimal Kerja Sama (5) / Tahun",
+                            color: "red",
+                            thickness: 2,
+                            labelAlign: "near",
+                            labelFontColor: "red",
+                            labelFontWeight: "bold",
+                            showOnTop: true
+                        }]
                     },
                     toolTip: {
                         shared: true
@@ -486,6 +495,7 @@
             }
 
             renderLineChart(lineChartData);
+
 
 
             // === CHART 3: Kategori Nasional vs Internasional ===
