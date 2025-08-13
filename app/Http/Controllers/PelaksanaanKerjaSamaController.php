@@ -35,8 +35,15 @@ class PelaksanaanKerjaSamaController extends Controller
             $validatedData = $request->validate([
                 'rekap_id' => 'required|exists:rekapkerjasama,id',
                 'ruang_lingkup' => 'required|string',
-                'dosen_terlibat' => 'required|string',
-                'mahasiswa_terlibat' => 'required|string',
+
+                // Kolom baru untuk jumlah
+                'jumlah_dosen_terlibat' => 'nullable|integer|min:0',
+                'jumlah_mahasiswa_terlibat' => 'nullable|integer|min:0',
+
+                // Nama-nama dosen & mahasiswa
+                'dosen_terlibat' => 'nullable|string',
+                'mahasiswa_terlibat' => 'nullable|string',
+
                 'anggaran_ukdw' => 'required|numeric',
                 'hasil_pelaksanaan' => 'required|string',
                 'tautan_link_kegiatan' => 'nullable|url',
@@ -55,19 +62,26 @@ class PelaksanaanKerjaSamaController extends Controller
             $filePath = null;
             if ($request->hasFile('dokumen_kegiatan')) {
                 $file = $request->file('dokumen_kegiatan');
-                $filePath = $file->store('dokumen_kegiatan', 'public'); // simpan di storage/app/public/dokumen_kegiatan
+                $filePath = $file->store('dokumen_kegiatan', 'public');
             }
 
             // Simpan ke database
             PelaksanaanKerjaSama::create([
                 'idrekap' => $validatedData['rekap_id'],
                 'ruang_lingkup' => $validatedData['ruang_lingkup'],
-                'dosen_terlibat' => $validatedData['dosen_terlibat'],
-                'mahasiswa_terlibat' => $validatedData['mahasiswa_terlibat'],
+
+                // Kolom jumlah
+                'jumlah_dosen_terlibat' => $validatedData['jumlah_dosen_terlibat'] ?? 0,
+                'jumlah_mahasiswa_terlibat' => $validatedData['jumlah_mahasiswa_terlibat'] ?? 0,
+
+                // Kolom nama
+                'dosen_terlibat' => $validatedData['dosen_terlibat'] ?? '',
+                'mahasiswa_terlibat' => $validatedData['mahasiswa_terlibat'] ?? '',
+
                 'anggaran_ukdw' => $validatedData['anggaran_ukdw'],
-                'tautan_link_kegiatan' => $validatedData['tautan_link_kegiatan'],
+                'tautan_link_kegiatan' => $validatedData['tautan_link_kegiatan'] ?? '',
                 'hasil_pelaksanaan' => $validatedData['hasil_pelaksanaan'],
-                'dokumen_kegiatan' => $filePath, // simpan path-nya
+                'dokumen_kegiatan' => $filePath,
             ]);
 
             // Update status laporan
@@ -79,7 +93,8 @@ class PelaksanaanKerjaSamaController extends Controller
                 return response()->json(['message' => 'Laporan pelaksanaan berhasil disimpan'], 200);
             }
 
-            return redirect()->route('pelaksanaankerjasama.index')->with('success', 'Laporan pelaksanaan berhasil disimpan');
+            return redirect()->route('pelaksanaankerjasama.index')
+                ->with('success', 'Laporan pelaksanaan berhasil disimpan');
         } catch (ValidationException $e) {
             if ($request->wantsJson()) {
                 return response()->json(['errors' => $e->errors()], 422);
@@ -92,6 +107,7 @@ class PelaksanaanKerjaSamaController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat menyimpan data.')->withInput();
         }
     }
+
 
 
 
@@ -113,8 +129,10 @@ class PelaksanaanKerjaSamaController extends Controller
     {
         $validated = $request->validate([
             'ruang_lingkup' => 'required',
-            'dosen_terlibat' => 'nullable',
-            'mahasiswa_terlibat' => 'nullable',
+            'jumlah_dosen_terlibat' => 'nullable|integer|min:0',
+            'jumlah_mahasiswa_terlibat' => 'nullable|integer|min:0',
+            'dosen_terlibat' => 'string',
+            'mahasiswa_terlibat' => 'string',
             'anggaran_ukdw' => 'required|numeric',
             'hasil_pelaksanaan' => 'required',
             'tautan_link_kegiatan' => 'nullable|url',

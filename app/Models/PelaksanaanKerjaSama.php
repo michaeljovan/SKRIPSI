@@ -14,6 +14,8 @@ class PelaksanaanKerjaSama extends Model
     protected $fillable = [
         'idrekap',
         'ruang_lingkup',
+        'jumlah_dosen_terlibat',    // kolom baru
+        'jumlah_mahasiswa_terlibat', // kolom baru
         'dosen_terlibat',
         'mahasiswa_terlibat',
         'anggaran_ukdw',
@@ -21,6 +23,7 @@ class PelaksanaanKerjaSama extends Model
         'tautan_link_kegiatan',
         'dokumen_kegiatan',
     ];
+
 
     // app/Models/PelaksanaanKerjaSama.php
 

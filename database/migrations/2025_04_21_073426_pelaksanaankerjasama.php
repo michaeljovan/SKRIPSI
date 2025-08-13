@@ -18,15 +18,23 @@ return new class extends Migration
             $table->foreign('idrekap')->references('id')->on('rekapkerjasama')->onDelete('cascade');
 
             $table->text('ruang_lingkup');
-            $table->string('dosen_terlibat');
-            $table->string('mahasiswa_terlibat');
+
+            // kolom baru
+            $table->integer('jumlah_dosen_terlibat')->nullable();
+            $table->integer('jumlah_mahasiswa_terlibat')->nullable();
+
+            $table->text('dosen_terlibat');
+            $table->text('mahasiswa_terlibat');
+
             $table->text('anggaran_ukdw')->nullable();
             $table->text('hasil_pelaksanaan')->nullable();
             $table->text('tautan_link_kegiatan');
             $table->string('dokumen_kegiatan')->nullable();
+
             $table->timestamps();
         });
     }
+
 
     public function down(): void
     {

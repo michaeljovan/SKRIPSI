@@ -92,6 +92,7 @@
                 @method('PUT')
                 <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
 
+                <!-- Identitas Dokumen -->
                 <div class="form-section">
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -101,6 +102,7 @@
                     </div>
                 </div>
 
+                <!-- Ringkasan Kerja Sama -->
                 <div class="form-section">
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -114,52 +116,67 @@
                     </div>
                 </div>
 
+                <!-- Ruang Lingkup -->
                 <div class="form-section">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="ruang_lingkup" class="form-label required-field">Ruang Lingkup</label>
-                            <textarea class="form-control compact-textarea" id="ruang_lingkup" name="ruang_lingkup" required>{{ $pelaksanaan->ruang_lingkup }}</textarea>
+                            <textarea class="form-control compact-textarea" id="ruang_lingkup" name="ruang_lingkup" required>{{ old('ruang_lingkup', $pelaksanaan->ruang_lingkup) }}</textarea>
                         </div>
                     </div>
                 </div>
 
+                <!-- Jumlah dan Nama Dosen/Mahasiswa -->
                 <div class="form-section">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label for="dosen_terlibat" class="form-label">Dosen Terlibat</label>
-                            <input type="text" class="form-control" id="dosen_terlibat" name="dosen_terlibat"
-                                value="{{ $pelaksanaan->dosen_terlibat }}">
+                            <label for="jumlah_dosen_terlibat" class="form-label">Jumlah Dosen Terlibat</label>
+                            <input type="number" min="0" class="form-control" id="jumlah_dosen_terlibat"
+                                name="jumlah_dosen_terlibat"
+                                value="{{ old('jumlah_dosen_terlibat', $pelaksanaan->jumlah_dosen_terlibat) }}">
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="mahasiswa_terlibat" class="form-label">Mahasiswa Terlibat</label>
+                            <label for="jumlah_mahasiswa_terlibat" class="form-label">Jumlah Mahasiswa
+                                Terlibat</label>
+                            <input type="number" min="0" class="form-control" id="jumlah_mahasiswa_terlibat"
+                                name="jumlah_mahasiswa_terlibat"
+                                value="{{ old('jumlah_mahasiswa_terlibat', $pelaksanaan->jumlah_mahasiswa_terlibat) }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="dosen_terlibat" class="form-label">Nama Dosen Terlibat</label>
+                            <input type="text" class="form-control" id="dosen_terlibat" name="dosen_terlibat"
+                                value="{{ old('dosen_terlibat', $pelaksanaan->dosen_terlibat) }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="mahasiswa_terlibat" class="form-label">Nama Mahasiswa Terlibat</label>
                             <input type="text" class="form-control" id="mahasiswa_terlibat"
-                                name="mahasiswa_terlibat" value="{{ $pelaksanaan->mahasiswa_terlibat }}">
+                                name="mahasiswa_terlibat"
+                                value="{{ old('mahasiswa_terlibat', $pelaksanaan->mahasiswa_terlibat) }}">
                         </div>
                     </div>
                 </div>
 
+                <!-- Anggaran -->
                 <div class="form-section">
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">In Cash (Rp)</label>
-                            <textarea class="form-control compact-textarea" disabled>
-                                {{ $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '-' }}
-                            </textarea>
+                            <textarea class="form-control compact-textarea" disabled>{{ $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '-' }}</textarea>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">In Kind</label>
-                            <textarea class="form-control compact-textarea" disabled>
-                                {{ $rekap->in_kind ? number_format($rekap->in_kind, 0, ',', '.') : '-' }}
-                            </textarea>
+                            <textarea class="form-control compact-textarea" disabled>{{ $rekap->in_kind ? number_format($rekap->in_kind, 0, ',', '.') : '-' }}</textarea>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="anggaran_ukdw" class="form-label required-field">Anggaran UKDW (Rp)</label>
                             <input type="text" class="form-control" id="anggaran_ukdw" name="anggaran_ukdw"
-                                value="{{ number_format($pelaksanaan->anggaran_ukdw, 0, ',', '.') }}" required>
+                                value="{{ number_format(old('anggaran_ukdw', $pelaksanaan->anggaran_ukdw), 0, ',', '.') }}"
+                                required>
                         </div>
                     </div>
                 </div>
 
+                <!-- Hasil Pelaksanaan & Dokumen -->
                 <div class="form-section">
                     <div class="mb-3">
                         <label for="hasil_pelaksanaan" class="form-label required-field">Deskripsi Hasil
@@ -168,20 +185,16 @@
                     </div>
 
                     <div class="row">
-                        <!-- Tautan kegiatan -->
                         <div class="col-md-6 mb-3">
                             <label for="tautan_link_kegiatan" class="form-label">Tautan Link Kegiatan</label>
                             <input type="url" class="form-control" id="tautan_link_kegiatan"
                                 name="tautan_link_kegiatan"
                                 value="{{ old('tautan_link_kegiatan', $pelaksanaan->tautan_link_kegiatan) }}">
                         </div>
-
-                        <!-- Upload PDF -->
                         <div class="col-md-6 mb-3">
                             <label for="dokumen_kegiatan" class="form-label">Upload Ulang Dokumen (PDF)</label>
                             <input type="file" class="form-control" id="dokumen_kegiatan" name="dokumen_kegiatan"
                                 accept=".pdf">
-
                             @if ($pelaksanaan->dokumen_kegiatan)
                                 <div class="mt-2">
                                     <a href="{{ asset('storage/' . $pelaksanaan->dokumen_kegiatan) }}"
@@ -194,6 +207,7 @@
                     </div>
                 </div>
 
+                <!-- Actions -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                     <a href="{{ route('pelaksanaankerjasama.index') }}" class="btn btn-secondary me-md-2">
                         <i class="bi bi-arrow-left"></i> Kembali
@@ -203,6 +217,7 @@
                     </button>
                 </div>
             </form>
+
         </div>
     </main>
 

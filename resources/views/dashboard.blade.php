@@ -128,7 +128,7 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm">
                         <div class="card-header bg-warning text-dark">
-                            <h5 class="card-title mb-0"><i class="bi me-2"></i>5 Mitra Tidak Teraktif</h5>
+                            <h5 class="card-title mb-0"><i class="bi me-2"></i>5 Mitra Tidak Aktif</h5>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">

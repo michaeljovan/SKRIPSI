@@ -94,7 +94,9 @@
                                     <th>Judul Kerja Sama</th>
                                     <th>Mitra</th>
                                     <th>Ruang Lingkup</th>
+                                    <th>Jumlah Dosen Terlibat</th>
                                     <th>Dosen Terlibat</th>
+                                    <th>Jumlah Mahasiswa Terlibat</th>
                                     <th>Mahasiswa Terlibat</th>
                                     <th>In Kind</th>
                                     <th>In Cash</th>
@@ -111,7 +113,9 @@
                                         <td>{{ $item->judul_kerja_sama }}</td>
                                         <td>{{ $item->mitra_kerja_sama }}</td>
                                         <td>{{ $item->laporanPelaksanaan->ruang_lingkup }}</td>
+                                        <td>{{ $item->laporanPelaksanaan->jumlah_dosen_terlibat }}</td>
                                         <td>{{ $item->laporanPelaksanaan->dosen_terlibat }}</td>
+                                        <td>{{ $item->laporanPelaksanaan->jumlah_mahasiswa_terlibat }}</td>
                                         <td>{{ $item->laporanPelaksanaan->mahasiswa_terlibat }}</td>
                                         <td>{{ number_format($item->in_kind, 0, ',', '.') }}</td>
                                         <td>{{ number_format($item->in_cash, 0, ',', '.') }}</td>

@@ -90,91 +90,135 @@
                 enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
+
+                <!-- SECTION: Identitas Dokumen -->
                 <div class="form-section">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="no_dokumen" class="form-label required-field">Nomor Dokumen</label>
-                            <input type="text" class="form-control" id="no_dokumen" name="no_dokumen"
-                                value="{{ $rekap->no_dokumen }}" disabled>
+                            <input type="text" class="form-control-plaintext border rounded px-3 py-2 bg-light"
+                                id="no_dokumen" value="{{ $rekap->no_dokumen }}" readonly>
                         </div>
                     </div>
                 </div>
+
+                <!-- SECTION: Ringkasan Kerja Sama -->
                 <div class="form-section">
                     <div class="row">
+                        <!-- Judul -->
                         <div class="col-md-6 mb-3">
                             <label for="judul_kerjasama" class="form-label required-field">Judul Kerja Sama</label>
-                            <textarea class="form-control compact-textarea" id="judul_kerjasama" name="judul_kerjasama" disabled>{{ $rekap->judul_kerja_sama }}</textarea>
+                            <textarea class="form-control-plaintext border rounded px-3 py-2 bg-light compact-textarea" id="judul_kerjasama"
+                                readonly>{{ $rekap->judul_kerja_sama }}</textarea>
                         </div>
-                    </div>
-                    <div class="row">
+                        <!-- Mitra -->
                         <div class="col-md-6 mb-3">
                             <label for="mitra_kerjasama" class="form-label required-field">Mitra Kerja Sama</label>
-                            <textarea class="form-control compact-textarea" id="mitra_kerjasama" name="mitra_kerjasama" disabled>{{ $rekap->mitra_kerja_sama }}</textarea>
+                            <textarea class="form-control-plaintext border rounded px-3 py-2 bg-light compact-textarea" id="mitra_kerjasama"
+                                readonly>{{ $rekap->mitra_kerja_sama }}</textarea>
                         </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Ruang Lingkup -->
                         <div class="col-md-6 mb-3">
                             <label for="ruang_lingkup" class="form-label required-field">Ruang Lingkup</label>
                             <textarea class="form-control compact-textarea" id="ruang_lingkup" name="ruang_lingkup" required></textarea>
                         </div>
+                        <!-- Placeholder kolom kanan kosong agar layout seimbang -->
+                        <div class="col-md-6 mb-3"></div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="dosen_terlibat" class="form-label">Dosen Terlibat</label>
-                                <input type="text" class="form-control small-textarea" id="dosen_terlibat"
-                                    name="dosen_terlibat" placeholder=""></input>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="mahasiswa_terlibat" class="form-label">Mahasiswa Terlibat</label>
-                                <input input="text" class="form-control small-textarea" id="mahasiswa_terlibat"
-                                    name="mahasiswa_terlibat" placeholder=""></input>
-                            </div>
+                </div>
+
+                <!-- SECTION: Partisipasi (Jumlah & Nama berdampingan) -->
+                <div class="form-section">
+                    <!-- Baris 1: Jumlah -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="jumlah_dosen_terlibat" class="form-label">Jumlah Dosen Terlibat</label>
+                            <input type="number" min="0" class="form-control" id="jumlah_dosen_terlibat"
+                                name="jumlah_dosen_terlibat" placeholder="Contoh: 2">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="jumlah_mahasiswa_terlibat" class="form-label">Jumlah Mahasiswa
+                                Terlibat</label>
+                            <input type="number" min="0" class="form-control" id="jumlah_mahasiswa_terlibat"
+                                name="jumlah_mahasiswa_terlibat" placeholder="Contoh: 8">
+                        </div>
+                    </div>
+                    <!-- Baris 2: Daftar Nama -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dosen_terlibat" class="form-label">Dosen Terlibat</label>
+                            <textarea class="form-control" id="dosen_terlibat" name="dosen_terlibat" rows="2"
+                                placeholder="Tulis nama dosen, pisahkan dengan koma. Contoh: Dr. Andi, Dr. Sari, Bapak Budi"></textarea>
+                            <div class="form-text">Pisahkan dengan koma jika lebih dari satu.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="mahasiswa_terlibat" class="form-label">Mahasiswa Terlibat</label>
+                            <textarea class="form-control" id="mahasiswa_terlibat" name="mahasiswa_terlibat" rows="2"
+                                placeholder="Tulis nama mahasiswa, pisahkan dengan koma. Contoh: Budi Santoso, Sari Putri, Joko P."></textarea>
+                            <div class="form-text">Pisahkan dengan koma jika lebih dari satu.</div>
                         </div>
                     </div>
                 </div>
-        </div>
-        <div class="form-section">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="in_cash" class="form-label">In Cash (Rp)</label>
-                    <textarea class="form-control compact-textarea" id="in_cash" name="in_cash" disabled>{{ $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '-' }}</textarea>
+
+                <!-- SECTION: Anggaran -->
+                <div class="form-section">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="in_cash" class="form-label">In Cash (Rp)</label>
+                            <textarea class="form-control-plaintext border rounded px-3 py-2 bg-light compact-textarea" id="in_cash" readonly>{{ $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '-' }}</textarea>
+                            <div class="form-text">Nilai dari rekap kerja sama</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="in_kind" class="form-label">In Kind</label>
+                            <textarea class="form-control-plaintext border rounded px-3 py-2 bg-light compact-textarea" id="in_kind" readonly>{{ $rekap->in_kind ? number_format($rekap->in_kind, 0, ',', '.') : '-' }}</textarea>
+                            <div class="form-text">Nilai dari rekap kerja sama</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="anggaran_ukdw" class="form-label">Anggaran UKDW (Rp)</label>
+                            <input type="text" class="form-control" id="anggaran_ukdw" name="anggaran_ukdw"
+                                required>
+                            <div class="form-text">Masukkan angka tanpa pemisah. (Contoh: 15000000)</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="in_kind" class="form-label">In Kind</label>
-                    <textarea class="form-control compact-textarea" id="in_kind" name="in_kind" disabled>{{ $rekap->in_kind ? number_format($rekap->in_kind, 0, ',', '.') : '-' }}</textarea>
+
+                <!-- SECTION: Hasil Pelaksanaan & Dokumen -->
+                <div class="form-section">
+                    <div class="mb-3">
+                        <label for="hasil_pelaksanaan" class="form-label required-field">Deskripsi Hasil
+                            Pelaksanaan</label>
+                        <textarea class="form-control" id="hasil_pelaksanaan" name="hasil_pelaksanaan" rows="5" required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="tautan_kegiatan" class="form-label">Tautan Link Kegiatan</label>
+                            <input type="url" class="form-control" id="tautan_kegiatan"
+                                name="tautan_link_kegiatan" placeholder="https://example.com">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="dokumen_kegiatan" class="form-label">Upload Dokumen (PDF)</label>
+                            <input type="file" class="form-control" id="dokumen_kegiatan" name="dokumen_kegiatan"
+                                accept=".pdf,application/pdf">
+                            <div class="form-text">Maksimal ukuran file 5MB (format PDF).</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="anggaran_ukdw" class="form-label">Anggaran UKDW (Rp)</label>
-                    <textarea class="form-control compact-textarea" id="anggara_ukdw" name="anggaran_ukdw" required></textarea>
+
+                <!-- ACTIONS -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="reset" class="btn btn-secondary me-md-2">
+                        <i class="bi bi-x-circle"></i> Reset
+                    </button>
+                    <button type="button" id="submitButton" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Simpan
+                    </button>
                 </div>
-            </div>
-        </div>
-        <div class="form-section">
-            <div class="mb-3">
-                <label for="hasil_pelaksanaan" class="form-label required-field">Deskripsi Hasil Pelaksanaan</label>
-                <textarea class="form-control" id="hasil_pelaksanaan" name="hasil_pelaksanaan" rows="5" required></textarea>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="tautan_kegiatan" class="form-label">Tautan Link Kegiatan</label>
-                    <input type="url" class="form-control" id="tautan_kegiatan" name="tautan_link_kegiatan"
-                        placeholder="https://example.com">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="dokumen_kegiatan" class="form-label">Upload Dokumen (PDF)</label>
-                    <input type="file" class="form-control" id="dokumen_kegiatan" name="dokumen_kegiatan"
-                        accept=".pdf">
-                </div>
-            </div>
-        </div>
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-            <button type="reset" class="btn btn-secondary me-md-2">
-                <i class="bi bi-x-circle"></i> Reset
-            </button>
-            <button type="button" id="submitButton" class="btn btn-primary">
-                <i class="bi bi-save"></i> Simpan
-            </button>
-        </div>
-        </form>
+            </form>
+
         </div>
     </main>
 
@@ -186,24 +230,67 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        //modal sweetalert2 popup
         document.addEventListener('DOMContentLoaded', function() {
-            // SweetAlert for form submission
+            // -------------------- Elemen utama --------------------
             const form = document.getElementById('laporanForm');
             const submitButton = document.getElementById('submitButton');
+            const dokInput = document.getElementById('dokumen_kegiatan');
+            const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
 
+            // -------------------- Helper: Validasi dokumen (PDF & ≤5MB) --------------------
+            function validateDokumenKegiatan() {
+                if (!dokInput || dokInput.files.length === 0) return true; // opsional upload
+                const file = dokInput.files[0];
+
+                if (file.size > MAX_FILE_BYTES) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Ukuran Terlalu Besar',
+                        text: 'Maksimal ukuran dokumen adalah 5MB.'
+                    });
+                    dokInput.value = '';
+                    return false;
+                }
+
+                const isPdf = file.type === 'application/pdf' || dokInput.value.toLowerCase().endsWith('.pdf');
+                if (!isPdf) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Format Tidak Didukung',
+                        text: 'Dokumen harus berformat PDF.'
+                    });
+                    dokInput.value = '';
+                    return false;
+                }
+                return true;
+            }
+
+            if (dokInput) {
+                dokInput.addEventListener('change', validateDokumenKegiatan);
+            }
+
+            // -------------------- Submit dengan SweetAlert + fetch --------------------
             submitButton.addEventListener('click', function(e) {
                 e.preventDefault();
 
-                // Validate HTML5 form
+                // Validasi HTML5
                 if (!form.checkValidity()) {
                     form.reportValidity();
                     return;
                 }
 
+                // Validasi file (PDF & ≤5MB)
+                if (!validateDokumenKegiatan()) return;
+
+                // Normalisasi angka: kirim angka murni (tanpa titik/koma/spasi)
+                const anggaranEl = document.getElementById('anggaran_ukdw');
+                if (anggaranEl) {
+                    anggaranEl.value = (anggaranEl.value || '').replace(/\D/g, '');
+                }
+
                 Swal.fire({
                     title: 'Simpan Laporan Pelaksanaan?',
-                    text: "Apakah Anda yakin ingin menyimpan data laporan pelaksanaan kerja sama ini?",
+                    text: 'Apakah Anda yakin ingin menyimpan data laporan pelaksanaan kerja sama ini?',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
@@ -211,58 +298,70 @@
                     confirmButtonText: 'Ya, Simpan!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        const formData = new FormData(form);
+                    if (!result.isConfirmed) return;
 
-                        fetch(form.action, {
-                                method: 'POST',
-                                body: formData,
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'input[name="_token"]').value,
-                                    'Accept': 'application/json'
-                                }
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    return response.json().then(data => Promise.reject(data));
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil!',
-                                    text: 'Laporan pelaksanaan berhasil disimpan',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    window.location.reload(); // atau redirect
-                                });
-                            })
-                            .catch(error => {
-                                if (error.errors) {
-                                    const errorList = Object.values(error.errors).map(err =>
-                                        `<li>${err}</li>`).join('');
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Validasi Gagal!',
-                                        html: `<ul>${errorList}</ul>`,
-                                        confirmButtonText: 'OK'
-                                    });
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')
+                                    .value,
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(data => Promise.reject(data));
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: data.message ||
+                                    'Laporan pelaksanaan berhasil disimpan',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Redirect kalau backend kasih URL; fallback reload
+                                if (data.redirect) {
+                                    window.location.href = data.redirect;
                                 } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Terjadi Kesalahan',
-                                        text: 'Tidak dapat menyimpan data.'
-                                    });
+                                    window.location.reload();
                                 }
                             });
-                    }
+                        })
+                        .catch(error => {
+                            if (error && error.errors) {
+                                const errorList = Object.values(error.errors)
+                                    .flat()
+                                    .map(msg => `<li>${msg}</li>`)
+                                    .join('');
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Validasi Gagal!',
+                                    html: `<ul>${errorList}</ul>`,
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Terjadi Kesalahan',
+                                    text: error?.message ||
+                                        'Tidak dapat menyimpan data.'
+                                });
+                            }
+                        });
                 });
             });
 
-            // Check for success/error messages from backend
+            // -------------------- Flash message dari backend --------------------
+            // Blade akan render blok ini saat ada session/error
+            // (Biarkan apa adanya—akan diisi server-side)
+            // prettier-ignore
             @if (session('success'))
                 Swal.fire({
                     icon: 'success',
@@ -272,7 +371,7 @@
                     showConfirmButton: false
                 });
             @endif
-
+            // prettier-ignore
             @if ($errors->any())
                 Swal.fire({
                     icon: 'error',
@@ -281,62 +380,61 @@
                     confirmButtonText: 'OK'
                 });
             @endif
-        });
 
-        document.addEventListener('DOMContentLoaded', function() {
+            // -------------------- Sidebar Toggle --------------------
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const mainContent = document.getElementById('mainContent');
             const toggleIcon = document.getElementById('toggleIcon');
 
-            // Toggle sidebar
-            sidebarToggle.addEventListener('click', function() {
-                if (window.innerWidth < 992) {
-                    // Mobile behavior
-                    sidebar.classList.toggle('show');
-                    sidebarToggle.classList.toggle('show');
-                } else {
-                    // Desktop behavior
-                    sidebar.classList.toggle('collapsed');
-                    sidebarToggle.classList.toggle('collapsed');
-                    mainContent.classList.toggle('full-width');
-
-                    // Toggle icon
-                    if (sidebar.classList.contains('collapsed')) {
-                        toggleIcon.classList.remove('bi-list');
-                        toggleIcon.classList.add('bi-chevron-right');
-                    } else {
-                        toggleIcon.classList.remove('bi-chevron-right');
-                        toggleIcon.classList.add('bi-list');
-                    }
-                }
-            });
-
-            // Auto-close sidebar on mobile when clicking a link
-            const navLinks = document.querySelectorAll('.menu-link, .submenu-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
+            if (sidebar && sidebarToggle && mainContent && toggleIcon) {
+                sidebarToggle.addEventListener('click', function() {
                     if (window.innerWidth < 992) {
-                        sidebar.classList.remove('show');
-                        sidebarToggle.classList.remove('show');
+                        sidebar.classList.toggle('show');
+                        sidebarToggle.classList.toggle('show');
+                    } else {
+                        sidebar.classList.toggle('collapsed');
+                        sidebarToggle.classList.toggle('collapsed');
+                        mainContent.classList.toggle('full-width');
+                        if (sidebar.classList.contains('collapsed')) {
+                            toggleIcon.classList.remove('bi-list');
+                            toggleIcon.classList.add('bi-chevron-right');
+                        } else {
+                            toggleIcon.classList.remove('bi-chevron-right');
+                            toggleIcon.classList.add('bi-list');
+                        }
                     }
                 });
-            });
 
-            // Format currency inputs
-            const currencyInputs = ['in_cash', 'anggaran_ukdw'];
+                document.querySelectorAll('.menu-link, .submenu-link').forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth < 992) {
+                            sidebar.classList.remove('show');
+                            sidebarToggle.classList.remove('show');
+                        }
+                    });
+                });
+            }
+
+            // -------------------- Format Rupiah saat ketik --------------------
+            // NB: hanya untuk tampilan; sebelum submit kita bersihkan ke angka murni (lihat di atas)
+            const currencyInputs = ['in_cash', 'anggaran_ukdw']; // in_cash biasanya readonly/ditampilkan saja
             currencyInputs.forEach(id => {
                 const input = document.getElementById(id);
-                if (input) {
-                    input.addEventListener('input', function(e) {
-                        let value = e.target.value.replace(/\D/g, '');
-                        value = value ? parseInt(value, 10).toLocaleString('id-ID') : '';
-                        e.target.value = value;
-                    });
-                }
+                if (!input) return;
+                input.addEventListener('input', function(e) {
+                    const caret = e.target.selectionStart;
+                    let digits = e.target.value.replace(/\D/g, '');
+                    e.target.value = digits ? parseInt(digits, 10).toLocaleString('id-ID') : '';
+                    // coba pertahankan posisi caret (best effort)
+                    try {
+                        e.target.setSelectionRange(caret, caret);
+                    } catch (_) {}
+                });
             });
         });
     </script>
+
 </body>
 
 </html>

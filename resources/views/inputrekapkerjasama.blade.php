@@ -323,74 +323,248 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
-            // Reset button with SweetAlert confirmation
+            // ---------- Reset dengan SweetAlert ----------
             document.querySelector('button[type="reset"]').addEventListener('click', function(e) {
                 e.preventDefault();
-
                 Swal.fire({
                     title: 'Konfirmasi Reset Form',
-                    text: "Apakah Anda yakin ingin mereset semua data yang telah diisi?",
+                    text: 'Apakah Anda yakin ingin mereset semua data yang telah diisi?',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: 'Ya, Reset!',
                     cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Reset the form
+                }).then((r) => {
+                    if (r.isConfirmed) {
                         document.getElementById('kerjaSamaForm').reset();
-
-                        // Show success message
-                        Swal.fire(
-                            'Berhasil!',
-                            'Form telah berhasil direset.',
-                            'success'
-                        );
+                        Swal.fire('Berhasil!', 'Form telah berhasil direset.', 'success');
                     }
                 });
             });
-        });
 
-        // Form submission with SweetAlert
-        document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+            // ---------- Hitung Masa Berlaku ----------
+            const tanggalMulai = document.getElementById('tanggalMulai');
+            const tanggalSelesai = document.getElementById('tanggalSelesai');
+            const masaBerlaku = document.getElementById('masaBerlaku');
 
-            const checkboxes = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
-            if (checkboxes.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Peringatan',
-                    text: 'Pilih minimal satu bentuk kerja sama.'
+            function calculateDuration() {
+                if (tanggalMulai.value && tanggalSelesai.value) {
+                    const s = new Date(tanggalMulai.value);
+                    const e = new Date(tanggalSelesai.value);
+                    if (e >= s) {
+                        const d = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
+                        masaBerlaku.value = d + ' hari';
+                    } else {
+                        masaBerlaku.value = '';
+                        Swal.fire('Tanggal tidak valid',
+                            'Tanggal selesai tidak boleh lebih awal dari tanggal mulai!', 'warning');
+                        tanggalSelesai.value = '';
+                    }
+                } else {
+                    masaBerlaku.value = '';
+                }
+            }
+            tanggalMulai.addEventListener('change', () => {
+                tanggalSelesai.min = tanggalMulai.value;
+                calculateDuration();
+            });
+            tanggalSelesai.addEventListener('change', calculateDuration);
+
+            // ---------- Sidebar Toggle ----------
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mainContent = document.getElementById('mainContent');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            sidebarToggle.addEventListener('click', function() {
+                if (window.innerWidth < 992) {
+                    sidebar.classList.toggle('show');
+                    sidebarToggle.classList.toggle('show');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    sidebarToggle.classList.toggle('collapsed');
+                    mainContent.classList.toggle('full-width');
+                    if (sidebar.classList.contains('collapsed')) {
+                        toggleIcon.classList.replace('bi-list', 'bi-chevron-right');
+                    } else {
+                        toggleIcon.classList.replace('bi-chevron-right', 'bi-list');
+                    }
+                }
+            });
+            document.querySelectorAll('.menu-link, .submenu-link').forEach(a => {
+                a.addEventListener('click', function() {
+                    if (window.innerWidth < 992) {
+                        sidebar.classList.remove('show');
+                        sidebarToggle.classList.remove('show');
+                    }
                 });
-                return;
+            });
+
+            // ---------- Dokumen Induk (sesuai controller getDokumenInduk) ----------
+            const jenisRadios = document.querySelectorAll('input[name="jenisKerjaSama"]');
+            const parentSelect = document.getElementById('parentDocument');
+            const parentMitra = document.getElementById('parentMitra');
+            const parentJudul = document.getElementById('parentJudul');
+            const noParentAlert = document.getElementById('noParentDocAlert');
+
+            const API_DOK_INDUK = "{{ route('api.dokumen_induk') }}"; // /api/dokumen-induk (web route)
+            async function fetchParentsByJenis(jenis) {
+                const url = `${API_DOK_INDUK}?jenis=${encodeURIComponent(jenis)}`;
+                const res = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => '');
+                    throw new Error(`Gagal memuat dokumen induk (HTTP ${res.status}) ${txt}`);
+                }
+                return res.json();
             }
 
-            const form = this;
-            const formData = new FormData(form);
-            const noDokumen = document.getElementById('noDokumen').value;
+            async function loadParentOptions(jenis) {
+                parentSelect.innerHTML = '';
+                parentMitra.value = '';
+                parentJudul.value = '';
 
-            fetch(`{{ route('cek.no_dokumen') }}?no_dokumen=${encodeURIComponent(noDokumen)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.exists) {
-                        Swal.fire({
-                            title: 'Gagal',
-                            text: 'No Dokumen sudah terdaftar.',
-                            icon: 'warning'
-                        });
-                        return;
+                try {
+                    // Panggil API kamu: getDokumenInduk( jenis=MoU|MoA|IA )
+                    const data = await fetchParentsByJenis(jenis);
+
+                    // Tampilkan alert informatif untuk MoU (opsional)
+                    if (jenis === 'MoU') {
+                        noParentAlert.style.display = 'block';
+                    } else {
+                        noParentAlert.style.display = 'none';
                     }
 
-                    Swal.fire({
-                        title: 'Memproses...',
-                        html: 'Sedang menyimpan data kerja sama',
-                        allowOutsideClick: false,
-                        didOpen: () => Swal.showLoading()
-                    });
+                    // Isi select sesuai response (controller sudah prepend "none")
+                    if (Array.isArray(data) && data.length) {
+                        data.forEach(item => {
+                            const opt = document.createElement('option');
+                            opt.value = item.id; // bisa 'none' atau id numeric
+                            opt.textContent = item.no_dokumen === 'Tidak Ada Induk' ?
+                                'Tidak Ada Induk' :
+                                `${item.no_dokumen} - ${item.judul_kerja_sama}`;
+                            opt.dataset.mitra = item.mitra_kerja_sama;
+                            opt.dataset.judul = item.judul_kerja_sama;
+                            parentSelect.appendChild(opt);
+                        });
+                        parentSelect.disabled = false;
+                    } else {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'Tidak ada dokumen induk yang tersedia';
+                        parentSelect.appendChild(opt);
+                        parentSelect.disabled = true;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire('Gagal', 'Gagal memuat dokumen induk.', 'error');
+                    parentSelect.disabled = true;
+                }
+            }
 
-                    fetch(form.action, {
+            jenisRadios.forEach(r => r.addEventListener('change', function() {
+                loadParentOptions(this.value);
+            }));
+
+            parentSelect.addEventListener('change', function() {
+                const sel = this.options[this.selectedIndex];
+                if (!sel) return;
+
+                if (sel.value === 'none') {
+                    // pilih "Tidak Ada Induk" → kosongkan info
+                    parentMitra.value = '';
+                    parentJudul.value = '';
+                } else {
+                    parentMitra.value = sel.dataset.mitra || '';
+                    parentJudul.value = sel.dataset.judul || '';
+                }
+            });
+
+            const checkedJenis = document.querySelector('input[name="jenisKerjaSama"]:checked');
+            if (checkedJenis) loadParentOptions(checkedJenis.value);
+
+            // ---------- Validasi ukuran file 5MB ----------
+            const fileInput = document.getElementById('dokumenPendukung');
+            const overLimit = (f) => f && f.size > 5 * 1024 * 1024;
+
+            fileInput.addEventListener('change', function() {
+                const f = this.files[0];
+                if (overLimit(f)) {
+                    Swal.fire('Ukuran terlalu besar', 'Ukuran dokumen maksimal 5MB.', 'warning');
+                    this.value = '';
+                    return;
+                }
+                // pastikan PDF
+                if (f && f.type !== 'application/pdf' && !this.value.toLowerCase().endsWith('.pdf')) {
+                    Swal.fire('Format salah', 'Dokumen harus berupa PDF.', 'warning');
+                    this.value = '';
+                }
+            });
+
+            // ---------- Submit form ----------
+            document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // minimal satu checkbox bentuk kerja sama
+                const checked = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
+                if (checked.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Pilih minimal satu bentuk kerja sama.'
+                    });
+                    return;
+                }
+
+                // file size check
+                const f = fileInput.files[0];
+                if (overLimit(f)) {
+                    Swal.fire('Ukuran terlalu besar', 'Ukuran dokumen maksimal 5MB.', 'warning');
+                    return;
+                }
+
+                const jenis = document.querySelector('input[name="jenisKerjaSama"]:checked')?.value;
+                const parentVal = document.getElementById('parentDocument').value ||
+                    'none'; // selaras dengan controller
+
+                // sanitasi angka
+                const stripNumber = (v) => (v || '').toString().replace(/[.,\s]/g, '');
+                ['inKind', 'totalInKind', 'inCash', 'totalInCash', 'jumlahImplementasi'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = stripNumber(el.value);
+                });
+
+                const form = this;
+                const formData = new FormData(form);
+
+                // Selaraskan dengan controller: controller akan mengubah 'none' => null
+                formData.set('parent_id', parentVal);
+
+                const noDokumen = document.getElementById('noDokumen').value;
+
+                // Cek unik no_dokumen
+                fetch(`{{ route('cek.no_dokumen') }}?no_dokumen=${encodeURIComponent(noDokumen)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.exists) {
+                            Swal.fire({
+                                title: 'Gagal',
+                                text: 'No Dokumen sudah terdaftar.',
+                                icon: 'warning'
+                            });
+                            throw new Error('NO_DUPLICATE');
+                        }
+
+                        Swal.fire({
+                            title: 'Memproses...',
+                            html: 'Sedang menyimpan data kerja sama',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        return fetch(form.action, {
                             method: 'POST',
                             body: formData,
                             headers: {
@@ -398,217 +572,45 @@
                                     'meta[name="csrf-token"]').content,
                                 'Accept': 'application/json'
                             }
-                        })
-                        .then(async response => {
-                            const data = await response.json();
-
-                            if (!response.ok) {
-                                if (data.errors) {
-                                    const firstErrorKey = Object.keys(data.errors)[0];
-                                    const firstErrorMessage = data.errors[firstErrorKey][0];
-
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Cek kembali input form anda',
-                                        text: firstErrorMessage
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Gagal',
-                                        text: data.message ||
-                                            'Terjadi kesalahan saat menyimpan.'
-                                    });
-                                }
-
-                                throw new Error('Cek kembali input form anda');
+                        });
+                    })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (!response.ok) {
+                            if (data.errors) {
+                                const firstKey = Object.keys(data.errors)[0];
+                                const firstMsg = data.errors[firstKey][0];
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Cek kembali input form anda',
+                                    text: firstMsg
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal',
+                                    text: data.message ||
+                                        'Terjadi kesalahan saat menyimpan.'
+                                });
                             }
-                            return data;
-                        })
-                        .then(data => {
-                            Swal.fire({
-                                title: 'Berhasil!',
-                                text: data.message ||
-                                    'Data kerja sama berhasil disimpan',
-                                icon: 'success'
-                            }).then(() => {
-                                window.location.href = data.redirect ||
-                                    '{{ route('data_kerja_sama') }}';
-                            });
-                        })
-                        .catch(error => {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: error.message || 'Cek kembali form anda',
-                                icon: 'error'
-                            });
-                            console.error('AJAX error:', error);
+                            throw new Error('VALIDATION_ERROR');
+                        }
+
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: data.message || 'Data kerja sama berhasil disimpan!',
+                            icon: 'success'
+                        }).then(() => {
+                            window.location.href = data.redirect ||
+                                '{{ route('data_kerja_sama') }}';
                         });
-                });
-        });
-
-        // Hitung Masa Berlaku
-        document.addEventListener('DOMContentLoaded', function() {
-            const tanggalMulai = document.getElementById('tanggalMulai');
-            const tanggalSelesai = document.getElementById('tanggalSelesai');
-            const masaBerlaku = document.getElementById('masaBerlaku');
-
-            function calculateDuration() {
-                if (tanggalMulai.value && tanggalSelesai.value) {
-                    const startDate = new Date(tanggalMulai.value);
-                    const endDate = new Date(tanggalSelesai.value);
-
-                    if (endDate >= startDate) {
-                        const diffTime = endDate - startDate;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                        masaBerlaku.value = diffDays + ' hari';
-                    } else {
-                        masaBerlaku.value = '';
-                        alert('Tanggal selesai tidak boleh lebih awal dari tanggal mulai!');
-                        tanggalSelesai.value = ''; // Reset nilai tanggal selesai
-                    }
-                } else {
-                    masaBerlaku.value = '';
-                }
-            }
-
-            tanggalMulai.addEventListener('change', function() {
-                // Batasi tanggal selesai minimal sama dengan tanggal mulai
-                tanggalSelesai.min = tanggalMulai.value;
-                calculateDuration();
+                    })
+                    .catch(err => {
+                        if (['NO_DUPLICATE', 'VALIDATION_ERROR'].includes(err.message)) return;
+                        Swal.fire('Error', 'Terjadi masalah jaringan saat memproses data.', 'error');
+                        console.error(err);
+                    });
             });
-
-            tanggalSelesai.addEventListener('change', calculateDuration);
-        });
-
-
-        // Sidebar Toggle Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const mainContent = document.getElementById('mainContent');
-            const toggleIcon = document.getElementById('toggleIcon');
-
-            // Toggle sidebar
-            sidebarToggle.addEventListener('click', function() {
-                if (window.innerWidth < 992) {
-                    // Mobile behavior
-                    sidebar.classList.toggle('show');
-                    sidebarToggle.classList.toggle('show');
-                } else {
-                    // Desktop behavior
-                    sidebar.classList.toggle('collapsed');
-                    sidebarToggle.classList.toggle('collapsed');
-                    mainContent.classList.toggle('full-width');
-
-                    // Toggle icon
-                    if (sidebar.classList.contains('collapsed')) {
-                        toggleIcon.classList.remove('bi-list');
-                        toggleIcon.classList.add('bi-chevron-right');
-                    } else {
-                        toggleIcon.classList.remove('bi-chevron-right');
-                        toggleIcon.classList.add('bi-list');
-                    }
-                }
-            });
-
-            // Auto-close sidebar on mobile when clicking a link
-            const navLinks = document.querySelectorAll('.menu-link, .submenu-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth < 992) {
-                        sidebar.classList.remove('show');
-                        sidebarToggle.classList.remove('show');
-                    }
-                });
-            });
-        });
-
-        //jeniskerja samainduk
-        document.addEventListener('DOMContentLoaded', function() {
-            const jenisRadios = document.querySelectorAll('input[name="jenisKerjaSama"]');
-            const parentSelect = document.getElementById('parentDocument');
-            const parentMitra = document.getElementById('parentMitra');
-            const parentJudul = document.getElementById('parentJudul');
-            const noParentAlert = document.getElementById('noParentDocAlert');
-
-            async function loadParentOptions(jenis) {
-                parentSelect.innerHTML = '';
-                parentMitra.value = '';
-                parentJudul.value = '';
-
-                if (jenis === 'MoU') {
-                    // MOU boleh tanpa induk, tampilkan pilihan "Tidak Ada Induk"
-                    parentSelect.disabled = false;
-                    noParentAlert.style.display = 'none';
-                    try {
-                        const response = await fetch(`/api/dokumen-induk?jenis=MoU`);
-                        const data = await response.json();
-
-                        data.forEach(item => {
-                            const option = document.createElement('option');
-                            option.value = item.id;
-                            option.textContent =
-                                `${item.no_dokumen} - ${item.judul_kerja_sama}`;
-                            option.dataset.mitra = item.mitra_kerja_sama;
-                            option.dataset.judul = item.judul_kerja_sama;
-                            parentSelect.appendChild(option);
-                        });
-                    } catch (error) {
-                        console.error('Gagal memuat dokumen induk:', error);
-                    }
-                } else if (jenis === 'MoA' || jenis === 'IA') {
-                    parentSelect.disabled = false;
-                    noParentAlert.style.display = 'none';
-
-                    try {
-                        const response = await fetch(`/api/dokumen-induk?jenis=${jenis}`);
-                        const data = await response.json();
-
-                        parentSelect.innerHTML = '';
-                        data.forEach(item => {
-                            const option = document.createElement('option');
-                            option.value = item.id;
-                            option.textContent =
-                                `${item.no_dokumen} - ${item.judul_kerja_sama}`;
-                            option.dataset.mitra = item.mitra_kerja_sama;
-                            option.dataset.judul = item.judul_kerja_sama;
-                            parentSelect.appendChild(option);
-                        });
-                    } catch (error) {
-                        console.error('Gagal memuat dokumen induk:', error);
-                    }
-                }
-            }
-
-            jenisRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    loadParentOptions(this.value);
-                });
-            });
-
-            parentSelect.addEventListener('change', function() {
-                const selected = this.options[this.selectedIndex];
-
-                if (selected.value === 'none') {
-                    this.value = '';
-                    parentMitra.value = '';
-                    parentJudul.value = '';
-                    parentMitra.disabled = true;
-                    parentJudul.disabled = true;
-                } else {
-                    parentMitra.disabled = false;
-                    parentJudul.disabled = false;
-                    parentMitra.value = selected.dataset.mitra || '';
-                    parentJudul.value = selected.dataset.judul || '';
-                }
-            });
-
-            // Jalankan saat halaman load, jika radio sudah terpilih
-            const checkedJenis = document.querySelector('input[name="jenisKerjaSama"]:checked');
-            if (checkedJenis) {
-                loadParentOptions(checkedJenis.value);
-            }
         });
     </script>
 </body>
