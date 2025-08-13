@@ -21,6 +21,7 @@ class RekapKerjaSama extends Model
         'jenis_kerja_sama',
         'pihak_ukdw',
         'pihak_mitra',
+        'email_pihak_mitra',
         'tanggal_mulai',
         'tanggal_selesai',
         'masa_berlaku',

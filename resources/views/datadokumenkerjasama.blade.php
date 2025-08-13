@@ -108,6 +108,7 @@
                                     <th style="min-width: 200px;">Kategori</th>
                                     <th style="min-width: 150px;">Pihak UKDW</th>
                                     <th style="min-width: 150px;">Pihak Mitra</th>
+                                    <th style="min-width: 150px;">Email Pihak Mitra</th>
                                     <th style="min-width: 120px;">Tanggal Mulai</th>
                                     <th style="min-width: 120px;">Tanggal Selesai</th>
                                     <th style="min-width: 120px;">Masa Berlaku (hari)</th>
@@ -143,6 +144,7 @@
                                         <td>{{ $rekap->kategori }}</td>
                                         <td>{{ $rekap->pihak_ukdw }}</td>
                                         <td>{{ $rekap->pihak_mitra }}</td>
+                                        <td>{{ $rekap->email_pihak_mitra }}</td>
                                         <td>{{ date('d/m/Y', strtotime($rekap->tanggal_mulai)) }}</td>
                                         <td>{{ date('d/m/Y', strtotime($rekap->tanggal_selesai)) }}</td>
                                         <td>{{ $rekap->masa_berlaku }}</td>

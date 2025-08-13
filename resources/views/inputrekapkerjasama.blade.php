@@ -215,13 +215,18 @@
                         </div>
                         <!-- Row 4 -->
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="pihakUKDW" class="form-label">Pihak UKDW</label>
                                 <input type="text" class="form-control" id="pihakUKDW" name="pihakUKDW" required>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="pihakMitra" class="form-label">Pihak Mitra</label>
                                 <input type="text" class="form-control" id="pihakMitra" name="pihakMitra"
+                                    required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="emailMitra" class="form-label">Email Penanggung Jawab Mitra</label>
+                                <input type="email" class="form-control" id="emailMitra" name="emailMitra"
                                     required>
                             </div>
                         </div>

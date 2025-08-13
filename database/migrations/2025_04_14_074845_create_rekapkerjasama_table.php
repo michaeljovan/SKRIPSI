@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('jenis_kerja_sama');
             $table->string('pihak_ukdw');
             $table->string('pihak_mitra');
+            $table->string('email_pihak_mitra');
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
             $table->integer('masa_berlaku');

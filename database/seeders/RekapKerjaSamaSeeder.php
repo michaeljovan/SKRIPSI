@@ -52,8 +52,14 @@ class RekapKerjaSamaSeeder extends Seeder
             $kategori = ['nasional', 'internasional'];
             $perusahaan = ['PT.', 'CV.', 'UD.', 'PD.'];
             $bidangUsaha = [
-                'Teknologi', 'Pendidikan', 'Kesehatan', 'Keuangan',
-                'Manufaktur', 'Retail', 'Jasa', 'Pertanian'
+                'Teknologi',
+                'Pendidikan',
+                'Kesehatan',
+                'Keuangan',
+                'Manufaktur',
+                'Retail',
+                'Jasa',
+                'Pertanian'
             ];
 
             // Generate 50 data dummy
@@ -63,20 +69,21 @@ class RekapKerjaSamaSeeder extends Seeder
                 $duration = $endDate->diff($startDate)->days + 1;
 
                 $bentuk = $faker->randomElement($bentukKerjaSama);
-                $mitra = $faker->randomElement($perusahaan).' '.$faker->company.' '.$faker->randomElement($bidangUsaha);
+                $mitra = $faker->randomElement($perusahaan) . ' ' . $faker->company . ' ' . $faker->randomElement($bidangUsaha);
 
                 $inKind = $faker->boolean(60) ? $faker->numberBetween(5000000, 500000000) : null;
                 $inCash = $faker->boolean(60) ? $faker->numberBetween(5000000, 500000000) : null;
 
                 RekapKerjaSama::create([
-                    'no_dokumen' => 'KS/FTI/'.date('Y').'/'.str_pad($i, 3, '0', STR_PAD_LEFT),
+                    'no_dokumen' => 'KS/FTI/' . date('Y') . '/' . str_pad($i, 3, '0', STR_PAD_LEFT),
                     'unit' => $faker->randomElement($units),
                     'mitra_kerja_sama' => $mitra,
-                    'judul_kerja_sama' => 'Kerja Sama '.implode(' dan ', $bentuk).' dengan '.$mitra,
+                    'judul_kerja_sama' => 'Kerja Sama ' . implode(' dan ', $bentuk) . ' dengan ' . $mitra,
                     'bentuk_kerja_sama' => implode(', ', $bentuk),
                     'jenis_kerja_sama' => $faker->randomElement($jenisKerjaSama),
                     'pihak_ukdw' => $faker->name,
                     'pihak_mitra' => $faker->name,
+                    'email_pihak_mitra' => $faker->safeEmail,
                     'tanggal_mulai' => $startDate,
                     'tanggal_selesai' => $endDate,
                     'masa_berlaku' => $duration,
@@ -86,16 +93,15 @@ class RekapKerjaSamaSeeder extends Seeder
                     'in_cash' => $inCash,
                     'total_in_cash' => $inCash,
                     'jumlah_implementasi' => $faker->numberBetween(0, 10),
-                    'dokumen_path' => 'dokumen_kerja_sama/dummy_'.$i.'.pdf',
+                    'dokumen_path' => 'dokumen_kerja_sama/dummy_' . $i . '.pdf',
                     'created_at' => $faker->dateTimeBetween('-1 year', 'now'),
                     'updated_at' => $faker->dateTimeBetween('-1 year', 'now'),
                 ]);
             }
 
             $this->command->info('Berhasil menambahkan 50 data dummy Rekap Kerja Sama!');
-
         } catch (\Exception $e) {
-            $this->command->error('Error: '.$e->getMessage());
+            $this->command->error('Error: ' . $e->getMessage());
         }
     }
 
@@ -112,7 +118,7 @@ class RekapKerjaSamaSeeder extends Seeder
                 $this->command->warn("Tabel {$tableName} tidak ditemukan, dilewati");
             }
         } catch (\Exception $e) {
-            $this->command->error("Gagal menghapus data dari {$tableName}: ".$e->getMessage());
+            $this->command->error("Gagal menghapus data dari {$tableName}: " . $e->getMessage());
         }
     }
 }
