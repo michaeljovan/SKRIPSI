@@ -22,6 +22,43 @@ Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post')
 
 Route::get('/rekapkerjasama/{id}/pdf', [RekapKerjaSamaController::class, 'lihatPDF'])->name('rekapkerjasama.pdf');
 
+
+Route::post('/evaluasi-mitra/{rekap}/send-otp', [EvaluasiMitraController::class, 'kirimLinkDanOtp'])
+    ->name('evaluasi.mitra.send_otp');
+
+Route::get('/evaluasi-mitra/{rekapId}/otp', [EvaluasiMitraController::class, 'showOtpGate'])
+    ->name('EvaluasiMitra.otpGate');
+
+Route::post('/evaluasi-mitra/{rekap}/otp-verify', [EvaluasiMitraController::class, 'verifyOtp'])
+    ->name('evaluasi.mitra.otp.verify');
+
+// create form setelah OTP valid
+Route::get('/evaluasi-mitra/create/{id}', [EvaluasiMitraController::class, 'create'])
+    ->name('EvaluasiMitra.create');
+
+
+
+// Gerbang OTP (GET form)
+Route::get('/evaluasi-mitra-kinerja/{rekapId}/otp',
+    [EvaluasiMitraKinerjaController::class, 'showOtpGate']
+)->name('EvaluasiMitraKinerja.otpGate');
+
+// Verifikasi OTP (POST)
+Route::post('/evaluasi-mitra-kinerja/{rekapId}/otp',
+    [EvaluasiMitraKinerjaController::class, 'verifyOtp']
+)->name('EvaluasiMitraKinerja.verifyOtp');
+
+// Kirim link ke mitra + OTP ke admin (POST dari dashboard admin)
+Route::post('/evaluasi-mitra-kinerja/{rekapId}/kirim',
+    [EvaluasiMitraKinerjaController::class, 'kirimLinkDanOtp']
+)->name('EvaluasiMitraKinerja.kirim');
+
+// Akses form setelah OTP valid (sudah kamu pakai di verifyOtp)
+Route::get('/evaluasi-mitra-kinerja/{id}/create',
+    [EvaluasiMitraKinerjaController::class, 'create']
+)->name('EvaluasiMitraKinerja.create');
+
+
 // Autentikasi Routes
 Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
 

@@ -181,10 +181,14 @@
                                                 @else
                                                     <span class="status-indicator status-empty"></span>
                                                     <span class="status-text status-empty-text">Belum Terisi</span>
-                                                    <a href="{{ route('EvaluasiMitraKinerja.create', ['id' => $rekap->id]) }}"
-                                                        class="btn btn-sm btn-primary ms-2" title="Tambah Laporan">
-                                                        <i class="bi bi-plus-circle"></i> Tambah
-                                                    </a>
+                                                    <form
+                                                        action="{{ route('EvaluasiMitraKinerja.kirim', ['rekapId' => $rekap->id]) }}"
+                                                        method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-primary ms-2">
+                                                            <i class="bi bi-envelope-paper"></i> Kirim Link & OTP
+                                                        </button>
+                                                    </form>
                                                 @endif
                                             </div>
                                         </td>
@@ -196,10 +200,16 @@
                                                 @else
                                                     <span class="status-indicator status-empty"></span>
                                                     <span class="status-text status-empty-text">Belum Terisi</span>
-                                                    <a href="{{ route('EvaluasiMitra.create', ['id' => $rekap->id]) }}"
-                                                        class="btn btn-sm btn-primary ms-2" title="Tambah Laporan">
-                                                        <i class="bi bi-plus-circle"></i> Tambah
-                                                    </a>
+
+                                                    <form
+                                                        action="{{ route('evaluasi.mitra.send_otp', ['rekap' => $rekap->id]) }}"
+                                                        method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-primary ms-2"
+                                                            title="Kirim link (mitra) & OTP (admin)">
+                                                            <i class="bi bi-envelope-paper"></i> Kirim Link & OTP
+                                                        </button>
+                                                    </form>
                                                 @endif
                                             </div>
                                         </td>

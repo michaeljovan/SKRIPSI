@@ -251,15 +251,20 @@
 
                             <!-- Row 4 -->
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="pihakUKDW" class="form-label">Pihak UKDW</label>
                                     <input type="text" class="form-control" id="pihakUKDW" name="pihakUKDW"
                                         value="{{ old('pihakUKDW', $rekap->pihak_ukdw) }}" required>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="pihakMitra" class="form-label">Pihak Mitra</label>
                                     <input type="text" class="form-control" id="pihakMitra" name="pihakMitra"
                                         value="{{ old('pihakMitra', $rekap->pihak_mitra) }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="emailMitra" class="form-label">Email Penanggung Jawab Mitra</label>
+                                    <input type="email" class="form-control" id="emailMitra" name="emailMitra"
+                                        value="{{ old('emailMitra', $rekap->email_pihak_mitra) }}" required>
                                 </div>
                             </div>
 
@@ -376,55 +381,70 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Reset button with SweetAlert confirmation
-            document.querySelector('button[type="reset"]').addEventListener('click', function(e) {
-                e.preventDefault();
+            const form = document.getElementById('kerjaSamaForm');
+            const jenisRadios = document.querySelectorAll('input[name="jenisKerjaSama"]');
+            const parentSelect = document.getElementById('parentDocument'); // name="parent_id"
+            const parentMitra = document.getElementById('parentMitra');
+            const parentJudul = document.getElementById('parentJudul');
+            const noParentAlert = document.getElementById('noParentDocAlert');
+            const errBox = document.getElementById('bentukKerjaSamaError');
 
-                Swal.fire({
-                    title: 'Konfirmasi Reset Form',
-                    text: "Apakah Anda yakin ingin mereset semua perubahan yang telah dibuat?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, Reset!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('kerjaSamaForm').reset();
-                        Swal.fire('Berhasil!', 'Form telah berhasil direset ke nilai awal.',
-                            'success');
-                    }
+            // Reset dengan konfirmasi
+            const resetBtn = document.querySelector('button[type="reset"]');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Konfirmasi Reset Form',
+                        text: 'Apakah Anda yakin ingin mereset semua perubahan?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Reset!',
+                        cancelButtonText: 'Batal'
+                    }).then(res => {
+                        if (res.isConfirmed) {
+                            form.reset();
+                            if (errBox) errBox.style.display = 'none';
+                            Swal.fire('Berhasil!', 'Form telah direset.', 'success');
+                        }
+                    });
                 });
-            });
-
-            // Event listener untuk radio jenis kerja sama
-            jenisRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    updateDokumenInduk(this.value);
-                });
-            });
-
-            // Trigger saat halaman pertama kali dibuka (edit form)
-            const selectedRadio = document.querySelector('.jenis-radio:checked');
-            if (selectedRadio) {
-                updateDokumenInduk(selectedRadio.value);
             }
 
-            // Form submission with SweetAlert
-            document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
+            // Helper: tampilkan error 422 per field
+            function showValidationErrors(errors) {
+                // Hapus highlight lama
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+                // Build list error
+                const html = Object.entries(errors).map(([field, msgs]) => {
+                    // Tandai field invalid jika ada input dg name=field
+                    const input = form.querySelector(`[name="${field}"]`);
+                    if (input) input.classList.add('is-invalid');
+                    return `<li><strong>${field}</strong>: ${[].concat(msgs).join('<br>')}</li>`;
+                }).join('');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi gagal',
+                    html: `<ul style="text-align:left;margin:0;padding-left:18px">${html}</ul>`
+                });
+            }
+
+            // Submit AJAX
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
-                const checkboxes = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
-                if (checkboxes.length === 0) {
-                    document.getElementById('bentukKerjaSamaError').style.display = 'block';
+                // Validasi client: minimal 1 bentuk kerja sama
+                const checked = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
+                if (checked.length === 0) {
+                    if (errBox) errBox.style.display = 'block';
                     return;
                 } else {
-                    document.getElementById('bentukKerjaSamaError').style.display = 'none';
+                    if (errBox) errBox.style.display = 'none';
                 }
 
-                const form = this;
-                const formData = new FormData(form);
+                const fd = new FormData(form); // @method('PUT') akan tersertakan sebagai _method
 
                 Swal.fire({
                     title: 'Memproses...',
@@ -433,109 +453,75 @@
                     didOpen: () => Swal.showLoading()
                 });
 
-                fetch(form.action, {
+                try {
+                    const res = await fetch(form.action, {
                         method: 'POST',
-                        body: formData,
+                        body: fd,
                         headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .content,
+                            'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                throw err;
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                title: 'Berhasil!',
-                                text: data.message || 'Data kerja sama berhasil diperbarui',
-                                icon: 'success'
-                            }).then(() => {
-                                window.location.href = data.redirect ||
-                                    '{{ route('data_kerja_sama') }}';
-                            });
-                        } else {
-                            throw new Error(data.message || 'Gagal memperbarui data');
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: error.message || 'Terjadi kesalahan saat memperbarui data',
-                            icon: 'error'
-                        });
-                        console.error('Error:', error);
+                        },
+                        redirect: 'follow'
                     });
+
+                    const ct = res.headers.get('content-type') || '';
+
+                    // Tangani 422 (validasi)
+                    if (res.status === 422 && ct.includes('application/json')) {
+                        const data = await res.json();
+                        Swal.close();
+                        showValidationErrors(data.errors || {});
+                        return;
+                    }
+
+                    // Error lain
+                    if (!res.ok) {
+                        let message = 'Gagal menyimpan data.';
+                        if (ct.includes('application/json')) {
+                            const data = await res.json().catch(() => null);
+                            if (data?.message) message = data.message;
+                        }
+                        throw new Error(message);
+                    }
+
+                    // Sukses JSON
+                    if (ct.includes('application/json')) {
+                        const data = await res.json();
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message || 'Data kerja sama berhasil diperbarui'
+                        }).then(() => {
+                            window.location.href = data.redirect ||
+                                '{{ route('data_kerja_sama') }}';
+                        });
+                        return;
+                    }
+
+                    // Sukses non-JSON (redirect HTML)
+                    Swal.close();
+                    window.location.href = res.url || '{{ route('data_kerja_sama') }}';
+
+                } catch (err) {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: err.message || 'Terjadi kesalahan saat memperbarui data'
+                    });
+                    console.error(err);
+                }
             });
 
-            // Hitung masa berlaku
-            const tanggalMulai = document.getElementById('tanggalMulai');
-            const tanggalSelesai = document.getElementById('tanggalSelesai');
-            const masaBerlaku = document.getElementById('masaBerlaku');
-
-            function calculateDuration() {
-                if (tanggalMulai.value && tanggalSelesai.value) {
-                    const startDate = new Date(tanggalMulai.value);
-                    const endDate = new Date(tanggalSelesai.value);
-                    const diffTime = Math.abs(endDate - startDate);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    masaBerlaku.value = diffDays + 1;
-                } else {
-                    masaBerlaku.value = '';
-                }
-            }
-
-            tanggalMulai.addEventListener('change', calculateDuration);
-            tanggalSelesai.addEventListener('change', calculateDuration);
-            calculateDuration();
-
-            // Sidebar toggle
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const mainContent = document.getElementById('mainContent');
-            const toggleIcon = document.getElementById('toggleIcon');
-
-            sidebarToggle.addEventListener('click', function() {
-                if (window.innerWidth < 992) {
-                    sidebar.classList.toggle('show');
-                    sidebarToggle.classList.toggle('show');
-                } else {
-                    sidebar.classList.toggle('collapsed');
-                    sidebarToggle.classList.toggle('collapsed');
-                    mainContent.classList.toggle('full-width');
-
-                    if (sidebar.classList.contains('collapsed')) {
-                        toggleIcon.classList.remove('bi-list');
-                        toggleIcon.classList.add('bi-chevron-right');
-                    } else {
-                        toggleIcon.classList.remove('bi-chevron-right');
-                        toggleIcon.classList.add('bi-list');
-                    }
-                }
-            });
-
-            const navLinks = document.querySelectorAll('.menu-link, .submenu-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth < 992) {
-                        sidebar.classList.remove('show');
-                        sidebarToggle.classList.remove('show');
-                    }
+            // Muat opsi induk sesuai jenis
+            jenisRadios.forEach(r => {
+                r.addEventListener('change', function() {
+                    loadParentOptions(this.value);
                 });
             });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const jenisRadios = document.querySelectorAll('input[name="jenisKerjaSama"]');
-            const parentSelect = document.getElementById('parentDocument');
-            const parentMitra = document.getElementById('parentMitra');
-            const parentJudul = document.getElementById('parentJudul');
-            const noParentAlert = document.getElementById('noParentDocAlert');
 
             async function loadParentOptions(jenis) {
                 parentSelect.innerHTML = '';
@@ -543,73 +529,77 @@
                 parentJudul.value = '';
 
                 if (jenis === 'MoU') {
-                    parentSelect.disabled = false;
-                    noParentAlert.style.display = 'block';
+                    // MoU: tidak perlu induk (disable + opsi placeholder)
+                    parentSelect.disabled = true;
+                    noParentAlert && (noParentAlert.style.display = 'block');
+
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = 'Tidak diperlukan dokumen induk';
+                    parentSelect.appendChild(opt);
+                    parentSelect.value = '';
                     return;
                 }
 
-                noParentAlert.style.display = 'none';
-                let fetchJenis = jenis === 'MoA' ? 'MoU' : (jenis === 'IA' ? 'MoU,MoA' : '');
+                // MoA / IA: induk opsional
+                parentSelect.disabled = false;
+                noParentAlert && (noParentAlert.style.display = 'none');
+
+                // Opsi kosong (boleh tanpa induk)
+                const emptyOpt = document.createElement('option');
+                emptyOpt.value = '';
+                emptyOpt.textContent = '— Tanpa Dokumen Induk —';
+                parentSelect.appendChild(emptyOpt);
+
                 try {
-                    const response = await fetch(`/api/dokumen-induk?jenis=${jenis}`);
+                    const response = await fetch(`/api/dokumen-induk?jenis=${encodeURIComponent(jenis)}`);
                     const data = await response.json();
 
                     data.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.id;
-                        option.textContent = `${item.no_dokumen} - ${item.judul_kerja_sama}`;
-                        option.dataset.mitra = item.mitra_kerja_sama;
-                        option.dataset.judul = item.judul_kerja_sama;
-                        parentSelect.appendChild(option);
+                        const opt = document.createElement('option');
+                        opt.value = item.id;
+                        opt.textContent = `${item.no_dokumen} - ${item.judul_kerja_sama}`;
+                        opt.dataset.mitra = item.mitra_kerja_sama;
+                        opt.dataset.judul = item.judul_kerja_sama;
+                        parentSelect.appendChild(opt);
                     });
 
-                    // Pilih dokumen induk jika sudah ada (edit mode)
+                    // Set nilai default (edit mode)
                     const selectedId = parentSelect.dataset.selectedId;
                     if (selectedId) {
-                        const selectedOption = Array.from(parentSelect.options).find(option => option.value ===
-                            selectedId);
-                        if (selectedOption) {
-                            parentSelect.value = selectedId;
-                            parentMitra.value = selectedOption.dataset.mitra || '';
-                            parentJudul.value = selectedOption.dataset.judul || '';
+                        const selected = Array.from(parentSelect.options).find(o => o.value === String(
+                            selectedId));
+                        if (selected) {
+                            parentSelect.value = String(selectedId);
+                            parentMitra.value = selected.dataset.mitra || '';
+                            parentJudul.value = selected.dataset.judul || '';
+                        } else {
+                            parentSelect.value = ''; // fallback tanpa induk
                         }
+                    } else {
+                        parentSelect.value = ''; // default tanpa induk
                     }
-
-                } catch (error) {
-                    console.error('Gagal memuat dokumen induk:', error);
+                } catch (e) {
+                    console.error('Gagal memuat dokumen induk:', e);
                 }
             }
 
-            jenisRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    loadParentOptions(this.value);
-                });
-            });
-
+            // On change: update info induk
             parentSelect.addEventListener('change', function() {
                 const selected = this.options[this.selectedIndex];
-
-                if (!selected || selected.value === 'none') {
-                    this.value = '';
+                if (!selected || selected.value === '') {
                     parentMitra.value = '';
                     parentJudul.value = '';
-                    parentMitra.disabled = true;
-                    parentJudul.disabled = true;
-                } else {
-                    parentMitra.disabled = false;
-                    parentJudul.disabled = false;
-                    parentMitra.value = selected.dataset.mitra || '';
-                    parentJudul.value = selected.dataset.judul || '';
+                    return;
                 }
+                parentMitra.value = selected.dataset.mitra || '';
+                parentJudul.value = selected.dataset.judul || '';
             });
 
-            // Saat halaman dimuat
+            // Trigger awal saat halaman dibuka
             const checkedJenis = document.querySelector('input[name="jenisKerjaSama"]:checked');
-            if (checkedJenis) {
-                loadParentOptions(checkedJenis.value);
-            }
+            if (checkedJenis) loadParentOptions(checkedJenis.value);
         });
     </script>
 </body>
-
 </html>

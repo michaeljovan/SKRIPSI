@@ -5,14 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\RekapKerjaSama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Services\RekapKerjaSamaService;
-use Tests\TestCase;
-use Mockery;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
+use App\Models\EvaluasiKinerjaOtp;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EvaluasiKinerjaOtpMail;
+use Illuminate\Validation\Rule;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 
 class RekapKerjaSamaController extends Controller
@@ -230,25 +232,88 @@ class RekapKerjaSamaController extends Controller
         try {
             $rekap = RekapKerjaSama::findOrFail($id);
 
-            $validated = $request->validate([
-                'noDokumen' => 'required|unique:rekapkerjasama,no_dokumen,' . $id,
-                'unit' => 'required',
-                'mitraKerjaSama' => 'required',
-                'judulKerjaSama' => 'required',
-                'bentukKerjaSama' => 'required|array',
-                'bentukKerjaSama.*' => 'string|in:Penelitian,Pendidikan,Pengabdian',
-                'jenisKerjaSama' => 'required|in:MoU,MoA,IA',
-                'pihakUKDW' => 'required',
-                'pihakMitra' => 'required',
-                'tanggalMulai' => 'required|date',
-                'tanggalSelesai' => 'required|date|after_or_equal:tanggalMulai',
-                'kategori' => 'required|in:nasional,internasional',
-                'dokumenPendukung' => 'nullable|file|mimes:pdf|max:5120',
-                'parent_id' => 'nullable|exists:rekapkerjasama,id'
+            // Normalisasi: kosong => null (induk opsional)
+            $request->merge([
+                'parent_id' => $request->filled('parent_id') ? $request->input('parent_id') : null,
             ]);
 
-            $duration = (new \DateTime($request->tanggalMulai))->diff(new \DateTime($request->tanggalSelesai))->days + 1;
+            // RULES & MESSAGES
+            $rules = [
+                'noDokumen'          => ['required', Rule::unique('rekapkerjasama', 'no_dokumen')->ignore($rekap->id, 'id')],
+                'unit'               => ['required'],
+                'mitraKerjaSama'     => ['required'],
+                'judulKerjaSama'     => ['required'],
+                'bentukKerjaSama'    => ['required', 'array'],
+                'bentukKerjaSama.*'  => ['string', 'in:Penelitian,Pendidikan,Pengabdian'],
+                'jenisKerjaSama'     => ['required', 'in:MoU,MoA,IA'],
+                'pihakUKDW'          => ['required'],
+                'pihakMitra'         => ['required'],
+                'emailMitra'         => ['required', 'email'],
+                'tanggalMulai'       => ['required', 'date'],
+                'tanggalSelesai'     => ['required', 'date', 'after_or_equal:tanggalMulai'],
+                'kategori'           => ['required', 'in:nasional,internasional'],
+                'dokumenPendukung'   => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+                'parent_id'          => ['nullable', 'integer', 'exists:rekapkerjasama,id'],
+                'in_kind'            => ['nullable', 'string'],
+                'totalInKind'        => ['nullable', 'string'],
+                'inCash'             => ['nullable', 'string'],
+                'totalInCash'        => ['nullable', 'string'],
+                'jumlahImplementasi' => ['nullable', 'numeric'],
+            ];
 
+            $messages = [
+                'noDokumen.required' => 'No Dokumen wajib diisi.',
+                'noDokumen.unique'   => 'No Dokumen sudah digunakan.',
+                'bentukKerjaSama.required' => 'Pilih minimal satu Bentuk Kerja Sama.',
+                'emailMitra.email'   => 'Format email penanggung jawab mitra tidak valid.',
+                'tanggalSelesai.after_or_equal' => 'Tanggal Selesai harus sama atau setelah Tanggal Mulai.',
+                'dokumenPendukung.mimes' => 'Dokumen pendukung harus PDF.',
+                'dokumenPendukung.max'   => 'Ukuran dokumen pendukung maksimal 5MB.',
+                'parent_id.exists'       => 'Dokumen induk tidak ditemukan.',
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+            $validator->after(function ($v) use ($request, $rekap) {
+                // MoU tidak boleh punya induk
+                if ($request->input('jenisKerjaSama') === 'MoU' && $request->filled('parent_id')) {
+                    $v->errors()->add('parent_id', 'MoU tidak memerlukan dokumen induk.');
+                }
+                // parent_id tidak boleh menunjuk ke dirinya sendiri
+                if ($request->filled('parent_id') && (int)$request->input('parent_id') === (int)$rekap->id) {
+                    $v->errors()->add('parent_id', 'Dokumen induk tidak boleh dokumen ini sendiri.');
+                }
+                // (Opsional) Pembatasan tipe induk jika dipilih
+                if ($request->filled('parent_id')) {
+                    $parent = RekapKerjaSama::find($request->input('parent_id'));
+                    if ($parent) {
+                        $jenis = $request->input('jenisKerjaSama');
+                        if ($jenis === 'MoA' && $parent->jenis_kerja_sama !== 'MoU') {
+                            $v->errors()->add('parent_id', 'Induk MoA harus bertipe MoU.');
+                        }
+                        if ($jenis === 'IA' && !in_array($parent->jenis_kerja_sama, ['MoU', 'MoA'])) {
+                            $v->errors()->add('parent_id', 'Induk IA harus bertipe MoU atau MoA.');
+                        }
+                    }
+                }
+            });
+
+            if ($validator->fails()) {
+                throw new \Illuminate\Validation\ValidationException($validator);
+            }
+
+            $validated = $validator->validated();
+
+            // MoU: paksa induk null
+            if ($validated['jenisKerjaSama'] === 'MoU') {
+                $validated['parent_id'] = null;
+            }
+
+            // Hitung masa berlaku (hari) dengan Carbon
+            $mulai   = Carbon::parse($validated['tanggalMulai']);
+            $selesai = Carbon::parse($validated['tanggalSelesai']);
+            $duration = $mulai->diffInDays($selesai) + 1;
+
+            // Upload file: hapus lama bila ada
             $filePath = $rekap->dokumen_path;
             if ($request->hasFile('dokumenPendukung')) {
                 if ($filePath && Storage::disk('public')->exists($filePath)) {
@@ -257,52 +322,81 @@ class RekapKerjaSamaController extends Controller
                 $filePath = $request->file('dokumenPendukung')->store('dokumen_kerja_sama', 'public');
             }
 
-            $noDokInduk = optional(RekapKerjaSama::find($request->parent_id))->no_dokumen;
+            // Ambil nomor dokumen induk (jika ada)
+            $noDokInduk = null;
+            if (!empty($validated['parent_id'])) {
+                $noDokInduk = optional(RekapKerjaSama::find($validated['parent_id']))->no_dokumen;
+            }
 
+            // Sanitizer angka (hapus non-digit)
+            $toNumber = function ($v) {
+                if ($v === null) return null;
+                $num = preg_replace('/[^\d]/', '', (string)$v);
+                return $num === '' ? null : (int)$num;
+            };
+
+            // Update
             $rekap->update([
-                'no_dokumen' => $request->noDokumen,
-                'unit' => $request->unit,
-                'mitra_kerja_sama' => $request->mitraKerjaSama,
-                'judul_kerja_sama' => $request->judulKerjaSama,
-                'bentuk_kerja_sama' => implode(', ', $request->bentukKerjaSama),
-                'jenis_kerja_sama' => $request->jenisKerjaSama,
-                'pihak_ukdw' => $request->pihakUKDW,
-                'pihak_mitra' => $request->pihakMitra,
-                'tanggal_mulai' => $request->tanggalMulai,
-                'tanggal_selesai' => $request->tanggalSelesai,
-                'masa_berlaku' => $duration,
-                'kategori' => $request->kategori,
-                'in_kind' => str_replace(',', '', $request->totalInKind) ?: 0,
-                'total_in_kind' => str_replace(',', '', $request->totalInKind) ?: 0,
-                'in_cash' => str_replace(',', '', $request->inCash) ?: 0,
-                'total_in_cash' => str_replace(',', '', $request->totalInCash) ?: 0,
-                'jumlah_implementasi' => $request->jumlahImplementasi ?? 0,
-                'dokumen_path' => $filePath,
-                'parent_id' => $request->parent_id,
-                'no_dokumen_induk' => $noDokInduk,
+                'no_dokumen'          => $validated['noDokumen'],
+                'unit'                => $validated['unit'],
+                'mitra_kerja_sama'    => $validated['mitraKerjaSama'],
+                'judul_kerja_sama'    => $validated['judulKerjaSama'],
+                'bentuk_kerja_sama'   => implode(', ', $validated['bentukKerjaSama']),
+                'jenis_kerja_sama'    => $validated['jenisKerjaSama'],
+                'pihak_ukdw'          => $validated['pihakUKDW'],
+                'pihak_mitra'         => $validated['pihakMitra'],
+                'email_pihak_mitra'   => $validated['emailMitra'],
+                'tanggal_mulai'       => $validated['tanggalMulai'],
+                'tanggal_selesai'     => $validated['tanggalSelesai'],
+                'masa_berlaku'        => $duration,
+                'kategori'            => $validated['kategori'],
+
+                // Finansial: teks vs angka
+                'in_kind'             => $request->input('in_kind'),                   // teks
+                'total_in_kind'       => $toNumber($request->input('totalInKind')),    // angka
+                'in_cash'             => $request->input('inCash'),                    // teks
+                'total_in_cash'       => $toNumber($request->input('totalInCash')),    // angka
+
+                'jumlah_implementasi' => (int) $request->input('jumlahImplementasi', 0),
+                'dokumen_path'        => $filePath,
+                'parent_id'           => $validated['parent_id'],
+                'no_dokumen_induk'    => $noDokInduk,
             ]);
 
-            if ($request->wantsJson() || $request->ajax()) {
+            // Respons
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Data kerja sama berhasil diperbarui!',
-                    'redirect' => route('data_kerja_sama')
+                    'success'  => true,
+                    'message'  => 'Data kerja sama berhasil diperbarui!',
+                    'redirect' => route('data_kerja_sama'),
                 ]);
             }
 
-            return redirect()->route('data_kerja_sama')->with('success', 'Data kerja sama berhasil diperbarui!');
+            return redirect()
+                ->route('data_kerja_sama')
+                ->with('success', 'Data kerja sama berhasil diperbarui!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log optional: \Log::warning('Update Rekap - Validation failed', ['errors' => $e->errors()]);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal.',
+                    'errors'  => $e->errors(),
+                ], 422);
+            }
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            $response = [
-                'success' => false,
-                'message' => $e->getMessage(),
-                'errors' => $e instanceof \Illuminate\Validation\ValidationException ? $e->errors() : []
-            ];
-
-            return $request->wantsJson() || $request->ajax()
-                ? response()->json($response, 500)
-                : back()->withErrors($e->getMessage());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
+            return back()->with('error', $e->getMessage())->withInput();
         }
     }
+
+
 
     public function lihatPDF($id)
     {
@@ -314,5 +408,36 @@ class RekapKerjaSamaController extends Controller
         return response($disk->get($rekap->dokumen_path), 200, [
             'Content-Type' => 'application/pdf',
         ]);
+    }
+
+
+    public function sendEvaluasiOtp(RekapKerjaSama $rekap, Request $request)
+    {
+        $staff = Auth::user();
+        if (!$staff || !$staff->email) {
+            return back()->with('error', 'Email staff tidak ditemukan.');
+        }
+
+        // generate OTP 6 digit
+        $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // simpan hash & meta
+        $record = EvaluasiKinerjaOtp::create([
+            'rekap_id'     => $rekap->id,
+            'staff_id'     => $staff->id ?? null,
+            'code_hash'    => Hash::make($otp),
+            'expires_at'   => now()->addMinutes(30),
+            'sent_to_email' => $staff->email,
+            'request_ip'   => $request->ip(),
+            'user_agent'   => substr((string)$request->userAgent(), 0, 190),
+        ]);
+
+        // link OTP gate yang akan diberikan ke mitra
+        $otpGateUrl = route('evaluasi.kinerja.otp.show', ['rekap' => $rekap->id]);
+
+        // kirim email ke staff (staff akan teruskan OTP & link ke mitra)
+        Mail::to($staff->email)->send(new EvaluasiKinerjaOtpMail($rekap, $otp, $otpGateUrl));
+
+        return back()->with('success', 'OTP dan tautan evaluasi telah dikirim ke email Anda.');
     }
 }

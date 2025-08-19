@@ -25,287 +25,243 @@
                     alt="">
                 <img src="{{ asset('assets/logo-ukdw.png') }}" width="40" height="40" alt="">
             </div>
-            <div class="settingbtn d-flex gap-2">
-                <a href="{{ route('superadmin') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
-                    <i class="bi bi-gear"></i> <span class="d-none d-md-inline">Super Admin</span>
-                </a>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                    class="btn btn-sm btn-outline-danger rounded-pill">
-                    <i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline">Logout</span>
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
-            </div>
         </div>
     </nav>
 
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-menu">
-            <!-- Dashboard Item -->
-            <div class="menu-item">
-                <a href="{{ route('dashboard') }}" class="menu-link active">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </div>
+    <!-- Main Content -->
+    <main class="main-content p-3 d-flex align-items-center justify-content-center min-vh-100" id="mainContent">
+        <div class="container">
+            <div class="row justify-content-center w-100">
+                <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Form Evaluasi Kepuasan Mitra Kinerja</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ route('EvaluasiMitra.store') }}" method="POST"
+                                enctype="multipart/form-data">
+                                @csrf
+                                <div class="mb-4">
+                                    <h6 class="border-bottom pb-2"> </h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="nodok" class="form-label">No Dokumen</label>
+                                            <input type="text" class="form-control" id="nodok" name="nodok"
+                                                required value="{{ $rekap->no_dokumen ?? '' }}" readonly>
+                                            <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="mitra" class="form-label">Mitra</label>
+                                            <input type="text" class="form-control" id="mitra" name="mitra"
+                                                required value="{{ $rekap->mitra_kerja_sama ?? '' }}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
 
-            <!-- Dokumen Item -->
-            <div class="menu-item">
-                <a class="menu-link" data-bs-toggle="collapse" href="#dokumenMenu">
-                    <i class="bi bi-files"></i> Dokumen <i class="bi bi-chevron-down float-end"></i>
-                </a>
-                <div class="collapse show submenu" id="dokumenMenu">
-                    <div class="submenu-item">
-                        <a href="{{ route('rekapkerjasama.create') }}" class="submenu-link">Input Rekap Kerja Sama</a>
-                        <a href="{{ route('data_kerja_sama') }}" class="submenu-link">Data Dokumen Kerja Sama</a>
-                        <a href="{{ route('pelaksanaankerjasama.index') }}" class="submenu-link">Laporan Pelaksaan
-                            Kerja Sama</a>
-                        <a href="{{ route('EvaluasiMitraKinerja.index') }}" class="submenu-link">Form Evaluasi Kepuasan
-                            Mitra (Kinerja Mahasiswa/Dosen)</a>
-                        <a href="{{ route('EvaluasiMitra.index') }}" class="submenu-link">Form Evaluasi Kepuasan
-                            Mitra</a>
+                                <!-- Skala  -->
+                                <div class="mb-4">
+                                    <h6 class="border-bottom pb-2">Evaluasi Kerja Sama Kinerja</h6>
+                                    <p class="text-muted">Berikan penilaian Anda
+                                    </p>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 60%">Penilaian Oleh Mitra</th>
+                                                    <th class="text-center">Sangat Tinggi</th>
+                                                    <th class="text-center">Tinggi</th>
+                                                    <th class="text-center">Cukup</th>
+                                                    <th class="text-center">Kurang</th>
+                                                    <th class="text-center">Sangat Kurang</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Pelaksanaan kegiatan kerja sama sesuai dengan dokumen perjanjian
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio" name="integritas"
+                                                            value="Sangat Tinggi" required>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio" name="integritas"
+                                                            value="Tinggi">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio" name="integritas"
+                                                            value="Cukup">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio" name="integritas"
+                                                            value="Kurang">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="integritas" value="Sangat Kurang">
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td>Pelaksanaan kegiatan kerja sama sesuai dengan harapan</td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="keahlian" value="Sangat Tinggi" required>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="keahlian" value="Tinggi">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="keahlian" value="Cukup">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="keahlian" value="Kurang">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="keahlian" value="Sangat Kurang">
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td>Kegiatan kerja sama memberikan benefit bagi institusi </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="komunikasi" value="Sangat Tinggi" required>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="komunikasi" value="Tinggi">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="komunikasi" value="Cukup">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="komunikasi" value="Kurang">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="komunikasi" value="Sangat Kurang">
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td>Terbina komunikasi yang baik antara FTI UKDW dengan mitra</td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kerjasamatim" value="Sangat Tinggi" required>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kerjasamatim" value="Tinggi">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kerjasamatim" value="Cukup">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kerjasamatim" value="Kurang">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kerjasamatim" value="Sangat Kurang">
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td>Tujuan yang diharapkan dari kerja sama berhasil dicapai</td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="pengembangandiri" value="Sangat Tinggi" required>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="pengembangandiri" value="Tinggi">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="pengembangandiri" value="Cukup">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="pengembangandiri" value="Kurang">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="pengembangandiri" value="Sangat Kurang">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Kegiatan kerja sama berjalan dengan memuaskan</td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kreativitas" value="Sangat Tinggi" required>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kreativitas" value="Tinggi">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kreativitas" value="Cukup">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kreativitas" value="Kurang">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="kreativitas" value="Sangat Kurang">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Bersedia melanjutkan kerja sama kembali di masa mendatang</td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="bahasaasing" value="Sangat Tinggi" required>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="bahasaasing" value="Tinggi">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="bahasaasing" value="Cukup">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="bahasaasing" value="Kurang">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="bahasaasing" value="Sangat Kurang">
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="pdfFile" class="form-label">Unggah Dokumen PDF (Opsional)</label>
+                                    <input class="form-control" type="file" id="pdfFile" name="pdfFile"
+                                        accept=".pdf">
+                                    <div class="form-text">Maksimal ukuran file: 5MB</div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                                    <button type="submit" class="btn btn-primary">Submit Evaluasi</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toggle Button -->
-    <button class="toggle-btn" id="sidebarToggle">
-        <i class="bi bi-list" id="toggleIcon"></i>
-    </button>
-
-    <!-- Main Content -->
-    <main class="main-content p-3" id="mainContent">
-        <div class="container-fluid">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Form Evaluasi Kepuasan Mitra Kinerja</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('EvaluasiMitra.store') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="mb-4">
-                            <h6 class="border-bottom pb-2"> </h6>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="nodok" class="form-label">No Dokumen</label>
-                                    <input type="text" class="form-control" id="nodok" name="nodok" required
-                                        value="{{ $rekap->no_dokumen ?? '' }}" readonly>
-                                    <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="mitra" class="form-label">Mitra</label>
-                                    <input type="text" class="form-control" id="mitra" name="mitra"
-                                        required value="{{ $rekap->mitra_kerja_sama ?? '' }}" readonly>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Skala  -->
-                        <div class="mb-4">
-                            <h6 class="border-bottom pb-2">Evaluasi Kerja Sama Kinerja</h6>
-                            <p class="text-muted">Berikan penilaian Anda
-                            </p>
-
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 60%">Penilaian Oleh Mitra</th>
-                                            <th class="text-center">Sangat Tinggi</th>
-                                            <th class="text-center">Tinggi</th>
-                                            <th class="text-center">Cukup</th>
-                                            <th class="text-center">Kurang</th>
-                                            <th class="text-center">Sangat Kurang</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Pelaksanaan kegiatan kerja sama sesuai dengan dokumen perjanjian</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="integritas"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="integritas"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="integritas"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="integritas"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="integritas"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>Pelaksanaan kegiatan kerja sama sesuai dengan harapan</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="keahlian"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="keahlian"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="keahlian"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="keahlian"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="keahlian"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>Kegiatan kerja sama memberikan benefit bagi institusi </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="komunikasi"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="komunikasi"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="komunikasi"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="komunikasi"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="komunikasi"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>Terbina komunikasi yang baik antara FTI UKDW dengan mitra</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kerjasamatim"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kerjasamatim"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kerjasamatim"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kerjasamatim"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kerjasamatim"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>Tujuan yang diharapkan dari kerja sama berhasil dicapai</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio"
-                                                    name="pengembangandiri" value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio"
-                                                    name="pengembangandiri" value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio"
-                                                    name="pengembangandiri" value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio"
-                                                    name="pengembangandiri" value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio"
-                                                    name="pengembangandiri" value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Kegiatan kerja sama berjalan dengan memuaskan</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kreativitas"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kreativitas"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kreativitas"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kreativitas"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="kreativitas"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Bersedia melanjutkan kerja sama kembali di masa mendatang</td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Sangat Tinggi" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Tinggi">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Cukup">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Kurang">
-                                            </td>
-                                            <td class="text-center">
-                                                <input class="form-check-input" type="radio" name="bahasaasing"
-                                                    value="Sangat Kurang">
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="pdfFile" class="form-label">Unggah Dokumen PDF (Opsional)</label>
-                            <input class="form-control" type="file" id="pdfFile" name="pdfFile"
-                                accept=".pdf">
-                            <div class="form-text">Maksimal ukuran file: 5MB</div>
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="reset" class="btn btn-outline-secondary">Reset</button>
-                            <button type="submit" class="btn btn-primary">Submit Evaluasi</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
     </main>
 
     <footer class="py-2 text-center text-white">
