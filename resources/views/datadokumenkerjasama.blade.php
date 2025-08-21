@@ -118,6 +118,7 @@
                                     <th style="min-width: 100px;">In Cash</th>
                                     <th style="min-width: 120px;">Total In Cash</th>
                                     <th style="min-width: 150px;">Jumlah Implementasi</th>
+                                    <th style="min-width: 120px;">Status</th> {{-- kolom baru --}}
                                     <th style="min-width: 200px;">Laporan Pelaksanaan Kerja Sama</th>
                                     <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)
                                     </th>
@@ -158,6 +159,18 @@
                                         <td>{{ $rekap->total_in_cash ? number_format($rekap->total_in_cash, 0, ',', '.') : '-' }}
                                         </td>
                                         <td>{{ $rekap->jumlah_implementasi ?? '-' }}</td>
+                                        <td>
+                                            @php
+                                                $isSelesai = \Carbon\Carbon::parse($rekap->tanggal_selesai)
+                                                    ->endOfDay()
+                                                    ->lt(now());
+                                            @endphp
+                                            @if ($isSelesai)
+                                                <span class="badge bg-secondary">Selesai</span>
+                                            @else
+                                                <span class="badge bg-success">Aktif</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 @if ($rekap->is_laporan == true)

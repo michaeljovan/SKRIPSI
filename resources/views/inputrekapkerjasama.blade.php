@@ -114,6 +114,62 @@
                             </div>
                         </div>
 
+                        {{-- Jenis Permohonan --}}
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label d-block">Jenis Permohonan</label>
+
+                                @php
+                                    // Default: jika rekam punya parent_id, anggap "perpanjang", kalau tidak "baru"
+                                    $defaultPermohonan = old(
+                                        'jenisPermohonan',
+                                        isset($rekap->parent_id) && $rekap->parent_id ? 'perpanjang' : 'baru',
+                                    );
+                                @endphp
+
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="jenisPermohonan"
+                                        id="permohonanBaru" value="baru"
+                                        {{ $defaultPermohonan === 'baru' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="permohonanBaru">Baru</label>
+                                </div>
+
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="jenisPermohonan"
+                                        id="permohonanPerpanjang" value="perpanjang"
+                                        {{ $defaultPermohonan === 'perpanjang' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="permohonanPerpanjang">Perpanjang dari
+                                        Dokumen</label>
+                                </div>
+
+                                @error('jenisPermohonan')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="dokumenPerpanjang" class="form-label">Pilih Dokumen (jika
+                                    perpanjang)</label>
+                                <select class="form-select" id="dokumenPerpanjang" name="dokumenPerpanjang"
+                                    data-selected-id="{{ old('dokumenPerpanjang', $rekap->parent_id ?? '') }}"
+                                    data-current-id="{{ $rekap->id ?? '' }}"
+                                    {{ $defaultPermohonan === 'perpanjang' ? '' : 'disabled' }}>
+                                    <option value="">— Pilih No Dokumen —</option>
+                                    @foreach ($semuaDokumen as $d)
+                                        @continue(isset($rekap) && $d->id == $rekap->id) {{-- Jangan pilih diri sendiri --}}
+                                        <option value="{{ $d->id }}"
+                                            {{ (string) old('dokumenPerpanjang', $rekap->parent_id ?? '') === (string) $d->id ? 'selected' : '' }}>
+                                            {{ $d->no_dokumen }} —
+                                            {{ \Illuminate\Support\Str::limit($d->judul_kerja_sama, 60) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('dokumenPerpanjang')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
                         <!-- Row 2 -->
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -328,8 +384,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ---------- Reset dengan SweetAlert ----------
-            document.querySelector('button[type="reset"]').addEventListener('click', function(e) {
+            // ===================== Helper umum =====================
+            const $ = (sel, el = document) => el.querySelector(sel);
+            const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
+            const showWarn = (title, text) => Swal.fire(title, text, 'warning');
+            const showErr = (title, text) => Swal.fire(title, text, 'error');
+            const showOk = (title, text) => Swal.fire(title, text, 'success');
+
+            // ===================== Reset dengan SweetAlert =====================
+            const resetBtn = document.querySelector('button[type="reset"]');
+            resetBtn?.addEventListener('click', function(e) {
                 e.preventDefault();
                 Swal.fire({
                     title: 'Konfirmasi Reset Form',
@@ -340,180 +404,224 @@
                     cancelButtonText: 'Batal'
                 }).then((r) => {
                     if (r.isConfirmed) {
-                        document.getElementById('kerjaSamaForm').reset();
-                        Swal.fire('Berhasil!', 'Form telah berhasil direset.', 'success');
+                        document.getElementById('kerjaSamaForm')?.reset();
+                        showOk('Berhasil!', 'Form telah berhasil direset.');
+                        // Setelah reset, pastikan dropdown perpanjang kembali mengikuti radio default
+                        togglePerpanjangSelect();
                     }
                 });
             });
 
-            // ---------- Hitung Masa Berlaku ----------
-            const tanggalMulai = document.getElementById('tanggalMulai');
-            const tanggalSelesai = document.getElementById('tanggalSelesai');
-            const masaBerlaku = document.getElementById('masaBerlaku');
+            // ===================== Hitung Masa Berlaku =====================
+            const tanggalMulai = $('#tanggalMulai');
+            const tanggalSelesai = $('#tanggalSelesai');
+            const masaBerlaku = $('#masaBerlaku');
 
             function calculateDuration() {
+                if (!tanggalMulai || !tanggalSelesai || !masaBerlaku) return;
+
                 if (tanggalMulai.value && tanggalSelesai.value) {
                     const s = new Date(tanggalMulai.value);
                     const e = new Date(tanggalSelesai.value);
+                    if (isNaN(s.getTime()) || isNaN(e.getTime())) {
+                        masaBerlaku.value = '';
+                        return;
+                    }
                     if (e >= s) {
                         const d = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
                         masaBerlaku.value = d + ' hari';
                     } else {
                         masaBerlaku.value = '';
-                        Swal.fire('Tanggal tidak valid',
-                            'Tanggal selesai tidak boleh lebih awal dari tanggal mulai!', 'warning');
+                        showWarn('Tanggal tidak valid',
+                            'Tanggal selesai tidak boleh lebih awal dari tanggal mulai!');
                         tanggalSelesai.value = '';
                     }
                 } else {
                     masaBerlaku.value = '';
                 }
             }
-            tanggalMulai.addEventListener('change', () => {
-                tanggalSelesai.min = tanggalMulai.value;
+
+            tanggalMulai?.addEventListener('change', () => {
+                if (tanggalMulai && tanggalSelesai) {
+                    tanggalSelesai.min = tanggalMulai.value;
+                }
                 calculateDuration();
             });
-            tanggalSelesai.addEventListener('change', calculateDuration);
+            tanggalSelesai?.addEventListener('change', calculateDuration);
 
-            // ---------- Sidebar Toggle ----------
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const mainContent = document.getElementById('mainContent');
-            const toggleIcon = document.getElementById('toggleIcon');
+            // ===================== Sidebar Toggle =====================
+            const sidebar = $('#sidebar');
+            const sidebarToggle = $('#sidebarToggle');
+            const mainContent = $('#mainContent');
+            const toggleIcon = $('#toggleIcon');
 
-            sidebarToggle.addEventListener('click', function() {
+            sidebarToggle?.addEventListener('click', function() {
+                if (!sidebar) return;
                 if (window.innerWidth < 992) {
                     sidebar.classList.toggle('show');
                     sidebarToggle.classList.toggle('show');
                 } else {
                     sidebar.classList.toggle('collapsed');
                     sidebarToggle.classList.toggle('collapsed');
-                    mainContent.classList.toggle('full-width');
-                    if (sidebar.classList.contains('collapsed')) {
-                        toggleIcon.classList.replace('bi-list', 'bi-chevron-right');
-                    } else {
-                        toggleIcon.classList.replace('bi-chevron-right', 'bi-list');
+                    mainContent?.classList.toggle('full-width');
+                    if (toggleIcon) {
+                        if (sidebar.classList.contains('collapsed')) {
+                            toggleIcon.classList.replace('bi-list', 'bi-chevron-right');
+                        } else {
+                            toggleIcon.classList.replace('bi-chevron-right', 'bi-list');
+                        }
                     }
                 }
             });
-            document.querySelectorAll('.menu-link, .submenu-link').forEach(a => {
+
+            $$('.menu-link, .submenu-link').forEach(a => {
                 a.addEventListener('click', function() {
-                    if (window.innerWidth < 992) {
+                    if (window.innerWidth < 992 && sidebar) {
                         sidebar.classList.remove('show');
-                        sidebarToggle.classList.remove('show');
+                        sidebarToggle?.classList.remove('show');
                     }
                 });
             });
 
-            // ---------- Dokumen Induk (sesuai controller getDokumenInduk) ----------
-            const jenisRadios = document.querySelectorAll('input[name="jenisKerjaSama"]');
-            const parentSelect = document.getElementById('parentDocument');
-            const parentMitra = document.getElementById('parentMitra');
-            const parentJudul = document.getElementById('parentJudul');
-            const noParentAlert = document.getElementById('noParentDocAlert');
+            // ===================== PERPANJANG: Toggle dropdown No Dokumen =====================
+            const radioBaru = $('#permohonanBaru');
+            const radioPerpanjang = $('#permohonanPerpanjang');
+            const selectPerpanjang = $('#dokumenPerpanjang');
 
-            const API_DOK_INDUK = "{{ route('api.dokumen_induk') }}"; // /api/dokumen-induk (web route)
-            async function fetchParentsByJenis(jenis) {
-                const url = `${API_DOK_INDUK}?jenis=${encodeURIComponent(jenis)}`;
-                const res = await fetch(url, {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-                if (!res.ok) {
-                    const txt = await res.text().catch(() => '');
-                    throw new Error(`Gagal memuat dokumen induk (HTTP ${res.status}) ${txt}`);
+            function togglePerpanjangSelect() {
+                if (!selectPerpanjang) return;
+                const isPerpanjang = !!radioPerpanjang?.checked;
+                selectPerpanjang.disabled = !isPerpanjang;
+                if (!isPerpanjang) {
+                    // kosongkan pilihan saat kembali ke "Baru"
+                    selectPerpanjang.value = '';
                 }
-                return res.json();
             }
 
-            async function loadParentOptions(jenis) {
-                parentSelect.innerHTML = '';
-                parentMitra.value = '';
-                parentJudul.value = '';
+            // Inisialisasi sesuai kondisi awal dari Blade
+            togglePerpanjangSelect();
 
-                try {
-                    // Panggil API kamu: getDokumenInduk( jenis=MoU|MoA|IA )
-                    const data = await fetchParentsByJenis(jenis);
+            // Dengarkan perubahan radio
+            radioBaru?.addEventListener('change', togglePerpanjangSelect);
+            radioPerpanjang?.addEventListener('change', togglePerpanjangSelect);
 
-                    // Tampilkan alert informatif untuk MoU (opsional)
-                    if (jenis === 'MoU') {
-                        noParentAlert.style.display = 'block';
-                    } else {
-                        noParentAlert.style.display = 'none';
+            // Opsional: cegah pilih “diri sendiri” (saat edit)
+            if (selectPerpanjang) {
+                const currentId = selectPerpanjang.dataset.currentId;
+                if (currentId) {
+                    [...selectPerpanjang.options].forEach(opt => {
+                        if (opt.value === String(currentId)) opt.disabled = true;
+                    });
+                }
+            }
+
+            // ===================== DOKUMEN INDUK (opsional, beda fitur) =====================
+            // Hanya berjalan kalau elemen-elemen ini ada.
+            const jenisRadios = $$('input[name="jenisKerjaSama"]');
+            const parentSelect = $('#parentDocument');
+            const parentMitra = $('#parentMitra');
+            const parentJudul = $('#parentJudul');
+            const noParentAlert = $('#noParentDocAlert');
+
+            if (parentSelect && jenisRadios.length) {
+                const API_DOK_INDUK = "{{ route('api.dokumen_induk') }}";
+
+                async function fetchParentsByJenis(jenis) {
+                    const url = `${API_DOK_INDUK}?jenis=${encodeURIComponent(jenis)}`;
+                    const res = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    if (!res.ok) {
+                        const txt = await res.text().catch(() => '');
+                        throw new Error(`Gagal memuat dokumen induk (HTTP ${res.status}) ${txt}`);
                     }
+                    return res.json();
+                }
 
-                    // Isi select sesuai response (controller sudah prepend "none")
-                    if (Array.isArray(data) && data.length) {
-                        data.forEach(item => {
+                function resetParentFields() {
+                    parentSelect.innerHTML = '';
+                    if (parentMitra) parentMitra.value = '';
+                    if (parentJudul) parentJudul.value = '';
+                }
+
+                async function loadParentOptions(jenis) {
+                    resetParentFields();
+                    try {
+                        const data = await fetchParentsByJenis(jenis);
+                        if (noParentAlert) noParentAlert.style.display = (jenis === 'MoU' ? 'block' : 'none');
+
+                        if (Array.isArray(data) && data.length) {
+                            data.forEach(item => {
+                                const opt = document.createElement('option');
+                                opt.value = item.id; // bisa 'none' atau id
+                                opt.textContent = (item.no_dokumen === 'Tidak Ada Induk') ?
+                                    'Tidak Ada Induk' :
+                                    `${item.no_dokumen} - ${item.judul_kerja_sama}`;
+                                opt.dataset.mitra = item.mitra_kerja_sama || '';
+                                opt.dataset.judul = item.judul_kerja_sama || '';
+                                parentSelect.appendChild(opt);
+                            });
+                            parentSelect.disabled = false;
+                        } else {
                             const opt = document.createElement('option');
-                            opt.value = item.id; // bisa 'none' atau id numeric
-                            opt.textContent = item.no_dokumen === 'Tidak Ada Induk' ?
-                                'Tidak Ada Induk' :
-                                `${item.no_dokumen} - ${item.judul_kerja_sama}`;
-                            opt.dataset.mitra = item.mitra_kerja_sama;
-                            opt.dataset.judul = item.judul_kerja_sama;
+                            opt.value = '';
+                            opt.textContent = 'Tidak ada dokumen induk yang tersedia';
                             parentSelect.appendChild(opt);
-                        });
-                        parentSelect.disabled = false;
-                    } else {
-                        const opt = document.createElement('option');
-                        opt.value = '';
-                        opt.textContent = 'Tidak ada dokumen induk yang tersedia';
-                        parentSelect.appendChild(opt);
+                            parentSelect.disabled = true;
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showErr('Gagal', 'Gagal memuat dokumen induk.');
                         parentSelect.disabled = true;
                     }
-                } catch (e) {
-                    console.error(e);
-                    Swal.fire('Gagal', 'Gagal memuat dokumen induk.', 'error');
-                    parentSelect.disabled = true;
                 }
+
+                jenisRadios.forEach(r => r.addEventListener('change', function() {
+                    loadParentOptions(this.value);
+                }));
+
+                const checkedJenis = document.querySelector('input[name="jenisKerjaSama"]:checked');
+                if (checkedJenis) loadParentOptions(checkedJenis.value);
+
+                parentSelect.addEventListener('change', function() {
+                    const sel = this.options[this.selectedIndex];
+                    if (!sel) return;
+                    if (sel.value === 'none') {
+                        if (parentMitra) parentMitra.value = '';
+                        if (parentJudul) parentJudul.value = '';
+                    } else {
+                        if (parentMitra) parentMitra.value = sel.dataset.mitra || '';
+                        if (parentJudul) parentJudul.value = sel.dataset.judul || '';
+                    }
+                });
             }
 
-            jenisRadios.forEach(r => r.addEventListener('change', function() {
-                loadParentOptions(this.value);
-            }));
-
-            parentSelect.addEventListener('change', function() {
-                const sel = this.options[this.selectedIndex];
-                if (!sel) return;
-
-                if (sel.value === 'none') {
-                    // pilih "Tidak Ada Induk" → kosongkan info
-                    parentMitra.value = '';
-                    parentJudul.value = '';
-                } else {
-                    parentMitra.value = sel.dataset.mitra || '';
-                    parentJudul.value = sel.dataset.judul || '';
-                }
-            });
-
-            const checkedJenis = document.querySelector('input[name="jenisKerjaSama"]:checked');
-            if (checkedJenis) loadParentOptions(checkedJenis.value);
-
-            // ---------- Validasi ukuran file 5MB ----------
-            const fileInput = document.getElementById('dokumenPendukung');
+            // ===================== Validasi ukuran file 5MB + format PDF =====================
+            const fileInput = $('#dokumenPendukung');
             const overLimit = (f) => f && f.size > 5 * 1024 * 1024;
 
-            fileInput.addEventListener('change', function() {
-                const f = this.files[0];
+            fileInput?.addEventListener('change', function() {
+                const f = this.files?.[0];
                 if (overLimit(f)) {
-                    Swal.fire('Ukuran terlalu besar', 'Ukuran dokumen maksimal 5MB.', 'warning');
+                    showWarn('Ukuran terlalu besar', 'Ukuran dokumen maksimal 5MB.');
                     this.value = '';
                     return;
                 }
-                // pastikan PDF
                 if (f && f.type !== 'application/pdf' && !this.value.toLowerCase().endsWith('.pdf')) {
-                    Swal.fire('Format salah', 'Dokumen harus berupa PDF.', 'warning');
+                    showWarn('Format salah', 'Dokumen harus berupa PDF.');
                     this.value = '';
                 }
             });
 
-            // ---------- Submit form ----------
-            document.getElementById('kerjaSamaForm').addEventListener('submit', function(e) {
+            // ===================== Submit form =====================
+            const form = $('#kerjaSamaForm');
+            form?.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // minimal satu checkbox bentuk kerja sama
-                const checked = document.querySelectorAll('input[name="bentukKerjaSama[]"]:checked');
+                // Minimal satu checkbox bentuk kerja sama
+                const checked = $$('input[name="bentukKerjaSama[]"]:checked');
                 if (checked.length === 0) {
                     Swal.fire({
                         icon: 'warning',
@@ -523,37 +631,47 @@
                     return;
                 }
 
-                // file size check
-                const f = fileInput.files[0];
+                // File size check lagi saat submit
+                const f = fileInput?.files?.[0];
                 if (overLimit(f)) {
-                    Swal.fire('Ukuran terlalu besar', 'Ukuran dokumen maksimal 5MB.', 'warning');
+                    showWarn('Ukuran terlalu besar', 'Ukuran dokumen maksimal 5MB.');
                     return;
                 }
 
-                const jenis = document.querySelector('input[name="jenisKerjaSama"]:checked')?.value;
-                const parentVal = document.getElementById('parentDocument').value ||
-                    'none'; // selaras dengan controller
+                // ===== Ambil parent_id sesuai JENIS PERMOHONAN =====
+                // Jika "perpanjang" → pakai #dokumenPerpanjang
+                // Jika "baru" → null (kita kirim 'none', nanti controller ubah ke null)
+                const isPerpanjang = !!radioPerpanjang?.checked;
+                let parentVal = 'none';
+                if (isPerpanjang && selectPerpanjang) {
+                    parentVal = selectPerpanjang.value || 'none';
+                }
 
-                // sanitasi angka
+                // Sanitasi angka (hapus . , spasi)
                 const stripNumber = (v) => (v || '').toString().replace(/[.,\s]/g, '');
                 ['inKind', 'totalInKind', 'inCash', 'totalInCash', 'jumlahImplementasi'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.value = stripNumber(el.value);
                 });
 
-                const form = this;
                 const formData = new FormData(form);
-
-                // Selaraskan dengan controller: controller akan mengubah 'none' => null
                 formData.set('parent_id', parentVal);
 
-                const noDokumen = document.getElementById('noDokumen').value;
+                const noDokumen = $('#noDokumen')?.value || '';
+                if (!noDokumen.trim()) {
+                    showWarn('Validasi', 'No Dokumen wajib diisi.');
+                    return;
+                }
 
                 // Cek unik no_dokumen
-                fetch(`{{ route('cek.no_dokumen') }}?no_dokumen=${encodeURIComponent(noDokumen)}`)
+                fetch(`{{ route('cek.no_dokumen') }}?no_dokumen=${encodeURIComponent(noDokumen)}`, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
                     .then(res => res.json())
                     .then(data => {
-                        if (data.exists) {
+                        if (data?.exists) {
                             Swal.fire({
                                 title: 'Gagal',
                                 text: 'No Dokumen sudah terdaftar.',
@@ -574,15 +692,18 @@
                             body: formData,
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').content,
+                                    'meta[name="csrf-token"]')?.content || '',
                                 'Accept': 'application/json'
                             }
                         });
                     })
                     .then(async (response) => {
-                        const data = await response.json();
+                        const contentType = response.headers.get('Content-Type') || '';
+                        const isJSON = contentType.includes('application/json');
+                        const data = isJSON ? await response.json() : {};
+
                         if (!response.ok) {
-                            if (data.errors) {
+                            if (data?.errors) {
                                 const firstKey = Object.keys(data.errors)[0];
                                 const firstMsg = data.errors[firstKey][0];
                                 Swal.fire({
@@ -612,12 +733,13 @@
                     })
                     .catch(err => {
                         if (['NO_DUPLICATE', 'VALIDATION_ERROR'].includes(err.message)) return;
-                        Swal.fire('Error', 'Terjadi masalah jaringan saat memproses data.', 'error');
+                        showErr('Error', 'Terjadi masalah jaringan saat memproses data.');
                         console.error(err);
                     });
             });
         });
     </script>
+
 </body>
 
 </html>

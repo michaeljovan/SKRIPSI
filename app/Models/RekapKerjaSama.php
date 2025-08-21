@@ -11,7 +11,7 @@ class RekapKerjaSama extends Model
 
     protected $table = 'rekapkerjasama';
     protected $primaryKey = 'id';
-
+    public $timestamps = true; 
     protected $fillable = [
         'no_dokumen',
         'unit',
