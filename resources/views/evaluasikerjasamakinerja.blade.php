@@ -93,6 +93,12 @@
                                     <th>No</th>
                                     <th style="min-width: 180px;">No Dokumen</th>
                                     <th style="min-width: 180px;">Mitra</th>
+
+                                    {{-- kolom baru --}}
+                                    <th style="min-width: 220px;">Dosen Terlibat</th>
+                                    <th style="min-width: 220px;">Mahasiswa Terlibat</th>
+                                    <th style="min-width: 180px;">Pengisi (Mitra)</th>
+
                                     <th style="min-width: 180px;">Integritas</th>
                                     <th style="min-width: 180px;">Keahlian</th>
                                     <th style="min-width: 180px;">Komunikasi</th>
@@ -116,6 +122,57 @@
                                         <td class="text-center">{{ $loop->iteration }}</td>
                                         <td>{{ $item->nodok }}</td>
                                         <td>{{ $item->mitra }}</td>
+                                        @php
+                                            $lap = optional($item->rekapKerjasama)->laporanPelaksanaan;
+                                            $split = function ($s) {
+                                                if (!$s) {
+                                                    return [];
+                                                }
+                                                $arr = preg_split('/\r\n|\r|\n|,/', (string) $s);
+                                                return array_values(
+                                                    array_filter(array_map('trim', $arr), fn($v) => $v !== ''),
+                                                );
+                                            };
+
+                                            $dosenList = $lap ? $split($lap->dosen_terlibat) : [];
+                                            $mhsList = $lap ? $split($lap->mahasiswa_terlibat) : [];
+
+                                            $dosenCount = $lap->jumlah_dosen_terlibat ?? count($dosenList);
+                                            $mhsCount = $lap->jumlah_mahasiswa_terlibat ?? count($mhsList);
+
+                                            // ringkas nama (maks 5 pertama)
+                                            $dosenPreview = implode(', ', array_slice($dosenList, 0, 5));
+                                            $mhsPreview = implode(', ', array_slice($mhsList, 0, 5));
+                                        @endphp
+
+                                        <td>
+                                            <span class="badge bg-primary">{{ $dosenCount }}</span>
+                                            @if ($dosenCount)
+                                                <div class="small text-muted mt-1">
+                                                    {{ \Illuminate\Support\Str::limit($dosenPreview, 60) }}
+                                                    @if ($dosenCount > 5)
+                                                        <em> +{{ $dosenCount - 5 }} lagi</em>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-muted small">—</span>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            <span class="badge bg-primary">{{ $mhsCount }}</span>
+                                            @if ($mhsCount)
+                                                <div class="small text-muted mt-1">
+                                                    {{ \Illuminate\Support\Str::limit($mhsPreview, 60) }}
+                                                    @if ($mhsCount > 5)
+                                                        <em> +{{ $mhsCount - 5 }} lagi</em>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-muted small">—</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $item->pengisi_mitra ?: '—' }}</td>
                                         <td>{{ $item->integritas_text }}</td>
                                         <td>{{ $item->keahlian_text }}</td>
                                         <td>{{ $item->komunikasi_text }}</td>
@@ -149,10 +206,6 @@
                                                         <i class="bi bi-eye-slash"></i>
                                                     </button>
                                                 @endif
-                                                <a href="{{ route('EvaluasiMitraKinerja.edit', $item->idkinerja) }}"
-                                                    class="btn btn-sm btn-warning" title="Edit">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
                                                 <button class="btn btn-sm btn-danger" title="Hapus"
                                                     onclick="confirmDelete({{ $item->idkinerja ?? 'null' }})"
                                                     {{ !isset($item->idkinerja) ? 'disabled' : '' }}>

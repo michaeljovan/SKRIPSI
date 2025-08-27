@@ -15,10 +15,14 @@ return new class extends Migration
             $table->id('idmitra');
             $table->unsignedBigInteger('rekap_id');
             $table->foreign('rekap_id')->references('id')->on('rekapkerjasama')->onDelete('cascade');
+
             $table->string('nodok');
             $table->string('mitra');
 
-            // (1-5)
+            // Tambahan: siapa yang mengisi dari pihak mitra
+            $table->string('pengisi_mitra', 100)->nullable();
+
+            // (1-5) - biarkan string jika memang desain awal kamu string
             $table->string('integritas');
             $table->string('keahlian');
             $table->string('komunikasi');
@@ -38,6 +42,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('evaluasimitrakinerja');
+        // Perbaiki nama tabel agar sesuai dengan yang dibuat di up()
+        Schema::dropIfExists('evaluasimitra');
     }
 };

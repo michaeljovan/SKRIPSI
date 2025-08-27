@@ -118,7 +118,7 @@
                                     <th style="min-width: 100px;">In Cash</th>
                                     <th style="min-width: 120px;">Total In Cash</th>
                                     <th style="min-width: 150px;">Jumlah Implementasi</th>
-                                    <th style="min-width: 120px;">Status</th> {{-- kolom baru --}}
+                                    <th style="min-width: 120px;">Status</th>
                                     <th style="min-width: 200px;">Laporan Pelaksanaan Kerja Sama</th>
                                     <th style="min-width: 200px;">Form Evaluasi Kepuasan Mitra Kerja Sama (Kinerja)
                                     </th>
@@ -161,16 +161,64 @@
                                         <td>{{ $rekap->jumlah_implementasi ?? '-' }}</td>
                                         <td>
                                             @php
-                                                $isSelesai = \Carbon\Carbon::parse($rekap->tanggal_selesai)
-                                                    ->endOfDay()
-                                                    ->lt(now());
+                                                $now = \Carbon\Carbon::now('Asia/Jakarta');
+                                                $tglSelesai = \Carbon\Carbon::parse(
+                                                    $rekap->tanggal_selesai,
+                                                )->endOfDay();
+
+                                                // Prioritas: dihentikan > selesai (tanggal lewat) > aktif
+                                                $status =
+                                                    $rekap->status === 'dihentikan'
+                                                        ? 'dihentikan'
+                                                        : ($tglSelesai->lt($now)
+                                                            ? 'selesai'
+                                                            : 'aktif');
+
+                                                $badgeClass = match ($status) {
+                                                    'dihentikan' => 'bg-danger',
+                                                    'selesai' => 'bg-secondary',
+                                                    default => 'bg-success',
+                                                };
+
+                                                // Teks label: pakai "Berhenti" bila dihentikan
+                                                $statusLabel = match ($status) {
+                                                    'dihentikan' => 'Berhenti',
+                                                    'selesai' => 'Selesai',
+                                                    default => 'Aktif',
+                                                };
+
+                                                $parentNo = optional($rekap->induk)->no_dokumen;
                                             @endphp
-                                            @if ($isSelesai)
-                                                <span class="badge bg-secondary">Selesai</span>
-                                            @else
-                                                <span class="badge bg-success">Aktif</span>
+
+                                            <span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
+
+                                            @if ($status === 'dihentikan')
+                                                <div class="small text-danger mt-1">
+                                                    Dihentikan pada:
+                                                    {{ optional($rekap->stopped_at)->timezone('Asia/Jakarta')->format('d/m/Y H:i') ?? '-' }}
+                                                </div>
+                                                <div class="small text-muted">
+                                                    Tgl selesai diset:
+                                                    {{ \Carbon\Carbon::parse($rekap->tanggal_selesai)->format('d/m/Y') }}
+                                                </div>
+                                                @if (!empty($rekap->stopped_reason))
+                                                    <div class="small text-muted">Alasan: {{ $rekap->stopped_reason }}
+                                                    </div>
+                                                @endif
+                                            @elseif ($status === 'selesai')
+                                                <div class="small text-muted mt-1">
+                                                    Berakhir pada:
+                                                    {{ \Carbon\Carbon::parse($rekap->tanggal_selesai)->format('d/m/Y') }}
+                                                </div>
+                                            @endif
+
+                                            @if ($rekap->parent_id)
+                                                <div class="small text-muted mt-1">
+                                                    Perpanjang dari: {{ $parentNo ?? '—' }}
+                                                </div>
                                             @endif
                                         </td>
+
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 @if ($rekap->is_laporan == true)
@@ -228,6 +276,11 @@
                                         </td>
                                         <td>
                                             <div class="d-flex">
+                                                @php
+                                                    $isSelesai = \Carbon\Carbon::parse($rekap->tanggal_selesai)
+                                                        ->endOfDay()
+                                                        ->lt(now());
+                                                @endphp
                                                 <a href="{{ asset('storage/' . $rekap->dokumen_path) }}"
                                                     class="btn btn-sm btn-info me-1" target="_blank"
                                                     title="Lihat Dokumen">
@@ -237,6 +290,17 @@
                                                     class="btn btn-sm btn-warning me-1" title="Edit">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
+                                                @if (($rekap->status ?? 'aktif') === 'aktif')
+                                                    <form
+                                                        action="{{ route('rekapkerjasama.stop.form', ['id' => $rekap->id]) }}"
+                                                        method="GET" class="d-inline">
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-outline-secondary me-1"
+                                                            title="Hentikan kerja sama">
+                                                            <i class="bi bi-pause-circle"></i> Hentikan
+                                                        </button>
+                                                    </form>
+                                                @endif
                                                 <button class="btn btn-sm btn-danger delete-btn"
                                                     data-id="{{ $rekap->id }}" title="Hapus">
                                                     <i class="bi bi-trash"></i>
@@ -249,6 +313,22 @@
                         </table>
                     </div>
                 </div>
+                @if ($rekapKerjaSama->hasPages())
+                    <div
+                        class="card-footer bg-white border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                        <div class="text-muted small">
+                            Menampilkan
+                            <strong>{{ $rekapKerjaSama->firstItem() }}</strong>–
+                            <strong>{{ $rekapKerjaSama->lastItem() }}</strong>
+                            dari <strong>{{ $rekapKerjaSama->total() }}</strong> data
+                        </div>
+
+                        {{-- Tombol halaman Bootstrap 5, tetap membawa query filter karena pakai ->appends() --}}
+                        <div class="mb-0">
+                            {{ $rekapKerjaSama->onEachSide(1)->links('pagination::bootstrap-5') }}
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </main>
@@ -346,17 +426,6 @@
                                     IA</option>
                             </select>
                         </div>
-
-                        {{-- <div class="col-md-4 mb-3">
-                            <label for="is_laporan" class="form-label">Status Laporan</label>
-                            <select class="form-select" id="is_laporan" name="is_laporan">
-                                <option value="">Semua</option>
-                                <option value="1" {{ request('is_laporan') == '1' ? 'selected' : '' }}>Sudah
-                                    Dilaporkan</option>
-                                <option value="0" {{ request('is_laporan') == '0' ? 'selected' : '' }}>Belum
-                                    Dilaporkan</option>
-                            </select>
-                        </div> --}}
                     </div>
 
                     <div class="row">

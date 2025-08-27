@@ -37,24 +37,91 @@
                             <h5 class="mb-0">Form Evaluasi Kepuasan Mitra Kinerja</h5>
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('EvaluasiMitraKinerja.store') }}" method="POST"
+                            <form method="POST"
+                                action="{{ route('EvaluasiMitraKinerja.store', ['id' => $rekap->id]) }}"
                                 enctype="multipart/form-data">
                                 @csrf
+                                <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
                                 <div class="mb-4">
-                                    <h6 class="border-bottom pb-2"> </h6>
+                                    <h6 class="border-bottom pb-2">Informasi Dokumen</h6>
                                     <div class="row g-3">
-                                        <div class="col-md-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="nodok" class="form-label">No Dokumen</label>
                                             <input type="text" class="form-control" id="nodok" name="nodok"
-                                                required value="{{ $rekap->no_dokumen ?? '' }}" readonly>
-                                            <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
+                                                value="{{ $rekap->no_dokumen }}" readonly>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="mitra" class="form-label">Mitra</label>
                                             <input type="text" class="form-control" id="mitra" name="mitra"
-                                                required value="{{ $rekap->mitra_kerja_sama ?? '' }}" readonly>
+                                                value="{{ $rekap->mitra_kerja_sama }}" readonly>
+                                        </div>
+
+                                        <!-- Tambahan: siapa yang mengisi dari pihak mitra -->
+                                        <div class="col-12 col-md-6">
+                                            <label for="pengisi_mitra" class="form-label">Diisi oleh (Mitra)</label>
+                                            <input type="text" id="pengisi_mitra" name="pengisi_mitra"
+                                                class="form-control @error('pengisi_mitra') is-invalid @enderror"
+                                                value="{{ old('pengisi_mitra') }}"
+                                                placeholder="Nama pengisi dari pihak mitra" required>
+                                            @error('pengisi_mitra')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                     </div>
+                                    <h6 class="border-bottom pb-2 mt-4">Peserta Terlibat (dari Laporan Pelaksanaan)</h6>
+                                    @if ($laporan)
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label d-flex align-items-center">
+                                                    Dosen Terlibat
+                                                    <span class="badge bg-primary ms-2">{{ $dosenCount }}
+                                                        orang</span>
+                                                </label>
+                                                @if (count($dosenList))
+                                                    <div class="border rounded p-2"
+                                                        style="max-height:220px;overflow:auto;">
+                                                        <ul class="mb-0 small">
+                                                            @foreach ($dosenList as $nama)
+                                                                <li>{{ $nama }}</li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @else
+                                                    <div class="form-text text-muted">Tidak ada nama dosen yang
+                                                        tercatat.</div>
+                                                @endif
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label d-flex align-items-center">
+                                                    Mahasiswa Terlibat
+                                                    <span class="badge bg-primary ms-2">{{ $mahasiswaCount }}
+                                                        orang</span>
+                                                </label>
+                                                @if (count($mahasiswaList))
+                                                    <div class="border rounded p-2"
+                                                        style="max-height:220px;overflow:auto;">
+                                                        <ul class="mb-0 small">
+                                                            @foreach ($mahasiswaList as $nama)
+                                                                <li>{{ $nama }}</li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @else
+                                                    <div class="form-text text-muted">Tidak ada nama mahasiswa yang
+                                                        tercatat.</div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="alert alert-warning mb-0">
+                                            Belum ada Laporan Pelaksanaan untuk dokumen ini.
+                                            <a href="{{ route('pelaksanaankerjasama.create', ['id' => $rekap->id]) }}"
+                                                class="alert-link">
+                                                Tambahkan Laporan Pelaksanaan
+                                            </a>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <!-- Skala  -->
@@ -79,20 +146,20 @@
                                                 <tr>
                                                     <td>Integritas (Etika dan Moral)</td>
                                                     <td class="text-center">
-                                                        <input class="form-check-input" type="radio" name="integritas"
-                                                            value="Sangat Tinggi" required>
+                                                        <input class="form-check-input" type="radio"
+                                                            name="integritas" value="Sangat Tinggi" required>
                                                     </td>
                                                     <td class="text-center">
-                                                        <input class="form-check-input" type="radio" name="integritas"
-                                                            value="Tinggi">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="integritas" value="Tinggi">
                                                     </td>
                                                     <td class="text-center">
-                                                        <input class="form-check-input" type="radio" name="integritas"
-                                                            value="Cukup">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="integritas" value="Cukup">
                                                     </td>
                                                     <td class="text-center">
-                                                        <input class="form-check-input" type="radio" name="integritas"
-                                                            value="Kurang">
+                                                        <input class="form-check-input" type="radio"
+                                                            name="integritas" value="Kurang">
                                                     </td>
                                                     <td class="text-center">
                                                         <input class="form-check-input" type="radio"

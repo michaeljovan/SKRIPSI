@@ -23,62 +23,101 @@ class EvaluasiMitraController extends Controller
 
     public function create($id)
     {
-        if (session('evaluasi_mitra_allowed') != $id) {
-            abort(403, 'Akses evaluasi tidak valid atau sudah kedaluwarsa.');
-        }
+        // (kalau ada gate OTP, letakkan ceknya di sini dulu)
 
-        $rekap = RekapKerjaSama::findOrFail($id);
-        return view('inputevaluasikerjasamamitra', compact('rekap')); // ganti sesuai nama blade kamu
+        // Ambil rekap + laporan pelaksanaan
+        $rekap = \App\Models\RekapKerjaSama::with('laporanPelaksanaan')->findOrFail($id);
+        $laporan = $rekap->laporanPelaksanaan; // bisa null
+
+        // Helper split nama (koma / baris baru)
+        $split = function (?string $s): array {
+            if (!$s) return [];
+            $arr = preg_split('/\r\n|\r|\n|,/', $s);
+            return array_values(array_filter(array_map('trim', $arr), fn($v) => $v !== ''));
+        };
+
+        $dosenList      = $split(optional($laporan)->dosen_terlibat);
+        $mahasiswaList  = $split(optional($laporan)->mahasiswa_terlibat);
+
+        $dosenCount     = $laporan->jumlah_dosen_terlibat     ?? count($dosenList);
+        $mahasiswaCount = $laporan->jumlah_mahasiswa_terlibat ?? count($mahasiswaList);
+
+        return view('inputevaluasikerjasamamitra', compact(
+            'rekap',
+            'laporan',
+            'dosenList',
+            'mahasiswaList',
+            'dosenCount',
+            'mahasiswaCount'
+        ));
     }
+
     public function store(Request $request)
     {
-        // Map text values to numbers
+        // Map text → angka
         $valueMap = [
             'Sangat Tinggi' => 5,
-            'Tinggi' => 4,
-            'Cukup' => 3,
-            'Kurang' => 2,
-            'Sangat Kurang' => 1
+            'Tinggi'        => 4,
+            'Cukup'         => 3,
+            'Kurang'        => 2,
+            'Sangat Kurang' => 1,
         ];
 
         $validated = $request->validate([
             'rekap_id' => 'required|exists:rekapkerjasama,id',
-            'nodok' => 'required|string|max:255',
-            'mitra' => 'required|string|max:255',
+            'nodok'    => 'required|string|max:255',
+            'mitra'    => 'required|string|max:255',
 
-            // Change validation to accept the text values
-            'integritas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'keahlian' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'komunikasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'kerjasamatim' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'pengembangandiri' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'kreativitas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'bahasaasing' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            // PENGISI MITRA (baruu)
+            'pengisi_mitra' => 'required|string|max:100',
 
-            'pdfFile' => 'nullable|file|mimes:pdf|max:5120',
+            // Nilai (teks)
+            'integritas'        => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'keahlian'          => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'komunikasi'        => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'kerjasamatim'      => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'pengembangandiri'  => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'kreativitas'       => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'bahasaasing'       => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+
+            // Opsional
+            'komentar' => 'nullable|string',
+            'pdfFile'  => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        // Convert text values to numbers before saving
-        $validated['integritas'] = $valueMap[$validated['integritas']];
-        $validated['keahlian'] = $valueMap[$validated['keahlian']];
-        $validated['komunikasi'] = $valueMap[$validated['komunikasi']];
-        $validated['kerjasamatim'] = $valueMap[$validated['kerjasamatim']];
-        $validated['pengembangandiri'] = $valueMap[$validated['pengembangandiri']];
-        $validated['kreativitas'] = $valueMap[$validated['kreativitas']];
-        $validated['bahasaasing'] = $valueMap[$validated['bahasaasing']];
+        // Normalisasi nama pengisi
+        $validated['pengisi_mitra'] = trim($validated['pengisi_mitra']);
 
-        if ($request->hasFile('pdfFile')) {
-            $path = $request->file('pdfFile')->store('evaluasi_pdf', 'public');
-            $validated['file_pdf'] = $path;
+        // Konversi teks → angka
+        foreach (
+            [
+                'integritas',
+                'keahlian',
+                'komunikasi',
+                'kerjasamatim',
+                'pengembangandiri',
+                'kreativitas',
+                'bahasaasing'
+            ] as $field
+        ) {
+            $validated[$field] = $valueMap[$validated[$field]];
         }
 
-        EvaluasiMitra::create($validated);
+        // Upload PDF (jika ada)
+        if ($request->hasFile('pdfFile')) {
+            $validated['file_pdf'] = $request->file('pdfFile')->store('evaluasi_pdf', 'public');
+        }
 
-        $rekap = RekapKerjaSama::find($validated['rekap_id']);
-        $rekap->update(['is_mitra' => true]);
+        // Simpan
+        \App\Models\EvaluasiMitra::create($validated);
+
+        // Tandai rekap sudah ada evaluasi mitra
+        \App\Models\RekapKerjaSama::where('id', $validated['rekap_id'])
+            ->update(['is_mitra' => true]);
 
         return redirect()->back()->with('success', 'Evaluasi berhasil disimpan');
     }
+
 
     // app/Http/Controllers/EvaluasiMitraController.php
 

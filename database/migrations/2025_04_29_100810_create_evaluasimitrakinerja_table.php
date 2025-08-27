@@ -6,43 +6,44 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('evaluasimitrakinerja', function (Blueprint $table) {
             $table->id('idkinerja');
-            $table->unsignedBigInteger('rekap_id');
-            $table->foreign('rekap_id')->references('id')->on('rekapkerjasama')->onDelete('cascade');
+
+            $table->foreignId('rekap_id')
+                  ->constrained('rekapkerjasama')
+                  ->cascadeOnDelete();
+
             $table->string('nodok');
             $table->string('mitra');
 
-            // (1-5)
-            $table->string('integritas');
-            $table->string('keahlian');
-            $table->string('komunikasi');
-            $table->string('kerjasamatim');
-            $table->string('pengembangandiri');
-            $table->string('kreativitas');
-            $table->string('bahasaasing');
-            $table->string('teknologi');
-            $table->string('manajerial');
-            $table->string('analisis');
-            $table->string('laporan');
-            $table->string('inovasi');
+            // nilai 1..5
+            $table->unsignedTinyInteger('integritas');
+            $table->unsignedTinyInteger('keahlian');
+            $table->unsignedTinyInteger('komunikasi');
+            $table->unsignedTinyInteger('kerjasamatim');
+            $table->unsignedTinyInteger('pengembangandiri');
+            $table->unsignedTinyInteger('kreativitas');
+            $table->unsignedTinyInteger('bahasaasing');
+            $table->unsignedTinyInteger('teknologi');
+            $table->unsignedTinyInteger('manajerial');
+            $table->unsignedTinyInteger('analisis');
+            $table->unsignedTinyInteger('laporan');
+            $table->unsignedTinyInteger('inovasi');
+
             $table->string('lainlainlabel')->nullable();
-            $table->string('lainlainnilai')->nullable();
+            $table->unsignedTinyInteger('lainlainnilai')->nullable();
+
+            $table->string('pengisi_mitra', 100)->nullable(); // <— tambahan
 
             $table->text('komentar')->nullable();
             $table->string('file_pdf')->nullable();
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('evaluasimitrakinerja');

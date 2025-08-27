@@ -22,7 +22,6 @@ Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post')
 
 Route::get('/rekapkerjasama/{id}/pdf', [RekapKerjaSamaController::class, 'lihatPDF'])->name('rekapkerjasama.pdf');
 
-
 Route::post('/evaluasi-mitra/{rekap}/send-otp', [EvaluasiMitraController::class, 'kirimLinkDanOtp'])
     ->name('evaluasi.mitra.send_otp');
 
@@ -36,7 +35,15 @@ Route::post('/evaluasi-mitra/{rekap}/otp-verify', [EvaluasiMitraController::clas
 Route::get('/evaluasi-mitra/create/{id}', [EvaluasiMitraController::class, 'create'])
     ->name('EvaluasiMitra.create');
 
+Route::patch('/rekap-kerja-sama/{id}/stop', [RekapKerjaSamaController::class, 'stop'])
+    ->name('rekapkerjasama.stop');
 
+Route::get('rekapkerjasama/{id}/stop', [RekapKerjaSamaController::class, 'stopForm'])
+    ->name('rekapkerjasama.stop.form');
+
+// EKSEKUSI stop (PATCH)
+Route::patch('rekapkerjasama/{id}/stop', [RekapKerjaSamaController::class, 'stop'])
+    ->name('rekapkerjasama.stop');
 
 // Gerbang OTP (GET form)
 Route::get(
@@ -140,7 +147,6 @@ Route::middleware(['auth', 'cekrole:dekanat,staff'])->group(function () {
         Route::get('/{id}/edit', 'edit')->name('EvaluasiMitra.edit');
         Route::put('/{id}', 'update')->name('EvaluasiMitra.update');
     });
-
     // Logout
 });
 

@@ -92,13 +92,22 @@
                                     <th>No</th>
                                     <th style="min-width: 180px;">No Dokumen</th>
                                     <th style="min-width: 180px;">Mitra</th>
-                                    <th style="min-width: 300px;">Pelaksanaan kegiatan kerja sama sesuai dengan dokumen perjanjian</th>
-                                    <th style="min-width: 300px;">Pelaksanaan kegiatan kerja sama sesuai dengan harapan</th>
-                                    <th style="min-width: 300px;">Kegiatan kerja sama memberikan benefit bagi institusi</th>
-                                    <th style="min-width: 300px;">Terbina komunikasi yang baik antara FTI UKDW dengan mitra</th>
-                                    <th style="min-width: 300px;">Tujuan yang diharapkan dari kerja sama berhasil dicapai</th>
+                                    <th style="min-width: 220px;">Dosen Terlibat</th>
+                                    <th style="min-width: 220px;">Mahasiswa Terlibat</th>
+                                    <th style="min-width: 180px;">Pengisi (Mitra)</th>
+                                    <th style="min-width: 300px;">Pelaksanaan kegiatan kerja sama sesuai dengan dokumen
+                                        perjanjian</th>
+                                    <th style="min-width: 300px;">Pelaksanaan kegiatan kerja sama sesuai dengan harapan
+                                    </th>
+                                    <th style="min-width: 300px;">Kegiatan kerja sama memberikan benefit bagi institusi
+                                    </th>
+                                    <th style="min-width: 300px;">Terbina komunikasi yang baik antara FTI UKDW dengan
+                                        mitra</th>
+                                    <th style="min-width: 300px;">Tujuan yang diharapkan dari kerja sama berhasil
+                                        dicapai</th>
                                     <th style="min-width: 300px;">Kegiatan kerja sama berjalan dengan memuaskan</th>
-                                    <th style="min-width: 300px;">Bersedia melanjutkan kerja sama kembali di masa mendatang</th>
+                                    <th style="min-width: 300px;">Bersedia melanjutkan kerja sama kembali di masa
+                                        mendatang</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -108,6 +117,59 @@
                                         <td class="text-center">{{ $loop->iteration }}</td>
                                         <td>{{ $item->nodok }}</td>
                                         <td>{{ $item->mitra }}</td>
+                                        @php
+                                            // Ambil laporan pelaksanaan lewat relasi rekap
+                                            $lap = optional($item->rekapKerjasama)->laporanPelaksanaan;
+
+                                            // Helper pecah nama (koma / baris baru)
+                                            $split = function ($s) {
+                                                if (!$s) {
+                                                    return [];
+                                                }
+                                                $arr = preg_split('/\r\n|\r|\n|,/', (string) $s);
+                                                return array_values(
+                                                    array_filter(array_map('trim', $arr), fn($v) => $v !== ''),
+                                                );
+                                            };
+
+                                            $dosenList = $lap ? $split($lap->dosen_terlibat) : [];
+                                            $mhsList = $lap ? $split($lap->mahasiswa_terlibat) : [];
+
+                                            $dosenCount = $lap->jumlah_dosen_terlibat ?? count($dosenList);
+                                            $mhsCount = $lap->jumlah_mahasiswa_terlibat ?? count($mhsList);
+
+                                            $dosenPreview = implode(', ', array_slice($dosenList, 0, 5));
+                                            $mhsPreview = implode(', ', array_slice($mhsList, 0, 5));
+                                        @endphp
+
+                                        <td>
+                                            <span class="badge bg-primary">{{ $dosenCount }}</span>
+                                            @if ($dosenCount)
+                                                <div class="small text-muted mt-1">
+                                                    {{ \Illuminate\Support\Str::limit($dosenPreview, 60) }}
+                                                    @if ($dosenCount > 5)
+                                                        <em>+{{ $dosenCount - 5 }} lagi</em>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-muted small">—</span>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            <span class="badge bg-primary">{{ $mhsCount }}</span>
+                                            @if ($mhsCount)
+                                                <div class="small text-muted mt-1">
+                                                    {{ \Illuminate\Support\Str::limit($mhsPreview, 60) }}
+                                                    @if ($mhsCount > 5)
+                                                        <em>+{{ $mhsCount - 5 }} lagi</em>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-muted small">—</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $item->pengisi_mitra ?? '—' }}</td>
                                         <td>{{ $item->integritas_text }}</td>
                                         <td>{{ $item->keahlian_text }}</td>
                                         <td>{{ $item->komunikasi_text }}</td>
@@ -117,7 +179,7 @@
                                         <td>{{ $item->bahasaasing_text }}</td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                               @if ($item->file_pdf)
+                                                @if ($item->file_pdf)
                                                     <a href="{{ $item->pdf_url }}" target="_blank"
                                                         class="btn btn-sm btn-info" title="Detail">
                                                         <i class="bi bi-eye"></i>
@@ -128,10 +190,6 @@
                                                         <i class="bi bi-eye-slash"></i>
                                                     </button>
                                                 @endif
-                                                <a href="{{ route('EvaluasiMitra.edit', ['id' => $item->idmitra]) }}"
-                                                    class="btn btn-sm btn-warning" title="Edit">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
                                                 <button class="btn btn-sm btn-danger" title="Hapus"
                                                     onclick="confirmDeleteMitra({{ $item->idmitra ?? 'null' }})"
                                                     {{ !isset($item->idmitra) ? 'disabled' : '' }}>

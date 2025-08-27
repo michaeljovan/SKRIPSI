@@ -6,14 +6,45 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-
 class EvaluasiMitra extends Model
 {
     use HasFactory;
 
-    protected $table = 'EvaluasiMitra';
+    // Pastikan nama tabel sesuai dengan migration (huruf kecil)
+    protected $table = 'evaluasimitra';
 
-    // Di dalam model EvaluasiMitraKinerja.php
+    protected $primaryKey = 'idmitra';
+    public $incrementing = true;
+
+    protected $fillable = [
+        'rekap_id',
+        'nodok',
+        'mitra',
+        'pengisi_mitra',     // <--- TAMBAHAN
+
+        // skor (1-5) disimpan string/angka -> kita cast ke integer di bawah
+        'integritas',
+        'keahlian',
+        'komunikasi',
+        'kerjasamatim',
+        'pengembangandiri',
+        'kreativitas',
+        'bahasaasing',
+
+        'komentar',
+        'file_pdf',
+    ];
+
+    protected $casts = [
+        'integritas'       => 'integer',
+        'keahlian'         => 'integer',
+        'komunikasi'       => 'integer',
+        'kerjasamatim'     => 'integer',
+        'pengembangandiri' => 'integer',
+        'kreativitas'      => 'integer',
+        'bahasaasing'      => 'integer',
+    ];
+
     protected $appends = [
         'integritas_text',
         'keahlian_text',
@@ -22,17 +53,10 @@ class EvaluasiMitra extends Model
         'pengembangandiri_text',
         'kreativitas_text',
         'bahasaasing_text',
-        'teknologi_text',
-        'manajerial_text',
-        'analisis_text',
-        'laporan_text',
-        'inovasi_text',
-        'lainlainnilai_text',
-        'pdf_url'
-
+        'pdf_url',
     ];
 
-    // Accessor untuk mengubah nilai numerik ke teks
+    // ===== Accessors teks untuk setiap skor =====
     public function getIntegritasTextAttribute()
     {
         return $this->convertToText($this->integritas);
@@ -47,54 +71,34 @@ class EvaluasiMitra extends Model
     {
         return $this->convertToText($this->komunikasi);
     }
+
     public function getKerjasamatimTextAttribute()
     {
         return $this->convertToText($this->kerjasamatim);
     }
-    public function getpengembangandiriTextAttribute()
+
+    public function getPengembangandiriTextAttribute()
     {
         return $this->convertToText($this->pengembangandiri);
     }
-    public function getkreativitasTextAttribute()
+
+    public function getKreativitasTextAttribute()
     {
         return $this->convertToText($this->kreativitas);
     }
-    public function getbahasaasingTextAttribute()
+
+    public function getBahasaasingTextAttribute()
     {
         return $this->convertToText($this->bahasaasing);
     }
-    public function getteknologiTextAttribute()
-    {
-        return $this->convertToText($this->teknologi);
-    }
-    public function getmanajerialTextAttribute()
-    {
-        return $this->convertToText($this->manajerial);
-    }
-    public function getanalisisTextAttribute()
-    {
-        return $this->convertToText($this->analisis);
-    }
-    public function getlaporanTextAttribute()
-    {
-        return $this->convertToText($this->laporan);
-    }
-    public function getinovasiTextAttribute()
-    {
-        return $this->convertToText($this->inovasi);
-    }
-    public function getlainlainlabelTextAttribute()
-    {
-        return $this->convertToText($this->lainlainlabel);
-    }
 
+    // File URL
     public function getPdfUrlAttribute()
     {
         return $this->file_pdf ? Storage::url($this->file_pdf) : null;
     }
 
-
-
+    // Mapping angka -> teks
     private function convertToText($value)
     {
         $map = [
@@ -102,51 +106,12 @@ class EvaluasiMitra extends Model
             4 => 'Tinggi',
             3 => 'Cukup',
             2 => 'Kurang',
-            1 => 'Sangat Kurang'
+            1 => 'Sangat Kurang',
         ];
-
         return $map[$value] ?? '-';
     }
-    protected $primaryKey = 'idmitra';
-    public $incrementing = true;
-    protected $fillable = [
-        'rekap_id',
-        'nodok',
-        'mitra',
-        'integritas',
-        'keahlian',
-        'komunikasi',
-        'kerjasamatim',
-        'pengembangandiri',
-        'kreativitas',
-        'bahasaasing',
-        'teknologi',
-        'manajerial',
-        'analisis',
-        'laporan',
-        'inovasi',
-        'lainlainlabel',
-        'lainlainnilai',
-        'komentar',
-        'file_pdf'
-    ];
 
-    protected $casts = [
-        'integritas' => 'integer',
-        'keahlian' => 'integer',
-        'komunikasi' => 'integer',
-        'kerjasamatim' => 'integer',
-        'pengembangandiri' => 'integer',
-        'kreativitas' => 'integer',
-        'bahasaasing' => 'integer',
-        'teknologiinformasi' => 'integer',
-        'manajerial' => 'integer',
-        'analisis' => 'integer',
-        'laporan' => 'integer',
-        'inovasi' => 'integer',
-        'lainlainnilai' => 'integer',
-    ];
-
+    // Relasi
     public function rekapKerjasama()
     {
         return $this->belongsTo(RekapKerjaSama::class, 'rekap_id');

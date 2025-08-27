@@ -6,17 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('rekapkerjasama', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->string('no_dokumen_induk')->nullable();
-            $table->foreign('parent_id')->references('id')->on('rekapkerjasama')->nullOnDelete();
 
+            $table->foreignId('parent_id')
+                  ->nullable()
+                  ->constrained('rekapkerjasama')
+                  ->nullOnDelete();
+            $table->enum('jenis_permohonan', ['baru', 'perpanjang'])
+                  ->default('baru');
             $table->string('no_dokumen')->unique();
             $table->string('unit');
             $table->text('mitra_kerja_sama');
@@ -39,13 +39,13 @@ return new class extends Migration
             $table->boolean('is_laporan')->default(false);
             $table->boolean('is_kinerja')->default(false);
             $table->boolean('is_mitra')->default(false);
+            $table->enum('status', ['aktif', 'selesai', 'dihentikan'])->default('aktif')->index();
+            $table->timestamp('stopped_at')->nullable()->index();
+            $table->text('stopped_reason')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('rekapkerjasama');

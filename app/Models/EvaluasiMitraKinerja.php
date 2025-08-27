@@ -10,14 +10,16 @@ class EvaluasiMitraKinerja extends Model
 {
     use HasFactory;
 
+    protected $table = 'evaluasimitrakinerja'; // samakan dengan migration
     protected $primaryKey = 'idkinerja';
     public $incrementing = true;
-    protected $table = 'EvaluasiMitraKinerja';
 
     protected $fillable = [
         'rekap_id',
         'nodok',
         'mitra',
+
+        // nilai (1-5)
         'integritas',
         'keahlian',
         'komunikasi',
@@ -32,24 +34,28 @@ class EvaluasiMitraKinerja extends Model
         'inovasi',
         'lainlainlabel',
         'lainlainnilai',
+
         'komentar',
-        'file_pdf'
+        'file_pdf',
+
+        // tambahan
+        'pengisi_mitra',
     ];
 
     protected $casts = [
-        'integritas' => 'integer',
-        'keahlian' => 'integer',
-        'komunikasi' => 'integer',
-        'kerjasamatim' => 'integer',
+        'integritas'       => 'integer',
+        'keahlian'         => 'integer',
+        'komunikasi'       => 'integer',
+        'kerjasamatim'     => 'integer',
         'pengembangandiri' => 'integer',
-        'kreativitas' => 'integer',
-        'bahasaasing' => 'integer',
-        'teknologi' => 'integer', // perbaikan dari 'teknologiinformasi'
-        'manajerial' => 'integer',
-        'analisis' => 'integer',
-        'laporan' => 'integer',
-        'inovasi' => 'integer',
-        'lainlainnilai' => 'integer',
+        'kreativitas'      => 'integer',
+        'bahasaasing'      => 'integer',
+        'teknologi'        => 'integer',
+        'manajerial'       => 'integer',
+        'analisis'         => 'integer',
+        'laporan'          => 'integer',
+        'inovasi'          => 'integer',
+        'lainlainnilai'    => 'integer',
     ];
 
     protected $appends = [
@@ -66,102 +72,43 @@ class EvaluasiMitraKinerja extends Model
         'laporan_text',
         'inovasi_text',
         'lainlainnilai_text',
-        'pdf_url'
+        'pdf_url',
     ];
 
-    // === Accessor untuk tiap nilai ke bentuk teks ===
-    public function getIntegritasTextAttribute()
-    {
-        return $this->convertToText($this->integritas);
-    }
+    // === Accessor teks ===
+    public function getIntegritasTextAttribute()      { return $this->toText($this->integritas); }
+    public function getKeahlianTextAttribute()        { return $this->toText($this->keahlian); }
+    public function getKomunikasiTextAttribute()      { return $this->toText($this->komunikasi); }
+    public function getKerjasamatimTextAttribute()    { return $this->toText($this->kerjasamatim); }
+    public function getPengembangandiriTextAttribute(){ return $this->toText($this->pengembangandiri); }
+    public function getKreativitasTextAttribute()     { return $this->toText($this->kreativitas); }
+    public function getBahasaasingTextAttribute()     { return $this->toText($this->bahasaasing); }
+    public function getTeknologiTextAttribute()       { return $this->toText($this->teknologi); }
+    public function getManajerialTextAttribute()      { return $this->toText($this->manajerial); }
+    public function getAnalisisTextAttribute()        { return $this->toText($this->analisis); }
+    public function getLaporanTextAttribute()         { return $this->toText($this->laporan); }
+    public function getInovasiTextAttribute()         { return $this->toText($this->inovasi); }
+    public function getLainlainnilaiTextAttribute()   { return $this->toText($this->lainlainnilai); }
 
-    public function getKeahlianTextAttribute()
-    {
-        return $this->convertToText($this->keahlian);
-    }
-
-    public function getKomunikasiTextAttribute()
-    {
-        return $this->convertToText($this->komunikasi);
-    }
-
-    public function getKerjasamatimTextAttribute()
-    {
-        return $this->convertToText($this->kerjasamatim);
-    }
-
-    public function getPengembangandiriTextAttribute()
-    {
-        return $this->convertToText($this->pengembangandiri);
-    }
-
-    public function getKreativitasTextAttribute()
-    {
-        return $this->convertToText($this->kreativitas);
-    }
-
-    public function getBahasaasingTextAttribute()
-    {
-        return $this->convertToText($this->bahasaasing);
-    }
-
-    public function getTeknologiTextAttribute()
-    {
-        return $this->convertToText($this->teknologi);
-    }
-
-    public function getManajerialTextAttribute()
-    {
-        return $this->convertToText($this->manajerial);
-    }
-
-    public function getAnalisisTextAttribute()
-    {
-        return $this->convertToText($this->analisis);
-    }
-
-    public function getLaporanTextAttribute()
-    {
-        return $this->convertToText($this->laporan);
-    }
-
-    public function getInovasiTextAttribute()
-    {
-        return $this->convertToText($this->inovasi);
-    }
-
-    // === FIXED: Accessor untuk lainlainnilai ===
-    public function getLainlainnilaiTextAttribute()
-    {
-        return $this->convertToText($this->lainlainnilai);
-    }
-
-    // === PDF file URL accessor ===
+    // PDF URL
     public function getPdfUrlAttribute()
     {
         return $this->file_pdf ? Storage::url($this->file_pdf) : null;
     }
 
-    // === Shared method untuk mapping angka ke teks ===
-    private function convertToText($value)
+    private function toText($value)
     {
-        $map = [
-            5 => 'Sangat Tinggi',
-            4 => 'Tinggi',
-            3 => 'Cukup',
-            2 => 'Kurang',
-            1 => 'Sangat Kurang'
-        ];
-
+        $map = [5=>'Sangat Tinggi',4=>'Tinggi',3=>'Cukup',2=>'Kurang',1=>'Sangat Kurang'];
         return $map[$value] ?? '-';
     }
 
-    // === Relasi ===
+    // Relasi
     public function rekapKerjasama()
     {
         return $this->belongsTo(RekapKerjaSama::class, 'rekap_id');
     }
 
+    // alias
     public function rekap()
     {
         return $this->belongsTo(RekapKerjaSama::class, 'rekap_id');
