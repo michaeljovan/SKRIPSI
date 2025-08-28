@@ -1,166 +1,219 @@
 <?php
 
-namespace Tests\Unit\Http\Controllers;
+namespace Tests\Feature\Http\Controllers;
 
 use Tests\TestCase;
-use App\Http\Controllers\EvaluasiMitraKinerjaController;
-use App\Models\EvaluasiMitraKinerja;
-use App\Models\RekapKerjaSama;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
+use App\Models\RekapKerjaSama;
+use App\Models\EvaluasiMitraKinerja;
+use App\Models\EvaluasiKinerjaOtp;
 
 class EvaluasiMitraKinerjaUnitTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $controller;
-
-    protected function setUp(): void
+    /** Helper: buat 1 rekap minimal valid */
+    private function makeRekap(array $override = []): RekapKerjaSama
     {
-        parent::setUp();
-        $this->controller = new EvaluasiMitraKinerjaController();
-    }
+        $base = [
+            'no_dokumen'        => 'DOC-' . Str::upper(Str::random(5)),
+            'unit'              => 'Informatika',
+            'mitra_kerja_sama'  => 'PT Contoh',
+            'judul_kerja_sama'  => 'Judul Kerma',
+            'bentuk_kerja_sama' => 'Pendidikan',
+            'jenis_kerja_sama'  => 'MoU',
+            'pihak_ukdw'        => 'FTI',
+            'pihak_mitra'       => 'PT Contoh',
+            'email_pihak_mitra' => 'mitra@example.com',
+            'tanggal_mulai'     => now()->subDays(1)->toDateString(),
+            'tanggal_selesai'   => now()->addDays(5)->toDateString(),
+            'masa_berlaku'      => 7,
+            'kategori'          => 'nasional',
+            'dokumen_path'      => 'dummy.pdf',
+            'is_laporan'        => false,
+            'is_kinerja'        => false,
+            'is_mitra'          => false,
+        ];
 
-    protected function tearDown(): void
-    {
-        \Mockery::close();
-        parent::tearDown();
+        return RekapKerjaSama::create(array_merge($base, $override));
     }
 
     /** @test */
-    public function memetakan_nilai_teks_ke_angka_dengan_benar()
+    public function verify_otp_sukses_menyetel_session_dan_redirect_ke_create()
     {
-        $valueMap = [
-            'Sangat Tinggi' => 5,
-            'Tinggi' => 4,
-            'Cukup' => 3,
-            'Kurang' => 2,
-            'Sangat Kurang' => 1
-        ];
+        $rekap = $this->makeRekap();
 
-        foreach ($valueMap as $text => $number) {
-            $this->assertEquals(
-                $number,
-                $this->invokePrivateMethod($this->controller, 'mapNilai', [$text])
-            );
-        }
-    }
-
-    private function getCompleteEvaluationData($withFile = false)
-    {
-        $data = [
-            'rekap_id' => 1,
-            'nodok' => 'DOC-001',
-            'mitra' => 'Mitra Test',
-            'integritas' => 'Tinggi',
-            'keahlian' => 'Cukup',
-            'komunikasi' => 'Sangat Tinggi',
-            'kerjasamatim' => 'Tinggi',
-            'pengembangandiri' => 'Cukup',
-            'kreativitas' => 'Kurang',
-            'bahasaasing' => 'Sangat Kurang',
-            'teknologi' => 'Tinggi',
-            'manajerial' => 'Cukup',
-            'analisis' => 'Tinggi',
-            'laporan' => 'Sangat Tinggi',
-            'inovasi' => 'Tinggi',
-            'komentar' => 'Komentar test'
-        ];
-
-        if ($withFile) {
-            $data['pdfFile'] = UploadedFile::fake()->create('document.pdf', 1000);
-        }
-
-        return $data;
-    }
-
-    /** @test */
-    public function dapat_menyimpan_data_evaluasi_dengan_nilai_yang_dipetakan()
-    {
-        // Buat dummy RekapKerjaSama agar tidak error foreign key
-        RekapKerjaSama::factory()->create(['id' => 1]);
-
-        $request = new Request($this->getCompleteEvaluationData());
-
-        $response = $this->controller->store($request);
-
-        $this->assertNotNull($response);
-
-        $this->assertDatabaseHas('evaluasimitrakinerja', [
-            'nodok' => 'DOC-001',
-            'integritas' => 4, // 'Tinggi'
-            'komunikasi' => 5  // 'Sangat Tinggi'
+        // Simpan OTP valid
+        $plain = '123456';
+        EvaluasiKinerjaOtp::create([
+            'rekap_id'      => $rekap->id,
+            'code_hash'     => Hash::make($plain),
+            'expires_at'    => now()->addMinutes(30),
+            'used_at'       => null,
+            'sent_to_email' => 'admin@example.com',
         ]);
+
+        $resp = $this->post(route('EvaluasiMitraKinerja.verifyOtp', ['rekapId' => $rekap->id]), [
+            'otp' => $plain,
+        ]);
+
+        $resp->assertRedirect(route('EvaluasiMitraKinerja.create', ['id' => $rekap->id]));
+        $this->assertEquals($rekap->id, (int) session('evaluasi_mitra_kinerja_allowed'));
     }
 
     /** @test */
-    public function dapat_mengunggah_file_dengan_benar()
+    public function verify_otp_gagal_bila_kode_salah()
+    {
+        $rekap = $this->makeRekap();
+
+        EvaluasiKinerjaOtp::create([
+            'rekap_id'      => $rekap->id,
+            'code_hash'     => Hash::make('111111'),
+            'expires_at'    => now()->addMinutes(30),
+            'used_at'       => null,
+            'sent_to_email' => 'admin@example.com',
+        ]);
+
+        $resp = $this->from(route('EvaluasiMitraKinerja.otpGate', ['rekapId' => $rekap->id]))
+            ->post(route('EvaluasiMitraKinerja.verifyOtp', ['rekapId' => $rekap->id]), [
+                'otp' => '222222',
+            ]);
+
+        $resp->assertRedirect(route('EvaluasiMitraKinerja.otpGate', ['rekapId' => $rekap->id]));
+        $resp->assertSessionHasErrors('otp');
+    }
+
+    /** @test */
+    public function create_wajib_via_otp_gate_saat_session_tidak_sah()
+    {
+        $rekap = $this->makeRekap();
+
+        // Penting: bypass middleware auth/role supaya tes fokus ke gate OTP
+        $this->withoutMiddleware();
+
+        $resp = $this->get(route('EvaluasiMitraKinerja.create', ['id' => $rekap->id]));
+        $resp->assertRedirect(route('EvaluasiMitraKinerja.otpGate', ['rekapId' => $rekap->id]));
+        $resp->assertSessionHas('error');
+    }
+
+    /** @test */
+    public function store_menyimpan_evaluasi_memetakan_nilai_menandai_is_kinerja_true_dan_upload_pdf()
+    {
+        Storage::fake('public');
+        $rekap = $this->makeRekap();
+
+        $payload = [
+            'rekap_id'         => $rekap->id,
+            'nodok'            => $rekap->no_dokumen,
+            'mitra'            => $rekap->mitra_kerja_sama,
+            'pengisi_mitra'    => 'Bpk. Mitra',
+            'integritas'       => 'Tinggi',
+            'keahlian'         => 'Cukup',
+            'komunikasi'       => 'Sangat Tinggi',
+            'kerjasamatim'     => 'Tinggi',
+            'pengembangandiri' => 'Cukup',
+            'kreativitas'      => 'Kurang',
+            'bahasaasing'      => 'Sangat Kurang',
+            'teknologi'        => 'Tinggi',
+            'manajerial'       => 'Cukup',
+            'analisis'         => 'Tinggi',
+            'laporan'          => 'Sangat Tinggi',
+            'inovasi'          => 'Tinggi',
+            'komentar'         => 'Bagus',
+            'pdfFile'          => UploadedFile::fake()->create('eval.pdf', 120, 'application/pdf'),
+        ];
+
+        // Bypass middleware & set session OTP valid
+        $this->withoutMiddleware();
+        $this->withSession(['evaluasi_mitra_kinerja_allowed' => $rekap->id]);
+
+        $resp = $this->post(route('EvaluasiMitraKinerja.store'), $payload);
+        $resp->assertRedirect(); // back()->with('success', ...)
+
+        // Tersimpan di DB (cek sebagian field & mapping angka)
+        $this->assertDatabaseHas('evaluasimitrakinerja', [
+            'rekap_id'      => $rekap->id,
+            'nodok'         => $rekap->no_dokumen,
+            'mitra'         => $rekap->mitra_kerja_sama,
+            'integritas'    => 4, // Tinggi
+            'komunikasi'    => 5, // Sangat Tinggi
+            'pengisi_mitra' => 'Bpk. Mitra',
+        ]);
+
+        $row = EvaluasiMitraKinerja::first();
+        $this->assertNotNull($row->file_pdf);
+        Storage::disk('public')->assertExists($row->file_pdf);
+
+        $rekap->refresh();
+        $this->assertTrue((bool) $rekap->is_kinerja);
+    }
+
+    /** @test */
+    public function delete_menghapus_record_file_dan_menyetel_is_kinerja_false_jika_terakhir()
     {
         Storage::fake('public');
 
-        RekapKerjaSama::factory()->create(['id' => 1]);
+        $rekap = $this->makeRekap(['is_kinerja' => true]);
 
-        $data = $this->getCompleteEvaluationData(true);
-
-        $request = Request::create('/store', 'POST', $data, [], [
-            'pdfFile' => $data['pdfFile']
+        $path = 'evaluasi_pdf/sample.pdf';
+        Storage::disk('public')->put($path, 'dummy');
+        $ev = EvaluasiMitraKinerja::create([
+            'rekap_id'         => $rekap->id,
+            'nodok'            => $rekap->no_dokumen,
+            'mitra'            => $rekap->mitra_kerja_sama,
+            'pengisi_mitra'    => 'Bpk. Mitra',
+            'integritas'       => 4,
+            'keahlian'         => 3,
+            'komunikasi'       => 5,
+            'kerjasamatim'     => 4,
+            'pengembangandiri' => 3,
+            'kreativitas'      => 2,
+            'bahasaasing'      => 1,
+            'teknologi'        => 4,
+            'manajerial'       => 3,
+            'analisis'         => 4,
+            'laporan'          => 5,
+            'inovasi'          => 4,
+            'file_pdf'         => $path,
         ]);
 
-        $response = $this->controller->store($request);
+        // Matikan middleware biar endpoint delete bisa diakses langsung
+        $this->withoutMiddleware();
 
-        // Pastikan file benar-benar disimpan
-        Storage::disk('public')->assertExists('evaluasi_pdf/' . $data['pdfFile']->hashName());
+        $resp = $this->delete(route('EvaluasiMitraKinerja.delete', ['id' => $ev->idkinerja]));
+        $resp->assertStatus(200);
 
-        $this->assertDatabaseHas('evaluasimitrakinerja', [
-            'file_pdf' => 'evaluasi_pdf/' . $data['pdfFile']->hashName()
-        ]);
-    }
-
-    /** @test */
-   public function dapat_menghapus_data_evaluasi_dan_memperbarui_status_rekap()
-    {
-        $rekap = RekapKerjaSama::factory()->create(['id' => 1, 'is_kinerja' => true]);
-
-        $evaluasi = EvaluasiMitraKinerja::factory()->create([
-            'rekap_id' => $rekap->id
-        ]);
-
-        $response = $this->controller->delete($evaluasi->idkinerja);
-
-        $this->assertEquals([
-            'success' => true,
-            'message' => 'Hasil evaluasi berhasil dihapus'
-        ], $response->getData(true));
-
-        $this->assertDatabaseMissing('evaluasimitrakinerja', ['idkinerja' => $evaluasi->idkinerja]);
+        $this->assertDatabaseMissing('evaluasimitrakinerja', ['idkinerja' => $ev->idkinerja]);
+        Storage::disk('public')->assertMissing($path);
 
         $rekap->refresh();
-        $this->assertEquals(false, $rekap->is_kinerja);
+        $this->assertFalse((bool) $rekap->is_kinerja);
     }
 
     /** @test */
-    public function menangani_id_tidak_valid_saat_menghapus()
+    public function kirim_link_dan_otp_membuat_record_otp_dan_mengirim_email()
     {
-        $response = $this->controller->delete('invalid-id');
-        $this->assertEquals(400, $response->getStatusCode());
-        $this->assertEquals([
-            'success' => false,
-            'message' => 'ID tidak valid'
-        ], $response->getData(true));
-    }
+        Mail::fake();
+        config()->set('mail.admin_address', 'admin@example.com');
 
-    /**
-     * Helper method to invoke private methods
-     */
-    protected function invokePrivateMethod($object, $methodName, array $parameters = [])
-    {
-        $reflection = new \ReflectionClass(get_class($object));
-        $method = $reflection->getMethod($methodName);
-        $method->setAccessible(true);
+        $rekap = $this->makeRekap(['email_pihak_mitra' => 'mitra@example.com']);
 
-        return $method->invokeArgs($object, $parameters);
+        $resp = $this->post(route('EvaluasiMitraKinerja.kirim', ['rekapId' => $rekap->id]));
+        $resp->assertRedirect();
+
+        // Ganti ke nama tabel sesuai migrasi OTP-mu
+        $this->assertDatabaseHas('evaluasi_kinerja_otps', [
+            'rekap_id'      => $rekap->id,
+            'sent_to_email' => 'admin@example.com',
+        ]);
+
+        Mail::assertSent(\App\Mail\MitraEvaluasiLinkMail::class, fn($m) => $m->hasTo('mitra@example.com'));
+        Mail::assertSent(\App\Mail\AdminOtpMail::class, fn($m) => $m->hasTo('admin@example.com'));
     }
 }

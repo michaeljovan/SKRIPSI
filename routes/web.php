@@ -17,6 +17,18 @@ Route::get('/', function () {
     return view('login');
 });
 
+
+// Options JSON (dropdown induk) — beri nama:
+Route::get('/rekapkerjasama/options', [\App\Http\Controllers\RekapKerjaSamaController::class, 'options'])
+    ->name('rekapkerjasama.options');
+
+// Kirim OTP Evaluasi Kinerja (staff):
+Route::post('/rekapkerjasama/{rekap}/send-evaluasi-otp', [\App\Http\Controllers\RekapKerjaSamaController::class, 'sendEvaluasiOtp'])
+    ->name('rekap.sendEvaluasiOtp');
+
+// (sudah ada di kodenya) Gate OTP yang dipakai dalam email:
+Route::get('/__dummy-otp/{rekap}', fn() => 'ok')->name('evaluasi.kinerja.otp.show'); // hapus ini jika kamu sudah punya route aslinya
+
 Route::get('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/login', [LoginController::class, 'loginPost'])->name('login.post');
 
