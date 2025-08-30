@@ -170,11 +170,11 @@
                         <div class="col-md-4 mb-3">
                             <label for="anggaran_ukdw" class="form-label required-field">Anggaran UKDW (Rp)</label>
                             <input type="text" class="form-control" id="anggaran_ukdw" name="anggaran_ukdw"
-                                value="{{ number_format(old('anggaran_ukdw', $pelaksanaan->anggaran_ukdw), 0, ',', '.') }}"
+                                value="{{ number_format((float) old('anggaran_ukdw', $pelaksanaan->anggaran_ukdw), 0, ',', '.') }}"
                                 required>
                         </div>
                     </div>
-                </div>
+                </div>  
 
                 <!-- Hasil Pelaksanaan & Dokumen -->
                 <div class="form-section">
