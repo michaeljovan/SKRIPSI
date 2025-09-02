@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\RekapKerjaSama;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -133,10 +134,28 @@ class DashboardController extends Controller
             ];
         }
 
-        $expiringAgreements = RekapKerjaSama::where('tanggal_selesai', '>=', now())
+        $today   = Carbon::today();
+        $until30 = $today->copy()->addDays(30);
+
+        // GANTI yang lama ini (opsional, supaya "akan berakhir" juga hit hari ini):
+        $expiringAgreements = RekapKerjaSama::whereDate('tanggal_selesai', '>=', now()->toDateString())
             ->orderBy('tanggal_selesai', 'asc')
             ->take(5)
             ->get();
+
+        // TAMBAHKAN: sumber data khusus untuk tabel "Perpanjang & Berhenti"
+        $perpanjangBerhenti = RekapKerjaSama::with('induk')
+            ->where(function ($q) {
+                $q->whereNotNull('parent_id')      // perpanjang
+                    ->orWhere('status', 'dihentikan'); // berhenti
+            })
+            // urutkan: tampilkan "berhenti" dulu, lalu "perpanjang" (aktif)
+            ->orderByRaw("CASE WHEN status='dihentikan' THEN 0 ELSE 1 END")
+            ->orderByDesc('stopped_at')   // yang baru berhenti di atas
+            ->orderByDesc('updated_at')   // sisanya by update terbaru
+            ->take(5)
+            ->get();
+
 
 
 
@@ -162,6 +181,21 @@ class DashboardController extends Controller
             ];
         }
 
+
+        $sudahBerakhir = \App\Models\RekapKerjaSama::with('induk')
+            ->where(function ($q) {
+                // Tampilkan yang TANGGAL-nya sudah lewat HARI INI
+                $q->whereDate('tanggal_selesai', '<', now('Asia/Jakarta')->toDateString())
+                    // ATAU yang statusnya sudah dihentikan (walau tanggalnya = hari ini)
+                    ->orWhere('status', 'dihentikan');
+            })
+            // Urutkan: yang dihentikan dulu (baru berhenti di atas), lalu yang selesai biasa
+            ->orderByRaw("CASE WHEN status='dihentikan' THEN 0 ELSE 1 END")
+            ->orderByDesc('stopped_at')
+            ->orderByDesc('tanggal_selesai')
+            ->take(5)
+            ->get();
+
         return view('dashboard', compact(
             'mitraaktif',
             'mitrapasif',
@@ -172,7 +206,9 @@ class DashboardController extends Controller
             'jenisTersedikit',
             'expiringAgreements',
             'kategoriData',
-            'bentukPerUnitChart'
+            'bentukPerUnitChart',
+            'perpanjangBerhenti',
+            'sudahBerakhir' // <= tambahkan ini
         ));
     }
 

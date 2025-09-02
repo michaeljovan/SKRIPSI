@@ -244,21 +244,24 @@
                                                 <select class="form-select" id="parentDocument" name="parent_id">
                                                     <!-- Opsi akan diisi via JavaScript -->
                                                 </select>
-                                                <div class="form-text">Untuk MoA pilih MoU induk, untuk IA pilih
-                                                    MoU/MoA induk</div>
+                                                <div class="form-text">
+                                                    Untuk MoA pilih MoU induk, untuk IA pilih MoU/MoA induk
+                                                </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="parentMitra" class="form-label">Mitra Kerja Sama</label>
-                                                <input type="text" class="form-control" id="parentMitra"
-                                                    name="parentMitra" readonly>
+                                                <input type="text" class="form-control field-gray"
+                                                    id="parentMitra" name="parentMitra" readonly>
                                             </div>
                                         </div>
+
                                         <div class="row mt-3">
                                             <div class="col-md-6">
                                                 <label for="parentJudul" class="form-label">Judul Kerja Sama</label>
-                                                <input type="text" class="form-control" id="parentJudul"
-                                                    name="parentJudul" readonly>
+                                                <input type="text" class="form-control field-gray"
+                                                    id="parentJudul" name="parentJudul" readonly>
                                             </div>
+
                                         </div>
                                         <div id="noParentDocAlert" class="alert alert-info mt-3"
                                             style="display: none;">
@@ -294,17 +297,27 @@
                                 <input type="date" class="form-control" id="tanggalMulai" name="tanggalMulai"
                                     required>
                             </div>
+
                             <div class="col-md-4">
                                 <label for="tanggalSelesai" class="form-label">Tanggal Selesai</label>
                                 <input type="date" class="form-control" id="tanggalSelesai" name="tanggalSelesai"
                                     required>
                             </div>
+
                             <div class="col-md-4">
                                 <label for="masaBerlaku" class="form-label">Masa Berlaku (Hari)</label>
-                                <input type="text" class="form-control" id="masaBerlaku" name="masaBerlaku"
-                                    placeholder="Otomatis" readonly>
+                                <div class="input-group">
+                                    <span class="input-group-text field-gray">
+                                        <i class="bi bi-clock-history"></i>
+                                    </span>
+                                    <input type="text" class="form-control field-gray" id="masaBerlaku"
+                                        name="masaBerlaku" placeholder="Otomatis" readonly>
+                                    <span class="input-group-text field-gray">hari</span>
+                                </div>
                             </div>
+
                         </div>
+
 
                         <!-- Row 6 -->
                         <div class="row mb-3">
@@ -314,11 +327,13 @@
                                     <option value="" selected disabled>Pilih Kategori</option>
                                     <option value="nasional"> Nasional </option>
                                     <option value="internasional">Internasional</option>
+                                    <option value="lokal">Lokal</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="inKind" class="form-label">In Kind</label>
-                                <textarea class="form-control" id="inKind" name="inKind" rows="2" placeholder="Diisi dengan angka"></textarea>
+                                <textarea class="form-control" id="inKind" name="inKind" rows="2"
+                                    placeholder="Contoh : Pembicara - 1.000.000"></textarea>
                             </div>
                         </div>
 
@@ -331,7 +346,8 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="inCash" class="form-label">In Cash (Rp)</label>
-                                <textarea class="form-control" id="inCash" name="inCash" rows="2" placeholder="Diisi dengan angka"></textarea>
+                                <textarea class="form-control" id="inCash" name="inCash" rows="2"
+                                    placeholder="Contoh : Tiket Pesawat - 1.000.000"></textarea>
                             </div>
                         </div>
 
@@ -391,6 +407,12 @@
             const showErr = (title, text) => Swal.fire(title, text, 'error');
             const showOk = (title, text) => Swal.fire(title, text, 'success');
 
+            // Dapatkan CSRF token dari meta atau input hidden sebagai fallback
+            const getCsrfToken = () =>
+                document.querySelector('meta[name="csrf-token"]')?.content ||
+                document.querySelector('input[name="_token"]')?.value ||
+                '';
+
             // ===================== Reset dengan SweetAlert =====================
             const resetBtn = document.querySelector('button[type="reset"]');
             resetBtn?.addEventListener('click', function(e) {
@@ -406,7 +428,6 @@
                     if (r.isConfirmed) {
                         document.getElementById('kerjaSamaForm')?.reset();
                         showOk('Berhasil!', 'Form telah berhasil direset.');
-                        // Setelah reset, pastikan dropdown perpanjang kembali mengikuti radio default
                         togglePerpanjangSelect();
                     }
                 });
@@ -419,7 +440,6 @@
 
             function calculateDuration() {
                 if (!tanggalMulai || !tanggalSelesai || !masaBerlaku) return;
-
                 if (tanggalMulai.value && tanggalSelesai.value) {
                     const s = new Date(tanggalMulai.value);
                     const e = new Date(tanggalSelesai.value);
@@ -442,9 +462,7 @@
             }
 
             tanggalMulai?.addEventListener('change', () => {
-                if (tanggalMulai && tanggalSelesai) {
-                    tanggalSelesai.min = tanggalMulai.value;
-                }
+                if (tanggalMulai && tanggalSelesai) tanggalSelesai.min = tanggalMulai.value;
                 calculateDuration();
             });
             tanggalSelesai?.addEventListener('change', calculateDuration);
@@ -492,20 +510,13 @@
                 if (!selectPerpanjang) return;
                 const isPerpanjang = !!radioPerpanjang?.checked;
                 selectPerpanjang.disabled = !isPerpanjang;
-                if (!isPerpanjang) {
-                    // kosongkan pilihan saat kembali ke "Baru"
-                    selectPerpanjang.value = '';
-                }
+                if (!isPerpanjang) selectPerpanjang.value = '';
             }
-
-            // Inisialisasi sesuai kondisi awal dari Blade
             togglePerpanjangSelect();
-
-            // Dengarkan perubahan radio
             radioBaru?.addEventListener('change', togglePerpanjangSelect);
             radioPerpanjang?.addEventListener('change', togglePerpanjangSelect);
 
-            // Opsional: cegah pilih “diri sendiri” (saat edit)
+            // Cegah pilih diri sendiri saat edit (opsional)
             if (selectPerpanjang) {
                 const currentId = selectPerpanjang.dataset.currentId;
                 if (currentId) {
@@ -516,7 +527,6 @@
             }
 
             // ===================== DOKUMEN INDUK (opsional, beda fitur) =====================
-            // Hanya berjalan kalau elemen-elemen ini ada.
             const jenisRadios = $$('input[name="jenisKerjaSama"]');
             const parentSelect = $('#parentDocument');
             const parentMitra = $('#parentMitra');
@@ -531,7 +541,8 @@
                     const res = await fetch(url, {
                         headers: {
                             'Accept': 'application/json'
-                        }
+                        },
+                        credentials: 'same-origin' // penting agar cookie ikut
                     });
                     if (!res.ok) {
                         const txt = await res.text().catch(() => '');
@@ -581,7 +592,6 @@
                 jenisRadios.forEach(r => r.addEventListener('change', function() {
                     loadParentOptions(this.value);
                 }));
-
                 const checkedJenis = document.querySelector('input[name="jenisKerjaSama"]:checked');
                 if (checkedJenis) loadParentOptions(checkedJenis.value);
 
@@ -615,8 +625,9 @@
                 }
             });
 
-            // ===================== Submit form =====================
+            // ===================== Submit form (AJAX) =====================
             const form = $('#kerjaSamaForm');
+
             form?.addEventListener('submit', function(e) {
                 e.preventDefault();
 
@@ -631,31 +642,32 @@
                     return;
                 }
 
-                // File size check lagi saat submit
+                // File size check
                 const f = fileInput?.files?.[0];
                 if (overLimit(f)) {
                     showWarn('Ukuran terlalu besar', 'Ukuran dokumen maksimal 5MB.');
                     return;
                 }
 
-                // ===== Ambil parent_id sesuai JENIS PERMOHONAN =====
-                // Jika "perpanjang" → pakai #dokumenPerpanjang
-                // Jika "baru" → null (kita kirim 'none', nanti controller ubah ke null)
+                // Ambil parent_id sesuai jenis permohonan
                 const isPerpanjang = !!radioPerpanjang?.checked;
                 let parentVal = 'none';
                 if (isPerpanjang && selectPerpanjang) {
                     parentVal = selectPerpanjang.value || 'none';
                 }
 
-                // Sanitasi angka (hapus . , spasi)
-                const stripNumber = (v) => (v || '').toString().replace(/[.,\s]/g, '');
-                ['inKind', 'totalInKind', 'inCash', 'totalInCash', 'jumlahImplementasi'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = stripNumber(el.value);
-                });
+                // ❌ HAPUS sanitasi untuk inKind / inCash / total* (biarkan server parse)
+                // (Opsional) kalau mau: pastikan jumlahImplementasi hanya digit
+                const onlyDigits = v => (v || '').toString().replace(/[^\d]/g, '');
+                const jmlImpl = document.getElementById('jumlahImplementasi');
+                if (jmlImpl) jmlImpl.value = onlyDigits(jmlImpl.value);
 
                 const formData = new FormData(form);
                 formData.set('parent_id', parentVal);
+
+                // tambahkan CSRF ke body jika belum ada
+                const token = getCsrfToken();
+                if (!formData.has('_token') && token) formData.append('_token', token);
 
                 const noDokumen = $('#noDokumen')?.value || '';
                 if (!noDokumen.trim()) {
@@ -663,11 +675,12 @@
                     return;
                 }
 
-                // Cek unik no_dokumen
+                // Cek unik no_dokumen (GET aman tanpa CSRF)
                 fetch(`{{ route('cek.no_dokumen') }}?no_dokumen=${encodeURIComponent(noDokumen)}`, {
                         headers: {
                             'Accept': 'application/json'
-                        }
+                        },
+                        credentials: 'same-origin'
                     })
                     .then(res => res.json())
                     .then(data => {
@@ -691,10 +704,12 @@
                             method: 'POST',
                             body: formData,
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]')?.content || '',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': token,
                                 'Accept': 'application/json'
-                            }
+                                // JANGAN set 'Content-Type' untuk FormData
+                            },
+                            credentials: 'same-origin' // <-- penting agar cookie session ikut
                         });
                     })
                     .then(async (response) => {
@@ -702,7 +717,17 @@
                         const isJSON = contentType.includes('application/json');
                         const data = isJSON ? await response.json() : {};
 
-                        if (!response.ok) {
+                        // Tangkap CSRF/session expired (Laravel biasanya 419)
+                        if (response.status === 419) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Sesi berakhir',
+                                text: 'Sesi Anda kedaluwarsa. Silakan refresh halaman lalu coba lagi.'
+                            });
+                            throw new Error('CSRF_419');
+                        }
+
+                        if (!response.ok || data.success === false) {
                             if (data?.errors) {
                                 const firstKey = Object.keys(data.errors)[0];
                                 const firstMsg = data.errors[firstKey][0];
@@ -732,14 +757,14 @@
                         });
                     })
                     .catch(err => {
-                        if (['NO_DUPLICATE', 'VALIDATION_ERROR'].includes(err.message)) return;
+                        if (['NO_DUPLICATE', 'VALIDATION_ERROR', 'CSRF_419'].includes(err.message))
+                            return;
                         showErr('Error', 'Terjadi masalah jaringan saat memproses data.');
                         console.error(err);
                     });
             });
         });
     </script>
-
 </body>
 
 </html>

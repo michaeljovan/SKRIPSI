@@ -8,6 +8,32 @@ footer {
     background-color: #707FDD;
 }
 
+
+/* Kelas untuk field abu-abu */
+.field-gray,
+.field-gray:focus {
+    background-color: #e9ecef !important;
+    /* abu-abu (lebih jelas daripada bg-light) */
+    color: #495057 !important;
+    /* teks abu gelap agar kontras */
+    border-color: #ced4da !important;
+    /* border senada */
+    box-shadow: none !important;
+}
+
+.field-gray::placeholder {
+    color: #9aa0a6;
+    /* placeholder agak redup */
+    opacity: 1;
+}
+
+/* Jika dipakai di addon input-group */
+.input-group-text.field-gray {
+    background-color: #e9ecef !important;
+    color: #495057 !important;
+    border-color: #ced4da !important;
+}
+
 .sidebar {
     width: 300px;
     background-color: #CCDAFF;
@@ -88,13 +114,16 @@ footer {
 .btn-outline-success:hover {
     background-color: #28a745;
     color: white;
-    transform: translateX(5px); /* Sedikit bergeser ke kanan */
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3); /* Shadow hijau */
+    transform: translateX(5px);
+    /* Sedikit bergeser ke kanan */
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    /* Shadow hijau */
 }
 
 /* Animasi icon panah */
 .btn-outline-success:hover .bi-chevron-double-right {
-    transform: translateX(3px); /* Icon bergeser lebih jauh */
+    transform: translateX(3px);
+    /* Icon bergeser lebih jauh */
     transition: transform 0.3s ease;
 }
 
@@ -111,9 +140,11 @@ footer {
 
 .btn-outline-warning:hover {
     background-color: #ffc107;
-    color: #212529; /* Warna teks gelap untuk kontras */
+    color: #212529;
+    /* Warna teks gelap untuk kontras */
     transform: translateX(5px);
-    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3); /* Shadow kuning */
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+    /* Shadow kuning */
 }
 
 .btn-outline-warning:hover .bi-chevron-double-right {

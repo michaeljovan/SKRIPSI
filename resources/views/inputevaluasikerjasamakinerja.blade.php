@@ -74,8 +74,6 @@
                                             <div class="col-md-6">
                                                 <label class="form-label d-flex align-items-center">
                                                     Dosen Terlibat
-                                                    <span class="badge bg-primary ms-2">{{ $dosenCount }}
-                                                        orang</span>
                                                 </label>
                                                 @if (count($dosenList))
                                                     <div class="border rounded p-2"
@@ -95,8 +93,6 @@
                                             <div class="col-md-6">
                                                 <label class="form-label d-flex align-items-center">
                                                     Mahasiswa Terlibat
-                                                    <span class="badge bg-primary ms-2">{{ $mahasiswaCount }}
-                                                        orang</span>
                                                 </label>
                                                 @if (count($mahasiswaList))
                                                     <div class="border rounded p-2"

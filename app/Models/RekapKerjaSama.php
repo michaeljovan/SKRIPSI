@@ -55,9 +55,7 @@ class RekapKerjaSama extends Model
     protected $casts = [
         'tanggal_mulai'   => 'date',
         'tanggal_selesai' => 'date',
-        'in_cash'         => 'decimal:2',
         'total_in_cash'   => 'decimal:2',
-        'in_kind'         => 'decimal:2',
         'total_in_kind'   => 'decimal:2',
         'is_laporan'      => 'boolean',
         'is_kinerja'      => 'boolean',

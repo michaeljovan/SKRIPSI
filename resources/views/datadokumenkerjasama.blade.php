@@ -150,12 +150,10 @@
                                         <td>{{ date('d/m/Y', strtotime($rekap->tanggal_selesai)) }}</td>
                                         <td>{{ $rekap->masa_berlaku }}</td>
                                         <td>{{ $rekap->kategori }}</td>
-                                        <td>{{ $rekap->in_kind ? number_format($rekap->in_kind, 0, ',', '.') : '-' }}
-                                        </td>
+                                        <td>{{ $rekap->in_kind ?? '-' }}</td>
                                         <td>{{ $rekap->total_in_kind ? number_format($rekap->total_in_kind, 0, ',', '.') : '-' }}
                                         </td>
-                                        <td>{{ $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '-' }}
-                                        </td>
+                                        <td>{{ $rekap->in_cash ?? '-' }}</td>
                                         <td>{{ $rekap->total_in_cash ? number_format($rekap->total_in_cash, 0, ',', '.') : '-' }}
                                         </td>
                                         <td>{{ $rekap->jumlah_implementasi ?? '-' }}</td>

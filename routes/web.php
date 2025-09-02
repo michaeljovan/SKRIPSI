@@ -81,7 +81,8 @@ Route::get(
     [EvaluasiMitraKinerjaController::class, 'create']
 )->name('EvaluasiMitraKinerja.create');
 
-
+Route::get('/kerjasamaberakhir', [RekapKerjaSamaController::class, 'kerjasamaBerakhir'])
+    ->name('kerjasamaberakhir');
 
 Route::get('/rekapkerjasama/options', [RekapKerjaSamaController::class, 'options']);
 

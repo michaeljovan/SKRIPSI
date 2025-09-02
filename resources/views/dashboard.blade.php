@@ -247,20 +247,24 @@
                 </div>
 
                 <div class="row mt-4">
-                    <div class="col-12">
+                    <div class="col-12 col-lg-6">
                         <div class="card shadow-sm">
                             <div class="card-header bg-danger text-white">
-                                <h5 class="card-title mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Kerja Sama
-                                    yang Akan Berakhir</h5>
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-exclamation-octagon me-2"></i>Kerja Sama Sudah Berakhir
+                                </h5>
                             </div>
                             <div class="card-body">
-                                <div class="alert alert-warning">
-                                    <i class="bi bi-info-circle-fill me-2"></i>Berikut daftar kerja sama yang akan
-                                    berakhir
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    Menampilkan kerja sama yang <strong>sudah berakhir</strong> (tanggal lewat dari hari
+                                    ini)
+                                    atau yang <strong>statusnya dihentikan</strong>.
                                 </div>
+
                                 <div class="table-responsive">
-                                    <table class="table table-hover table-striped">
-                                        <thead>
+                                    <table class="table table-hover table-striped align-middle">
+                                        <thead class="table-light">
                                             <tr>
                                                 <th class="fw-bold">#</th>
                                                 <th class="fw-bold">Mitra Kerja Sama</th>
@@ -268,54 +272,187 @@
                                                 <th class="fw-bold">Unit</th>
                                                 <th class="fw-bold">Tanggal Mulai</th>
                                                 <th class="fw-bold">Tanggal Berakhir</th>
-                                                <th class="fw-bold">Sisa Hari</th>
+                                                <th class="fw-bold">Lewat Hari</th>
                                                 <th class="fw-bold">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse ($expiringAgreements as $index => $agreement)
-                                                @php
-                                                    $today = now();
-                                                    $endDate = \Carbon\Carbon::parse($agreement->tanggal_selesai);
-                                                    $daysLeft = $today->diffInDays($endDate, false);
+                                            @php $today = now()->startOfDay(); @endphp
 
-                                                    if ($daysLeft < 0) {
-                                                        $status = 'Kadaluarsa';
-                                                        $badgeClass = 'bg-danger';
-                                                    } elseif ($daysLeft <= 30) {
-                                                        $status = 'Akan Habis';
-                                                        $badgeClass = 'bg-warning text-dark';
-                                                    } else {
-                                                        $status = 'Aktif';
-                                                        $badgeClass = 'bg-success';
-                                                    }
+                                            @forelse ($sudahBerakhir as $index => $agreement)
+                                                @php
+                                                    $mulai =
+                                                        $agreement->tanggal_mulai instanceof \Carbon\Carbon
+                                                            ? $agreement->tanggal_mulai
+                                                            : \Carbon\Carbon::parse($agreement->tanggal_mulai);
+
+                                                    $selesai =
+                                                        $agreement->tanggal_selesai instanceof \Carbon\Carbon
+                                                            ? $agreement->tanggal_selesai
+                                                            : \Carbon\Carbon::parse($agreement->tanggal_selesai);
+
+                                                    $diff = $today->diffInDays($selesai, false); // negatif kalau lewat
+                                                    $daysLate = $diff < 0 ? abs($diff) : 0;
+
+                                                    $status =
+                                                        $agreement->status === 'dihentikan' ? 'Berhenti' : 'Selesai';
+                                                    $badge =
+                                                        $agreement->status === 'dihentikan'
+                                                            ? 'bg-danger'
+                                                            : 'bg-secondary';
                                                 @endphp
                                                 <tr>
                                                     <td>{{ $index + 1 }}</td>
-                                                    <td>{{ $agreement->mitra_kerja_sama }}</td>
-                                                    <td>{{ $agreement->judul_kerja_sama }}</td>
-                                                    <td>{{ $agreement->unit }}</td>
-                                                    <td>{{ $agreement->tanggal_mulai->format('d/m/Y') }}</td>
-                                                    <td>{{ $agreement->tanggal_selesai->format('d/m/Y') }}</td>
-                                                    <td>{{ $daysLeft > 0 ? $daysLeft : 0 }} hari</td>
+
+                                                    {{-- Mitra: satu baris, ellipsis + tooltip --}}
                                                     <td>
-                                                        <span
-                                                            class="badge {{ $badgeClass }}">{{ $status }}</span>
-                                                        @if ($daysLeft <= 30 && $daysLeft > 0)
-                                                            <i class="bi bi-exclamation-triangle-fill ms-2 text-warning"
-                                                                title="Kerja sama akan berakhir dalam {{ $daysLeft }} hari"></i>
+                                                        <span class="d-inline-block text-truncate"
+                                                            style="max-width: 220px;" data-bs-toggle="tooltip"
+                                                            title="{{ $agreement->mitra_kerja_sama }}">
+                                                            {{ $agreement->mitra_kerja_sama }}
+                                                        </span>
+                                                    </td>
+
+                                                    {{-- Judul: satu baris, ellipsis + tooltip --}}
+                                                    <td>
+                                                        <span class="d-inline-block text-truncate"
+                                                            style="max-width: 340px;" data-bs-toggle="tooltip"
+                                                            title="{{ $agreement->judul_kerja_sama }}">
+                                                            {{ $agreement->judul_kerja_sama }}
+                                                        </span>
+                                                    </td>
+
+                                                    <td>{{ $agreement->unit }}</td>
+                                                    <td>{{ $mulai->format('d/m/Y') }}</td>
+                                                    <td>{{ $selesai->format('d/m/Y') }}</td>
+                                                    <td>{{ $daysLate }} hari</td>
+                                                    <td><span
+                                                            class="badge {{ $badge }}">{{ $status }}</span>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="8" class="text-center">
+                                                        Tidak ada kerja sama yang sudah berakhir.
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <a href="{{ route('kerjasamaberakhir') }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i> Lihat Semua
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- KANAN: Perpanjang & Berhenti --}}
+                    <div class="col-12 col-lg-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-arrow-repeat me-2"></i>Perpanjang & Berhenti
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-secondary">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    Menampilkan kerja sama yang <strong>perpanjang</strong> (punya induk) dan yang
+                                    <strong>berhenti</strong>.
+                                </div>
+
+                                @php
+                                    $now = \Carbon\Carbon::now('Asia/Jakarta');
+                                @endphp
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="fw-bold">#</th>
+                                                <th class="fw-bold">No Dokumen</th>
+                                                <th class="fw-bold">Mitra</th>
+                                                <th class="fw-bold">Judul</th>
+                                                <th class="fw-bold">Status</th>
+                                                <th class="fw-bold">Detail</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($perpanjangBerhenti as $i => $rekap)
+                                                @php
+                                                    $tglSelesai = \Carbon\Carbon::parse(
+                                                        $rekap->tanggal_selesai,
+                                                    )->endOfDay();
+
+                                                    // PRIORITAS: dihentikan > selesai (tgl lewat) > aktif
+                                                    $status =
+                                                        $rekap->status === 'dihentikan'
+                                                            ? 'dihentikan'
+                                                            : ($tglSelesai->lt($now)
+                                                                ? 'selesai'
+                                                                : 'aktif');
+
+                                                    $badgeClass = match ($status) {
+                                                        'dihentikan' => 'bg-danger',
+                                                        'selesai' => 'bg-secondary',
+                                                        default => 'bg-success',
+                                                    };
+
+                                                    $statusLabel = match ($status) {
+                                                        'dihentikan' => 'Berhenti',
+                                                        'selesai' => 'Selesai',
+                                                        default => 'Aktif',
+                                                    };
+
+                                                    $parentNo = optional($rekap->induk)->no_dokumen;
+                                                @endphp
+                                                <tr>
+                                                    <td>{{ $i + 1 }}</td>
+                                                    <td>{{ $rekap->no_dokumen ?? '-' }}</td>
+                                                    <td>{{ $rekap->mitra_kerja_sama }}</td>
+                                                    <td>{{ \Illuminate\Support\Str::limit($rekap->judul_kerja_sama, 60) }}
+                                                    </td>
+                                                    <td><span
+                                                            class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
+                                                    </td>
+                                                    <td>
+                                                        @if ($status === 'dihentikan')
+                                                            <div class="small text-danger">
+                                                                Dihentikan:
+                                                                {{ optional($rekap->stopped_at)->timezone('Asia/Jakarta')->format('d/m/Y H:i') ?? '-' }}
+                                                            </div>
+                                                            <div class="small text-muted">
+                                                                Tgl selesai diset:
+                                                                {{ \Carbon\Carbon::parse($rekap->tanggal_selesai)->format('d/m/Y') }}
+                                                            </div>
+                                                            @if (!empty($rekap->stopped_reason))
+                                                                <div class="small text-muted">
+                                                                    Alasan: {{ $rekap->stopped_reason }}
+                                                                </div>
+                                                            @endif
+                                                        @endif
+
+                                                        @if ($rekap->parent_id)
+                                                            <div class="small text-muted mt-1">
+                                                                Perpanjang dari: {{ $parentNo ?? '—' }}
+                                                            </div>
                                                         @endif
                                                     </td>
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="8" class="text-center">Tidak ada kerja sama yang
-                                                        akan berakhir ke depan</td>
+                                                    <td colspan="6" class="text-center">
+                                                        Tidak ada data Perpanjang atau Berhenti.
+                                                    </td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
                                     </table>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -332,6 +469,10 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const triggers = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            triggers.forEach(el => new bootstrap.Tooltip(el));
+        });
         document.addEventListener('DOMContentLoaded', function() {
             // === SIDEBAR TOGGLE ===
             const sidebar = document.getElementById('sidebar');

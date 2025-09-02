@@ -30,9 +30,9 @@ return new class extends Migration
             $table->date('tanggal_selesai');
             $table->integer('masa_berlaku');
             $table->string('kategori');
-            $table->decimal('in_kind', 15, 2)->nullable();
+            $table->string('in_kind')->nullable();
             $table->decimal('total_in_kind', 15, 2)->nullable();
-            $table->decimal('in_cash', 15, 2)->nullable();
+            $table->string('in_cash')->nullable();
             $table->decimal('total_in_cash', 15, 2)->nullable();
             $table->integer('jumlah_implementasi')->nullable();
             $table->string('dokumen_path');

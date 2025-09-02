@@ -89,9 +89,12 @@ class RekapKerjaSamaController extends Controller
     public function store(Request $request)
     {
         try {
+            // Jika ada parent_id = 'none' dari frontend, normalkan jadi null
             if ($request->filled('parent_id') && $request->input('parent_id') === 'none') {
                 $request->merge(['parent_id' => null]);
             }
+
+            $today = \Carbon\Carbon::today();
 
             $validated = $request->validate([
                 'noDokumen'         => 'required|unique:rekapkerjasama,no_dokumen',
@@ -102,35 +105,61 @@ class RekapKerjaSamaController extends Controller
                 'bentukKerjaSama.*' => 'string|in:Penelitian,Pendidikan,Pengabdian',
                 'jenisKerjaSama'    => 'required|string|in:MoU,MoA,IA',
                 'jenisPermohonan'   => 'required|in:baru,perpanjang',
-                'dokumenPerpanjang' => 'nullable|required_if:jenisPermohonan,perpanjang|integer|exists:rekapkerjasama,id',
+
+                // Hanya izinkan dokumen yang sudah selesai / tanggal_selesai lewat
+                'dokumenPerpanjang' => [
+                    'nullable',
+                    'required_if:jenisPermohonan,perpanjang',
+                    'integer',
+                    \Illuminate\Validation\Rule::exists('rekapkerjasama', 'id')->where(function ($q) use ($today) {
+                        $q->where('status', 'selesai')
+                            ->orWhereDate('tanggal_selesai', '<', $today);
+                    }),
+                ],
+
                 'pihakUKDW'         => 'required',
                 'pihakMitra'        => 'required',
                 'emailMitra'        => 'required|email',
                 'tanggalMulai'      => 'required|date|before_or_equal:tanggalSelesai',
                 'tanggalSelesai'    => 'required|date|after_or_equal:tanggalMulai',
-                'kategori'          => 'required|string|in:nasional,internasional',
+                'kategori'          => 'required|string|in:nasional,internasional,lokal',
+
+                // ⬇️ Sekarang teks, bukan angka
                 'inKind'            => 'nullable|string',
                 'inCash'            => 'nullable|string',
+
+                // Tetap teks di form tapi akan diparse bila berisi angka
                 'totalInKind'       => 'nullable|string',
                 'totalInCash'       => 'nullable|string',
+
                 'jumlahImplementasi' => 'nullable|integer|min:0',
-                'dokumenPendukung'  => 'required|file|mimes:pdf|max:5120',
+                'dokumenPendukung'   => 'required|file|mimes:pdf|max:5120',
             ], [
-                'bentukKerjaSama.min'           => 'Pilih minimal satu bentuk kerja sama.',
-                'tanggalSelesai.after_or_equal' => 'Tanggal selesai harus setelah atau sama dengan tanggal mulai.',
-                'dokumenPendukung.max'          => 'Ukuran dokumen maksimal 5MB.',
+                'bentukKerjaSama.min'            => 'Pilih minimal satu bentuk kerja sama.',
+                'tanggalSelesai.after_or_equal'  => 'Tanggal selesai harus setelah atau sama dengan tanggal mulai.',
+                'dokumenPendukung.max'           => 'Ukuran dokumen maksimal 5MB.',
+                'dokumenPerpanjang.required_if'  => 'Silakan pilih dokumen yang akan diperpanjang.',
             ]);
 
+            // MoU tidak boleh punya induk
+            if ($validated['jenisKerjaSama'] === 'MoU') {
+                $validated['dokumenPerpanjang'] = null;
+            }
+
+            // Tentukan parent id untuk perpanjang
             $parentId = null;
             if ($validated['jenisKerjaSama'] !== 'MoU' && $validated['jenisPermohonan'] === 'perpanjang') {
                 $parentId = (int) $validated['dokumenPerpanjang'];
             }
 
+            // Hitung masa berlaku (hari)
             $duration = (new \DateTime($validated['tanggalMulai']))
                 ->diff(new \DateTime($validated['tanggalSelesai']))->days + 1;
 
+            // Upload dokumen
             $filePath = $request->file('dokumenPendukung')->store('dokumen_kerja_sama', 'public');
 
+            // Parser angka fleksibel untuk total* (boleh kosong)
             $parseMoney = function ($v) {
                 if ($v === null || $v === '') return null;
                 $s = preg_replace('/\s+/', '', (string) $v);
@@ -144,19 +173,18 @@ class RekapKerjaSamaController extends Controller
                     elseif ($lastDot === false) $decSep = ',';
                     else $decSep = ($lastComma > $lastDot) ? ',' : '.';
                 }
-
                 if ($decSep === ',') {
                     $s = str_replace('.', '', $s);
                     $s = str_replace(',', '.', $s);
                 } else {
                     $s = str_replace(',', '', $s);
                 }
-
                 if ($s === '' || $s === '.') return null;
                 return round((float) $s, 2);
             };
 
-            $rekap = RekapKerjaSama::create([
+            // Simpan
+            $rekap = \App\Models\RekapKerjaSama::create([
                 'no_dokumen'          => $validated['noDokumen'],
                 'unit'                => $validated['unit'],
                 'mitra_kerja_sama'    => $validated['mitraKerjaSama'],
@@ -170,10 +198,15 @@ class RekapKerjaSamaController extends Controller
                 'tanggal_selesai'     => $validated['tanggalSelesai'],
                 'masa_berlaku'        => $duration,
                 'kategori'            => $validated['kategori'],
-                'in_kind'             => $parseMoney($request->input('inKind')),
-                'in_cash'             => $parseMoney($request->input('inCash')),
+
+                // ⬇️ simpan sebagai TEKS
+                'in_kind'             => $validated['inKind'] ?? null,
+                'in_cash'             => $validated['inCash'] ?? null,
+
+                // ⬇️ akan diparse ke decimal bila berisi angka, atau null bila kosong
                 'total_in_kind'       => $parseMoney($request->input('totalInKind')),
                 'total_in_cash'       => $parseMoney($request->input('totalInCash')),
+
                 'jumlah_implementasi' => $request->input('jumlahImplementasi') !== null
                     ? (int) $request->input('jumlahImplementasi') : null,
                 'dokumen_path'        => $filePath,
@@ -185,7 +218,7 @@ class RekapKerjaSamaController extends Controller
                 'message'  => 'Data kerja sama berhasil disimpan!',
                 'redirect' => route('data_kerja_sama'),
             ]);
-        } catch (ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal.',
@@ -198,7 +231,6 @@ class RekapKerjaSamaController extends Controller
             ], 500);
         }
     }
-
 
     public function delete($id)
     {
@@ -267,8 +299,16 @@ class RekapKerjaSamaController extends Controller
         // objek kosong supaya blade aman diakses (create)
         $rekap = new RekapKerjaSama();
 
-        // dropdown: semua dokumen (terbaru dulu)
-        $semuaDokumen = RekapKerjaSama::select('id', 'no_dokumen', 'judul_kerja_sama')
+        // HANYA dokumen yang boleh dipakai perpanjang:
+        // - status = 'selesai' ATAU
+        // - tanggal_selesai sudah lewat dari hari ini
+        $today = \Carbon\Carbon::today();
+        $semuaDokumen = RekapKerjaSama::query()
+            ->select('id', 'no_dokumen', 'judul_kerja_sama', 'tanggal_selesai', 'status')
+            ->where(function ($q) use ($today) {
+                $q->where('status', 'selesai')
+                    ->orWhereDate('tanggal_selesai', '<', $today);
+            })
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
@@ -278,6 +318,7 @@ class RekapKerjaSamaController extends Controller
 
         return view('inputrekapkerjasama', compact('rekap', 'semuaDokumen', 'defaultPermohonan'));
     }
+
 
     public function edit($id)
     {
@@ -324,7 +365,7 @@ class RekapKerjaSamaController extends Controller
                 'emailMitra'         => ['required', 'email'],
                 'tanggalMulai'       => ['required', 'date'],
                 'tanggalSelesai'     => ['required', 'date', 'after_or_equal:tanggalMulai'],
-                'kategori'           => ['required', 'in:nasional,internasional'],
+                'kategori'           => ['required', 'in:nasional,internasional,lokal'],
                 'dokumenPendukung'   => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
                 'parent_id'          => ['nullable', 'integer', 'exists:rekapkerjasama,id'],
 
@@ -443,10 +484,10 @@ class RekapKerjaSamaController extends Controller
                 'masa_berlaku'        => $duration,
                 'kategori'            => $validated['kategori'],
 
-                // uang (decimal 2)
-                'in_kind'             => $parseMoney($request->input('inKind')),
+                'in_kind'             => $request->input('inKind'),
+                'in_cash'             => $request->input('inCash'),
+
                 'total_in_kind'       => $parseMoney($request->input('totalInKind')),
-                'in_cash'             => $parseMoney($request->input('inCash')),
                 'total_in_cash'       => $parseMoney($request->input('totalInCash')),
 
                 'jumlah_implementasi' => $request->filled('jumlahImplementasi')
@@ -454,7 +495,6 @@ class RekapKerjaSamaController extends Controller
                 'dokumen_path'        => $filePath,
                 'parent_id'           => $validated['parent_id'],
 
-                // status baru (jangan override jika sudah dihentikan)
                 'status'              => $statusBaru,
             ]);
 
@@ -591,5 +631,22 @@ class RekapKerjaSamaController extends Controller
 
         return redirect()->route('data_kerja_sama')
             ->with('success', 'Kerja sama dihentikan per ' . $today->format('d/m/Y') . '.');
+    }
+
+
+    public function kerjasamaBerakhir(Request $request)
+    {
+        $today = Carbon::today();
+
+        $items = \App\Models\RekapKerjaSama::query()
+            ->whereDate('tanggal_selesai', '<', $today) // sudah berakhir
+            ->orderByDesc('tanggal_selesai')            // yang paling baru kadaluarsa di atas
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('kerjasamaberakhir', [
+            'items' => $items,
+            'today' => $today,
+        ]);
     }
 }

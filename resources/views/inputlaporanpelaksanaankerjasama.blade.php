@@ -151,13 +151,13 @@
                         <div class="col-md-6 mb-3">
                             <label for="dosen_terlibat" class="form-label">Dosen Terlibat</label>
                             <textarea class="form-control" id="dosen_terlibat" name="dosen_terlibat" rows="2"
-                                placeholder="Tulis nama dosen, pisahkan dengan koma. Contoh: Dr. Andi, Dr. Sari, Bapak Budi"></textarea>
+                                placeholder="Tulis nama dosen, pisahkan dengan koma. Contoh: Dr. Andi, Dr. Sari, Bapak Irfan"></textarea>
                             <div class="form-text">Pisahkan dengan koma jika lebih dari satu.</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="mahasiswa_terlibat" class="form-label">Mahasiswa Terlibat</label>
                             <textarea class="form-control" id="mahasiswa_terlibat" name="mahasiswa_terlibat" rows="2"
-                                placeholder="Tulis nama mahasiswa, pisahkan dengan koma. Contoh: Budi Santoso, Sari Putri, Joko P."></textarea>
+                                placeholder="Tulis nama mahasiswa, pisahkan dengan koma. Contoh: Kalistus, Sari Putri, Joko P."></textarea>
                             <div class="form-text">Pisahkan dengan koma jika lebih dari satu.</div>
                         </div>
                     </div>
