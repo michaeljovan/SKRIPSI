@@ -10,7 +10,10 @@ use App\Http\Controllers\EvaluasiMitraController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MitraAktifController;
 use App\Http\Controllers\MitraPasifController;
-
+use App\Http\Controllers\EvaluationGateController;
+use App\Http\Controllers\EvaluasiLinkController;
+use App\Http\Controllers\EvaluasiMitraKinerjaPeroranganController;
+use App\Http\Controllers\EvaluasiMitraPeroranganController;
 
 // Public Routes
 Route::get('/', function () {
@@ -18,9 +21,38 @@ Route::get('/', function () {
 });
 
 
+Route::get('evaluasi-mitra/perorangan/{id}', [EvaluasiMitraPeroranganController::class, 'create'])
+    ->name('EvaluasiMitraPerorangan.create');
+
+Route::post('evaluasi-mitra/perorangan/{id}', [EvaluasiMitraPeroranganController::class, 'store'])
+    ->name('EvaluasiMitraPerorangan.store');
+
+Route::post('/rekap/{rekap}/send-evaluasi-link', [RekapKerjaSamaController::class, 'sendEvaluasiLink'])
+    ->name('evaluasi.link.send');
+
+Route::get('/evaluasi/kinerja/{rekap}/form', [EvaluasiMitraKinerjaController::class, 'pilihanForm'])
+    ->name('evaluasi.kinerja.form');
+
+Route::get('evaluasi-mitra/{rekapId}/pilihan', [EvaluasiMitraController::class, 'pilihanForm'])
+    ->name('EvaluasiMitra.pilihan');
+
+
+Route::get(
+    'evaluasi-mitra-kinerja/perorangan/{id}/create',
+    [EvaluasiMitraKinerjaPeroranganController::class, 'create']
+)->name('EvaluasiMitraKinerjaPerorangan.create');
+
+Route::post(
+    'evaluasi-mitra-kinerja/perorangan/{id}',
+    [EvaluasiMitraKinerjaPeroranganController::class, 'store']
+)->name('EvaluasiMitraKinerjaPerorangan.store');
+
 // Options JSON (dropdown induk) — beri nama:
 Route::get('/rekapkerjasama/options', [\App\Http\Controllers\RekapKerjaSamaController::class, 'options'])
     ->name('rekapkerjasama.options');
+
+Route::post('evaluasi-mitra/{rekapId}/kirim', [EvaluasiMitraController::class, 'kirimLink'])
+    ->name('EvaluasiMitra.kirim');
 
 // Kirim OTP Evaluasi Kinerja (staff):
 Route::post('/rekapkerjasama/{rekap}/send-evaluasi-otp', [\App\Http\Controllers\RekapKerjaSamaController::class, 'sendEvaluasiOtp'])
@@ -80,6 +112,11 @@ Route::get(
     '/evaluasi-mitra-kinerja/{id}/create',
     [EvaluasiMitraKinerjaController::class, 'create']
 )->name('EvaluasiMitraKinerja.create');
+
+Route::get(
+    'evaluasi-mitra-kinerja/{id}/create-direct',
+    [EvaluasiMitraKinerjaController::class, 'create']
+)->name('EvaluasiMitraKinerja.create_direct');
 
 Route::get('/kerjasamaberakhir', [RekapKerjaSamaController::class, 'kerjasamaBerakhir'])
     ->name('kerjasamaberakhir');

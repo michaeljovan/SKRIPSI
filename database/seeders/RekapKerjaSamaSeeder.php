@@ -49,7 +49,7 @@ class RekapKerjaSamaSeeder extends Seeder
                 ['Penelitian', 'Pendidikan', 'Pengabdian']
             ];
             $jenisKerjaSama = ['MoU', 'MoA', 'IA'];
-            $kategori = ['nasional', 'internasional'];
+            $kategori = ['nasional', 'internasional', 'lokal'];
             $perusahaan = ['PT.', 'CV.', 'UD.', 'PD.'];
             $bidangUsaha = [
                 'Teknologi',

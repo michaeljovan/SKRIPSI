@@ -16,7 +16,11 @@ use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
+use App\Models\EvaluasiLink;
+use App\Mail\EvaluasiLinkMail;
+use App\Mail\AdminOtpMail;
 
 class RekapKerjaSamaController extends Controller
 {
@@ -29,7 +33,12 @@ class RekapKerjaSamaController extends Controller
 
     public function index(Request $request)
     {
-        $query = RekapKerjaSama::with('induk');
+        $query = RekapKerjaSama::query()
+            ->with(['induk', 'laporanPelaksanaan'])
+            ->withCount([
+                'evaluasiKinerjaKeseluruhan',
+                'evaluasiKinerjaPerorangan',
+            ]);
 
         // ========== Filter dasar ==========
         $filters = [
@@ -81,6 +90,7 @@ class RekapKerjaSamaController extends Controller
     }
 
 
+
     public function cekNoDokumen(Request $request)
     {
         return response()->json(['exists' => $this->service->noDokumenExists($request->no_dokumen)]);
@@ -94,7 +104,7 @@ class RekapKerjaSamaController extends Controller
                 $request->merge(['parent_id' => null]);
             }
 
-            $today = \Carbon\Carbon::today();
+            $today = Carbon::today();
 
             $validated = $request->validate([
                 'noDokumen'         => 'required|unique:rekapkerjasama,no_dokumen',
@@ -111,7 +121,7 @@ class RekapKerjaSamaController extends Controller
                     'nullable',
                     'required_if:jenisPermohonan,perpanjang',
                     'integer',
-                    \Illuminate\Validation\Rule::exists('rekapkerjasama', 'id')->where(function ($q) use ($today) {
+                    Rule::exists('rekapkerjasama', 'id')->where(function ($q) use ($today) {
                         $q->where('status', 'selesai')
                             ->orWhereDate('tanggal_selesai', '<', $today);
                     }),
@@ -184,7 +194,7 @@ class RekapKerjaSamaController extends Controller
             };
 
             // Simpan
-            $rekap = \App\Models\RekapKerjaSama::create([
+            $rekap = RekapKerjaSama::create([
                 'no_dokumen'          => $validated['noDokumen'],
                 'unit'                => $validated['unit'],
                 'mitra_kerja_sama'    => $validated['mitraKerjaSama'],
@@ -218,7 +228,7 @@ class RekapKerjaSamaController extends Controller
                 'message'  => 'Data kerja sama berhasil disimpan!',
                 'redirect' => route('data_kerja_sama'),
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal.',
@@ -284,7 +294,7 @@ class RekapKerjaSamaController extends Controller
     {
         // ambil id current kalau dikirim (?exclude_id=123)
         $excludeId = request('exclude_id');
-        $q = \App\Models\RekapKerjaSama::query()
+        $q = RekapKerjaSama::query()
             ->select('id', 'no_dokumen', 'judul_kerja_sama')
             ->orderBy('no_dokumen');
 
@@ -302,7 +312,7 @@ class RekapKerjaSamaController extends Controller
         // HANYA dokumen yang boleh dipakai perpanjang:
         // - status = 'selesai' ATAU
         // - tanggal_selesai sudah lewat dari hari ini
-        $today = \Carbon\Carbon::today();
+        $today = Carbon::today();
         $semuaDokumen = RekapKerjaSama::query()
             ->select('id', 'no_dokumen', 'judul_kerja_sama', 'tanggal_selesai', 'status')
             ->where(function ($q) use ($today) {
@@ -344,7 +354,7 @@ class RekapKerjaSamaController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $rekap = \App\Models\RekapKerjaSama::findOrFail($id);
+            $rekap = RekapKerjaSama::findOrFail($id);
 
             // Normalisasi: kosong => null (induk opsional)
             $request->merge([
@@ -389,7 +399,7 @@ class RekapKerjaSamaController extends Controller
                 'parent_id.exists'       => 'Dokumen induk tidak ditemukan.',
             ];
 
-            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules, $messages);
+            $validator = Validator::make($request->all(), $rules, $messages);
             $validator->after(function ($v) use ($request, $rekap) {
                 // MoU tidak boleh punya induk
                 if ($request->input('jenisKerjaSama') === 'MoU' && $request->filled('parent_id')) {
@@ -401,7 +411,7 @@ class RekapKerjaSamaController extends Controller
                 }
                 // Validasi tipe induk
                 if ($request->filled('parent_id')) {
-                    $parent = \App\Models\RekapKerjaSama::find($request->input('parent_id'));
+                    $parent = RekapKerjaSama::find($request->input('parent_id'));
                     if ($parent) {
                         $jenis = $request->input('jenisKerjaSama');
                         if ($jenis === 'MoA' && $parent->jenis_kerja_sama !== 'MoU') {
@@ -415,7 +425,7 @@ class RekapKerjaSamaController extends Controller
             });
 
             if ($validator->fails()) {
-                throw new \Illuminate\Validation\ValidationException($validator);
+                throw new ValidationException($validator);
             }
 
             $validated = $validator->validated();
@@ -426,8 +436,8 @@ class RekapKerjaSamaController extends Controller
             }
 
             // Tanggal & masa berlaku
-            $mulai   = \Carbon\Carbon::parse($validated['tanggalMulai'])->startOfDay();
-            $selesai = \Carbon\Carbon::parse($validated['tanggalSelesai'])->endOfDay();
+            $mulai   = Carbon::parse($validated['tanggalMulai'])->startOfDay();
+            $selesai = Carbon::parse($validated['tanggalSelesai'])->endOfDay();
             $duration = $mulai->diffInDays($selesai) + 1;
 
             // Upload file (replace)
@@ -463,7 +473,7 @@ class RekapKerjaSamaController extends Controller
             };
 
             // Tentukan status baru (kecuali sudah dihentikan)
-            $now = \Carbon\Carbon::now('Asia/Jakarta');
+            $now = Carbon::now('Asia/Jakarta');
             $statusBaru = $rekap->status === 'dihentikan'
                 ? 'dihentikan'
                 : ($selesai->lt($now) ? 'selesai' : 'aktif');
@@ -510,7 +520,7 @@ class RekapKerjaSamaController extends Controller
             return redirect()
                 ->route('data_kerja_sama')
                 ->with('success', 'Data kerja sama berhasil diperbarui!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -540,6 +550,63 @@ class RekapKerjaSamaController extends Controller
         return response($disk->get($rekap->dokumen_path), 200, [
             'Content-Type' => 'application/pdf',
         ]);
+    }
+
+    public function sendEvaluasiLink(RekapKerjaSama $rekap, Request $request)
+    {
+        $staff = \Auth::user();
+        if (!$staff || !$staff->email) {
+            return back()->with('error', 'Email staff tidak ditemukan.');
+        }
+
+        $context = $request->string('context')->lower()->value(); // 'kinerja' | 'kepuasan'
+        if (!in_array($context, ['kinerja', 'kepuasan'])) $context = 'kinerja';
+
+        // TTL (menit) dari .env, default 30
+        $ttl = (int) env('EVAL_LINK_TTL', 30);
+        if ($ttl < 1) $ttl = 30;
+
+        // generate token raw + hash sha256 (bisa dicari ulang)
+        $rawToken  = Str::random(64);
+        $tokenHash = hash('sha256', $rawToken);
+        $expiresAt = now()->addMinutes($ttl);
+
+        // simpan record (opsional: invalidasi link lama context sama)
+        EvaluasiLink::where('rekap_id', $rekap->id)
+            ->where('context', $context)
+            ->whereNull('invalidated_at')
+            ->update(['invalidated_at' => now()]);
+
+        $record = EvaluasiLink::create([
+            'rekap_id'            => $rekap->id,
+            'context'             => $context,
+            'token_hash'          => $tokenHash,
+            'expires_at'          => $expiresAt,
+            'sent_to_email'       => $staff->email,
+            'created_by_staff_id' => $staff->id ?? null,
+            'request_ip'          => $request->ip(),
+            'user_agent'          => substr((string)$request->userAgent(), 0, 191),
+        ]);
+
+        // signed URL (punya param expires otomatis diverifikasi middleware 'signed')
+        $signedUrl = URL::temporarySignedRoute(
+            'evaluasi.link.show',
+            $expiresAt,
+            ['rekap' => $rekap->id, 'token' => $rawToken]
+        );
+
+        // kirim email ke staff (staff teruskan ke mitra)
+        \Mail::to($staff->email)->send(
+            new AdminOtpMail(
+                $rekap,
+                null,               // $otp = null (karena pakai link)
+                $signedUrl,         // <— kirim link ke mailable
+                $expiresAt,         // <— kirim expiry
+                $context ?? 'kinerja'
+            )
+        );
+
+        return back()->with('success', 'Tautan evaluasi dengan masa berlaku telah dikirim ke email Anda.');
     }
 
     public function sendEvaluasiOtp(RekapKerjaSama $rekap, Request $request)

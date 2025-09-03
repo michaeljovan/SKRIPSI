@@ -234,41 +234,65 @@
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                @if ($rekap->is_kinerja == true)
-                                                    <span class="status-indicator status-filled"></span>
-                                                    <span class="status-text status-filled-text">Terisi</span>
-                                                @else
-                                                    <span class="status-indicator status-empty"></span>
-                                                    <span class="status-text status-empty-text">Belum Terisi</span>
-                                                    <form
-                                                        action="{{ route('EvaluasiMitraKinerja.kirim', ['rekapId' => $rekap->id]) }}"
-                                                        method="POST" class="d-inline">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-primary ms-2">
-                                                            <i class="bi bi-envelope-paper"></i> Kirim Link & OTP
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                @if ($rekap->is_mitra == true)
+                                                @php
+                                                    $kes = $rekap->evaluasi_kinerja_keseluruhan_count ?? 0;
+                                                    $per = $rekap->evaluasi_kinerja_perorangan_count ?? 0;
+                                                    $adaKinerja = ($rekap->is_kinerja ?? false) || $kes + $per > 0;
+                                                @endphp
+
+                                                @if ($adaKinerja)
                                                     <span class="status-indicator status-filled"></span>
                                                     <span class="status-text status-filled-text">Terisi</span>
                                                 @else
                                                     <span class="status-indicator status-empty"></span>
                                                     <span class="status-text status-empty-text">Belum Terisi</span>
 
-                                                    <form
-                                                        action="{{ route('evaluasi.mitra.send_otp', ['rekap' => $rekap->id]) }}"
-                                                        method="POST" class="d-inline">
+                                                    {{-- form tersembunyi untuk submit kirim link --}}
+                                                    <form id="form-kirim-{{ $rekap->id }}"
+                                                        action="{{ route('EvaluasiMitraKinerja.kirim', ['rekapId' => $rekap->id]) }}"
+                                                        method="POST" class="d-none">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-sm btn-primary ms-2"
-                                                            title="Kirim link (mitra) & OTP (admin)">
-                                                            <i class="bi bi-envelope-paper"></i> Kirim Link & OTP
-                                                        </button>
+                                                        <input type="hidden" name="email_mitra"
+                                                            value="{{ $rekap->email_mitra ?? $rekap->email_pihak_mitra }}">
                                                     </form>
+
+                                                    <button type="button" class="btn btn-sm btn-primary ms-2"
+                                                        onclick="sendKinerjaLink({{ $rekap->id }}, '{{ $rekap->email_mitra ?? $rekap->email_pihak_mitra }}')">
+                                                        <i class="bi bi-envelope-paper"></i> Kirim Link
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @php
+                                                    $kesMitra = $rekap->evaluasi_mitra_keseluruhan_count ?? 0;
+                                                    $perMitra = $rekap->evaluasi_mitra_perorangan_count ?? 0;
+                                                    $adaMitra =
+                                                        ($rekap->is_mitra ?? false) || $kesMitra + $perMitra > 0;
+                                                @endphp
+
+                                                @if ($adaMitra)
+                                                    <span class="status-indicator status-filled"></span>
+                                                    <span class="status-text status-filled-text">Terisi</span>
+                                                @else
+                                                    <span class="status-indicator status-empty"></span>
+                                                    <span class="status-text status-empty-text">Belum Terisi</span>
+
+                                                    {{-- Form tersembunyi untuk kirim link --}}
+                                                    <form id="form-kirim-mitra-{{ $rekap->id }}"
+                                                        action="{{ route('EvaluasiMitra.kirim', ['rekapId' => $rekap->id]) }}"
+                                                        method="POST" class="d-none">
+                                                        @csrf
+                                                        <input type="hidden" name="email_mitra"
+                                                            value="{{ $rekap->email_mitra ?? $rekap->email_pihak_mitra }}">
+                                                    </form>
+
+                                                    {{-- Tombol submit langsung ke form di atas (tanpa JS) --}}
+                                                    <button type="submit" class="btn btn-sm btn-primary ms-2"
+                                                        form="form-kirim-mitra-{{ $rekap->id }}">
+                                                        <i class="bi bi-envelope-paper"></i> Kirim Link
+                                                    </button>
                                                 @endif
                                             </div>
                                         </td>
@@ -329,6 +353,87 @@
                 @endif
             </div>
         </div>
+
+        {{-- Form reusable untuk semua baris (anti nested form) --}}
+        <form id="form-kirim-evaluasi-kinerja" method="POST" class="d-none">
+            @csrf
+            <input type="hidden" name="email_mitra" id="email_mitra_field">
+        </form>
+        <script>
+            async function submitKirimEvaluasiKinerja(btn) {
+                const id = btn.dataset.id;
+                const email = (btn.dataset.email || '').trim();
+
+                // siapkan action ke route kirim
+                const form = document.getElementById('form-kirim-evaluasi-kinerja');
+                form.action = "{{ route('EvaluasiMitraKinerja.kirim', ['rekapId' => '__ID__']) }}".replace('__ID__', id);
+
+                // isi hidden email (controller baca name="email_mitra")
+                const emailField = document.getElementById('email_mitra_field');
+
+                if (!email) {
+                    // minta user input email jika kosong di DB
+                    if (window.Swal) {
+                        const {
+                            value: inputEmail
+                        } = await Swal.fire({
+                            title: 'Email mitra belum ada',
+                            input: 'email',
+                            inputLabel: 'Masukkan email mitra',
+                            inputPlaceholder: 'nama@domain.com',
+                            showCancelButton: true,
+                            confirmButtonText: 'Kirim',
+                            cancelButtonText: 'Batal',
+                            inputValidator: v => (!v ? 'Wajib diisi' : null)
+                        });
+                        if (!inputEmail) return; // batal
+                        emailField.value = inputEmail;
+                    } else {
+                        const inputEmail = prompt('Email mitra belum ada. Masukkan email mitra:');
+                        if (!inputEmail) return;
+                        emailField.value = inputEmail;
+                    }
+                } else {
+                    emailField.value = email;
+                }
+
+                form.submit();
+            }
+
+            function sendMitraLink(btn) {
+                const id = btn.dataset.rekapId;
+                const form = document.getElementById('form-kirim-mitra-' + id);
+                if (!form) {
+                    alert('Form tidak ditemukan');
+                    return;
+                }
+
+                let emailInput = form.querySelector('input[name="email_mitra"]');
+                let email = (btn.dataset.email || emailInput?.value || '').trim();
+
+                if (!email) {
+                    const ask = prompt('Masukkan email mitra tujuan:');
+                    if (!ask) return;
+                    email = ask.trim();
+                }
+
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    alert('Email tidak valid.');
+                    return;
+                }
+
+                if (!emailInput) {
+                    emailInput = document.createElement('input');
+                    emailInput.type = 'hidden';
+                    emailInput.name = 'email_mitra';
+                    form.appendChild(emailInput);
+                }
+                emailInput.value = email;
+
+                form.submit();
+            }
+        </script>
+
     </main>
     <!-- Footer -->
     <footer class=" py-2 text-center text-white">

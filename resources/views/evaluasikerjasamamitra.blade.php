@@ -84,149 +84,288 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Data Evaluasi Mitra</h5>
                 </div>
+
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>No</th>
-                                    <th style="min-width: 180px;">No Dokumen</th>
-                                    <th style="min-width: 180px;">Mitra</th>
-                                    <th style="min-width: 220px;">Dosen Terlibat</th>
-                                    <th style="min-width: 220px;">Mahasiswa Terlibat</th>
-                                    <th style="min-width: 180px;">Pengisi (Mitra)</th>
-                                    <th style="min-width: 300px;">Pelaksanaan kegiatan kerja sama sesuai dengan dokumen
-                                        perjanjian</th>
-                                    <th style="min-width: 300px;">Pelaksanaan kegiatan kerja sama sesuai dengan harapan
-                                    </th>
-                                    <th style="min-width: 300px;">Kegiatan kerja sama memberikan benefit bagi institusi
-                                    </th>
-                                    <th style="min-width: 300px;">Terbina komunikasi yang baik antara FTI UKDW dengan
-                                        mitra</th>
-                                    <th style="min-width: 300px;">Tujuan yang diharapkan dari kerja sama berhasil
-                                        dicapai</th>
-                                    <th style="min-width: 300px;">Kegiatan kerja sama berjalan dengan memuaskan</th>
-                                    <th style="min-width: 300px;">Bersedia melanjutkan kerja sama kembali di masa
-                                        mendatang</th>
-                                    <th class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($evaluasimitra as $key => $item)
-                                    <tr>
-                                        <td class="text-center">{{ $loop->iteration }}</td>
-                                        <td>{{ $item->nodok }}</td>
-                                        <td>{{ $item->mitra }}</td>
-                                        @php
-                                            // Ambil laporan pelaksanaan lewat relasi rekap
-                                            $lap = optional($item->rekapKerjasama)->laporanPelaksanaan;
 
-                                            // Helper pecah nama (koma / baris baru)
-                                            $split = function ($s) {
-                                                if (!$s) {
-                                                    return [];
-                                                }
-                                                $arr = preg_split('/\r\n|\r|\n|,/', (string) $s);
-                                                return array_values(
-                                                    array_filter(array_map('trim', $arr), fn($v) => $v !== ''),
-                                                );
-                                            };
+                    {{-- Tabs --}}
+                    <ul class="nav nav-tabs mb-3" id="tab-evaluasi" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-keseluruhan" data-bs-toggle="tab"
+                                data-bs-target="#pane-keseluruhan" type="button" role="tab">
+                                Keseluruhan
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-perorangan" data-bs-toggle="tab"
+                                data-bs-target="#pane-perorangan" type="button" role="tab">
+                                Perorangan
+                            </button>
+                        </li>
+                    </ul>
 
-                                            $dosenList = $lap ? $split($lap->dosen_terlibat) : [];
-                                            $mhsList = $lap ? $split($lap->mahasiswa_terlibat) : [];
+                    <div class="tab-content" id="tabContent">
 
-                                            $dosenCount = $lap->jumlah_dosen_terlibat ?? count($dosenList);
-                                            $mhsCount = $lap->jumlah_mahasiswa_terlibat ?? count($mhsList);
+                        {{-- =============== PANE KESELURUHAN =============== --}}
+                        <div class="tab-pane fade show active" id="pane-keseluruhan" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>No</th>
+                                            <th style="min-width:180px;">No Dokumen</th>
+                                            <th style="min-width:180px;">Mitra</th>
+                                            <th style="min-width:220px;">Dosen Terlibat</th>
+                                            <th style="min-width:220px;">Mahasiswa Terlibat</th>
+                                            <th style="min-width:180px;">Pengisi (Mitra)</th>
+                                            <th style="min-width:300px;">Pelaksanaan kegiatan kerja sama sesuai dengan
+                                                dokumen perjanjian</th>
+                                            <th style="min-width:300px;">Pelaksanaan kegiatan kerja sama sesuai dengan
+                                                harapan</th>
+                                            <th style="min-width:300px;">Kegiatan kerja sama memberikan benefit bagi
+                                                institusi</th>
+                                            <th style="min-width:300px;">Terbina komunikasi yang baik antara FTI UKDW
+                                                dengan mitra</th>
+                                            <th style="min-width:300px;">Tujuan yang diharapkan dari kerja sama
+                                                berhasil dicapai</th>
+                                            <th style="min-width:300px;">Kegiatan kerja sama berjalan dengan memuaskan
+                                            </th>
+                                            <th style="min-width:300px;">Bersedia melanjutkan kerja sama kembali di
+                                                masa mendatang</th>
+                                            <th class="text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($evaluasimitra as $key => $item)
+                                            <tr>
+                                                <td class="text-center">{{ $evaluasimitra->firstItem() + $key }}</td>
+                                                <td>{{ $item->nodok }}</td>
+                                                <td>{{ $item->mitra }}</td>
 
-                                            $dosenPreview = implode(', ', array_slice($dosenList, 0, 5));
-                                            $mhsPreview = implode(', ', array_slice($mhsList, 0, 5));
-                                        @endphp
+                                                @php
+                                                    $lap = optional($item->rekapKerjasama)->laporanPelaksanaan;
+                                                    $split = function ($s) {
+                                                        if (!$s) {
+                                                            return [];
+                                                        }
+                                                        $arr = preg_split('/\r\n|\r|\n|,/', (string) $s);
+                                                        return array_values(
+                                                            array_filter(array_map('trim', $arr), fn($v) => $v !== ''),
+                                                        );
+                                                    };
+                                                    $dosenList = $lap ? $split($lap->dosen_terlibat) : [];
+                                                    $mhsList = $lap ? $split($lap->mahasiswa_terlibat) : [];
 
-                                        <td>
-                                            <span class="badge bg-primary">{{ $dosenCount }}</span>
-                                            @if ($dosenCount)
-                                                <div class="small text-muted mt-1">
-                                                    {{ \Illuminate\Support\Str::limit($dosenPreview, 60) }}
-                                                    @if ($dosenCount > 5)
-                                                        <em>+{{ $dosenCount - 5 }} lagi</em>
+                                                    $dosenCount = $lap->jumlah_dosen_terlibat ?? count($dosenList);
+                                                    $mhsCount = $lap->jumlah_mahasiswa_terlibat ?? count($mhsList);
+
+                                                    $dosenPreview = implode(', ', array_slice($dosenList, 0, 5));
+                                                    $mhsPreview = implode(', ', array_slice($mhsList, 0, 5));
+                                                @endphp
+
+                                                <td>
+                                                    <span class="badge bg-primary">{{ $dosenCount }}</span>
+                                                    @if ($dosenCount)
+                                                        <div class="small text-muted mt-1">
+                                                            {{ \Illuminate\Support\Str::limit($dosenPreview, 60) }}
+                                                            @if ($dosenCount > 5)
+                                                                <em>+{{ $dosenCount - 5 }} lagi</em>
+                                                            @endif
+                                                        </div>
+                                                    @else
+                                                        <span class="text-muted small">—</span>
                                                     @endif
-                                                </div>
-                                            @else
-                                                <span class="text-muted small">—</span>
-                                            @endif
-                                        </td>
+                                                </td>
 
-                                        <td>
-                                            <span class="badge bg-primary">{{ $mhsCount }}</span>
-                                            @if ($mhsCount)
-                                                <div class="small text-muted mt-1">
-                                                    {{ \Illuminate\Support\Str::limit($mhsPreview, 60) }}
-                                                    @if ($mhsCount > 5)
-                                                        <em>+{{ $mhsCount - 5 }} lagi</em>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ $mhsCount }}</span>
+                                                    @if ($mhsCount)
+                                                        <div class="small text-muted mt-1">
+                                                            {{ \Illuminate\Support\Str::limit($mhsPreview, 60) }}
+                                                            @if ($mhsCount > 5)
+                                                                <em>+{{ $mhsCount - 5 }} lagi</em>
+                                                            @endif
+                                                        </div>
+                                                    @else
+                                                        <span class="text-muted small">—</span>
                                                     @endif
-                                                </div>
-                                            @else
-                                                <span class="text-muted small">—</span>
-                                            @endif
-                                        </td>
-                                        <td>{{ $item->pengisi_mitra ?? '—' }}</td>
-                                        <td>{{ $item->integritas_text }}</td>
-                                        <td>{{ $item->keahlian_text }}</td>
-                                        <td>{{ $item->komunikasi_text }}</td>
-                                        <td>{{ $item->kerjasamatim_text }}</td>
-                                        <td>{{ $item->pengembangandiri_text }}</td>
-                                        <td>{{ $item->kreativitas_text }}</td>
-                                        <td>{{ $item->bahasaasing_text }}</td>
-                                        <td class="text-center">
-                                            <div class="btn-group" role="group">
-                                                @if ($item->file_pdf)
-                                                    <a href="{{ $item->pdf_url }}" target="_blank"
-                                                        class="btn btn-sm btn-info" title="Detail">
-                                                        <i class="bi bi-eye"></i>
-                                                    </a>
-                                                @else
-                                                    <button class="btn btn-sm btn-secondary" title="Tidak ada dokumen"
-                                                        disabled>
-                                                        <i class="bi bi-eye-slash"></i>
-                                                    </button>
-                                                @endif
-                                                <button class="btn btn-sm btn-danger" title="Hapus"
-                                                    onclick="confirmDeleteMitra({{ $item->idmitra ?? 'null' }})"
-                                                    {{ !isset($item->idmitra) ? 'disabled' : '' }}>
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="18" class="text-center py-4">
-                                            <div class="alert alert-info">
-                                                <i class="bi bi-info-circle"></i> Tidak ada data evaluasi ditemukan
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                                </td>
 
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-between mt-3">
-                        <div class="text-muted">
-                            Menampilkan {{ $evaluasimitra->firstItem() ?? 0 }} sampai
-                            {{ $evaluasimitra->lastItem() ?? 0 }} dari {{ $evaluasimitra->total() ?? 0 }} entri
+                                                <td>{{ $item->pengisi_mitra ?? '—' }}</td>
+                                                <td>{{ $item->integritas_text }}</td>
+                                                <td>{{ $item->keahlian_text }}</td>
+                                                <td>{{ $item->komunikasi_text }}</td>
+                                                <td>{{ $item->kerjasamatim_text }}</td>
+                                                <td>{{ $item->pengembangandiri_text }}</td>
+                                                <td>{{ $item->kreativitas_text }}</td>
+                                                <td>{{ $item->bahasaasing_text }}</td>
+
+                                                <td class="text-center">
+                                                    <div class="btn-group" role="group">
+                                                        @if ($item->file_pdf)
+                                                            <a href="{{ $item->pdf_url }}" target="_blank"
+                                                                class="btn btn-sm btn-info" title="Detail">
+                                                                <i class="bi bi-eye"></i>
+                                                            </a>
+                                                        @else
+                                                            <button class="btn btn-sm btn-secondary"
+                                                                title="Tidak ada dokumen" disabled>
+                                                                <i class="bi bi-eye-slash"></i>
+                                                            </button>
+                                                        @endif
+                                                        <button class="btn btn-sm btn-danger" title="Hapus"
+                                                            onclick="confirmDeleteMitra({{ $item->idmitra ?? 'null' }})"
+                                                            {{ !isset($item->idmitra) ? 'disabled' : '' }}>
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="18" class="text-center py-4">
+                                                    <div class="alert alert-info">
+                                                        <i class="bi bi-info-circle"></i> Tidak ada data evaluasi
+                                                        ditemukan
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {{-- Pagination keseluruhan --}}
+                            <div class="d-flex justify-content-between mt-3">
+                                <div class="text-muted">
+                                    Menampilkan {{ $evaluasimitra->firstItem() ?? 0 }} sampai
+                                    {{ $evaluasimitra->lastItem() ?? 0 }} dari {{ $evaluasimitra->total() ?? 0 }}
+                                    entri
+                                </div>
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination pagination-sm">
+                                        {{ $evaluasimitra->appends(['per_page' => request('per_page')])->links() }}
+                                    </ul>
+                                </nav>
+                            </div>
                         </div>
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination pagination-sm">
-                                {{ $evaluasimitra->links() }}
-                            </ul>
-                        </nav>
-                    </div>
+
+                        {{-- =============== PANE PERORANGAN =============== --}}
+                        <div class="tab-pane fade" id="pane-perorangan" role="tabpanel">
+                            @php
+                                $scoreText = function ($v) {
+                                    return [
+                                        1 => 'Sangat Kurang',
+                                        2 => 'Kurang',
+                                        3 => 'Cukup',
+                                        4 => 'Tinggi',
+                                        5 => 'Sangat Tinggi',
+                                    ][$v] ?? '-';
+                                };
+                            @endphp
+
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>No</th>
+                                            <th style="min-width:180px;">No Dokumen</th>
+                                            <th style="min-width:180px;">Mitra</th>
+                                            <th style="min-width:120px;">Tipe</th>
+                                            <th style="min-width:220px;">Nama Responden</th>
+                                            <th style="min-width:180px;">Pengisi (Mitra)</th>
+
+                                            <th style="min-width:180px;">Integritas</th>
+                                            <th style="min-width:180px;">Keahlian</th>
+                                            <th style="min-width:180px;">Komunikasi</th>
+                                            <th style="min-width:180px;">Kerja Sama Tim</th>
+                                            <th style="min-width:180px;">Pengembangan Diri</th>
+                                            <th style="min-width:180px;">Kreativitas</th>
+                                            <th style="min-width:180px;">Bahasa Asing</th>
+
+                                            <th style="min-width:200px;">Komentar</th>
+                                            <th class="text-center">Lampiran</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($evaluasiPerorangan as $idx => $p)
+                                            <tr>
+                                                <td class="text-center">{{ $evaluasiPerorangan->firstItem() + $idx }}
+                                                </td>
+                                                <td>{{ optional($p->rekapKerjasama)->no_dokumen ?? '—' }}</td>
+                                                <td>{{ optional($p->rekapKerjasama)->mitra_kerja_sama ?? '—' }}</td>
+                                                <td>
+                                                    <span
+                                                        class="badge {{ $p->tipe_responden === 'dosen' ? 'bg-secondary' : 'bg-info' }}">
+                                                        {{ ucfirst($p->tipe_responden) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $p->nama_responden }}</td>
+                                                <td>{{ $p->pengisi_mitra ?? '—' }}</td>
+
+                                                <td>{{ $scoreText($p->integritas) }}</td>
+                                                <td>{{ $scoreText($p->keahlian) }}</td>
+                                                <td>{{ $scoreText($p->komunikasi) }}</td>
+                                                <td>{{ $scoreText($p->kerjasamatim) }}</td>
+                                                <td>{{ $scoreText($p->pengembangandiri) }}</td>
+                                                <td>{{ $scoreText($p->kreativitas) }}</td>
+                                                <td>{{ $scoreText($p->bahasaasing) }}</td>
+
+                                                <td>{{ \Illuminate\Support\Str::limit($p->komentar, 60) }}</td>
+                                                <td class="text-center">
+                                                    @php
+                                                        $pdfUrl = $p->lampiran_pdf_path
+                                                            ? asset('storage/' . $p->lampiran_pdf_path)
+                                                            : null;
+                                                    @endphp
+                                                    @if ($pdfUrl)
+                                                        <a href="{{ $pdfUrl }}" class="btn btn-sm btn-info"
+                                                            target="_blank" title="Lihat PDF">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                    @else
+                                                        <button class="btn btn-sm btn-secondary" disabled
+                                                            title="Tidak ada dokumen">
+                                                            <i class="bi bi-eye-slash"></i>
+                                                        </button>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="15" class="text-center py-4">
+                                                    <div class="alert alert-info mb-0">
+                                                        <i class="bi bi-info-circle"></i> Belum ada data evaluasi
+                                                        perorangan.
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {{-- Pagination perorangan --}}
+                            <div class="d-flex justify-content-between mt-3">
+                                <div class="text-muted">
+                                    Menampilkan {{ $evaluasiPerorangan->firstItem() ?? 0 }} sampai
+                                    {{ $evaluasiPerorangan->lastItem() ?? 0 }} dari
+                                    {{ $evaluasiPerorangan->total() ?? 0 }} entri
+                                </div>
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination pagination-sm">
+                                        {{-- gunakan page name 'per_page' agar tidak bentrok --}}
+                                        {{ $evaluasiPerorangan->appends(['kes_page' => request('kes_page')])->links() }}
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div> {{-- end tab-content --}}
+
                 </div>
             </div>
         </div>
     </main>
+
 
     <!-- Footer -->
     <footer class="py-2 text-center text-white">

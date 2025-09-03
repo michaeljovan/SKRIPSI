@@ -67,6 +67,21 @@ class RekapKerjaSama extends Model
      * Relasi ke entitas lain
      * ========================= */
 
+    public function evaluasiKinerjaKeseluruhan()
+    {
+        return $this->hasMany(EvaluasiMitraKinerja::class, 'rekap_id', 'id');
+    }
+
+    public function evaluasiKinerjaPerorangan()
+    {
+        return $this->hasMany(EvaluasiMitraKinerjaPerorangan::class, 'rekap_id', 'id');
+    }
+
+    public function evaluasiMitraPerorangan()
+    {
+        return $this->hasMany(\App\Models\EvaluasiMitraPerorangan::class, 'rekap_id');
+    }
+    
     public function laporanPelaksanaan()
     {
         return $this->hasOne(PelaksanaanKerjaSama::class, 'idrekap');
@@ -150,7 +165,7 @@ class RekapKerjaSama extends Model
     public function scopeBerjalan($query)
     {
         return $query->where('status', 'aktif')
-                     ->whereDate('tanggal_selesai', '>=', Carbon::today());
+            ->whereDate('tanggal_selesai', '>=', Carbon::today());
     }
 
     /* =========================

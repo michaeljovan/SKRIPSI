@@ -1,13 +1,13 @@
 <?php
 
+// app/Mail/EvaluasiLinkMail.php
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Carbon\Carbon;
 
-class MitraEvaluasiLinkMail extends Mailable
+class EvaluasiLinkMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -16,7 +16,7 @@ class MitraEvaluasiLinkMail extends Mailable
     public $expiresAt;
     public $context;
 
-    public function __construct($rekap, string $signedUrl, Carbon $expiresAt, string $context = 'kinerja')
+    public function __construct($rekap, string $signedUrl, \Carbon\Carbon $expiresAt, string $context = 'kinerja')
     {
         $this->rekap = $rekap;
         $this->signedUrl = $signedUrl;
@@ -26,7 +26,11 @@ class MitraEvaluasiLinkMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Link & OTP Evaluasi Mitra')
-            ->view('emails.evaluasi_link'); // <- sesuaikan dengan file yang sudah ada
+        $subject = $this->context === 'kepuasan'
+            ? 'Tautan Evaluasi Kepuasan Mitra (Berlaku Terbatas)'
+            : 'Tautan Evaluasi Kinerja Mitra (Berlaku Terbatas)';
+
+        return $this->subject($subject)
+            ->view('emails.evaluasi_link');
     }
 }

@@ -4,119 +4,68 @@ namespace App\Http\Controllers;
 
 use App\Models\EvaluasiMitraKinerja;
 use App\Models\RekapKerjaSama;
-use App\Models\EvaluasiKinerjaOtp;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MitraEvaluasiLinkMail;
-use App\Mail\AdminOtpMail;
+use Carbon\Carbon;
+use App\Models\EvaluasiLink;
+use App\Models\EvaluasiMitraKinerjaPerorangan;
 
 class EvaluasiMitraKinerjaController extends Controller
 {
     /** List evaluasi (admin) */
-    public function index(\Illuminate\Http\Request $request)
+    public function index(Request $request)
     {
-        $q = \App\Models\EvaluasiMitraKinerja::query()
-            // eager load: rekap + laporan pelaksanaan (hindari N+1)
-            ->with(['rekapKerjasama.laporanPelaksanaan']);
+        $s = trim((string) $request->input('s', ''));
 
-        // Pencarian opsional (?s=keyword) pada No Dokumen & Mitra
-        if ($request->filled('s')) {
-            $s = trim((string) $request->input('s'));
-            $q->where(function ($qq) use ($s) {
+        // page size terpisah agar tidak bentrok
+        $perKes = (int) $request->input('per_kes', 10);
+        $perPer = (int) $request->input('per_per', 10);
+        $perKes = ($perKes < 1 || $perKes > 100) ? 10 : $perKes;
+        $perPer = ($perPer < 1 || $perPer > 100) ? 10 : $perPer;
+
+        // === K E S E L U R U H A N ===
+        $qKes = EvaluasiMitraKinerja::query()
+            ->with(['rekapKerjasama.laporanPelaksanaan'])
+            ->orderByDesc('created_at');
+
+        if ($s !== '') {
+            $qKes->where(function ($qq) use ($s) {
                 $qq->where('nodok', 'like', "%{$s}%")
                     ->orWhere('mitra', 'like', "%{$s}%");
             });
         }
 
-        // Page size opsional (?per_page=20), dibatasi agar aman
-        $perPage = (int) $request->input('per_page', 10);
-        if ($perPage < 1 || $perPage > 100) {
-            $perPage = 10;
+        $evaluasiKes = $qKes->paginate($perKes, ['*'], 'page_kes')
+            ->appends(['s' => $s, 'per_kes' => $perKes, 'per_per' => $perPer]);
+
+        // === P E R O R A N G A N ===
+        $qPer = EvaluasiMitraKinerjaPerorangan::query()
+            ->with(['rekap.laporanPelaksanaan']) // pastikan relasi 'rekap' ada di model perorangan
+            ->orderByDesc('submitted_at');
+
+        if ($s !== '') {
+            $qPer->where(function ($qq) use ($s) {
+                $qq->where('nama_responden', 'like', "%{$s}%")
+                    ->orWhere('pengisi_mitra', 'like', "%{$s}%");
+            });
         }
 
-        $evaluasi = $q->orderByDesc('created_at')
-            ->paginate($perPage)
-            ->withQueryString(); // pertahankan ?s= & ?per_page=
+        $evaluasiPer = $qPer->paginate($perPer, ['*'], 'page_per')
+            ->appends(['s' => $s, 'per_kes' => $perKes, 'per_per' => $perPer]);
 
-        return view('evaluasikerjasamakinerja', compact('evaluasi'));
+        return view('evaluasikerjasamakinerja', compact('evaluasiKes', 'evaluasiPer', 's', 'perKes', 'perPer'));
     }
 
 
-    /** Halaman gerbang OTP (mitra) */
-    public function showOtpGate($rekapId)
-    {
-        $rekap = RekapKerjaSama::findOrFail($rekapId);
-        return view('evaluasi_kinerja_otp_gate', compact('rekap'));
-    }
-
-    /** Verifikasi OTP dari mitra */
-    public function verifyOtp(Request $request, $rekapId)
-    {
-        $request->validate([
-            'otp' => 'required|string|size:6',
-        ], [
-            'otp.size' => 'Kode OTP harus 6 digit.',
-        ]);
-
-        $rekap = RekapKerjaSama::findOrFail($rekapId);
-
-        $maxHours = (int) env('EVAL_KINERJA_OTP_MAX_HOURS', 12);
-
-        $recentOtps = EvaluasiKinerjaOtp::where('rekap_id', $rekap->id)
-            ->where('created_at', '>=', now()->subHours($maxHours))
-            ->orderByDesc('id')
-            ->limit(10)
-            ->get();
-
-        $matched = null;
-        foreach ($recentOtps as $o) {
-            if (Hash::check($request->otp, $o->code_hash)) {
-                $matched = $o;
-                break;
-            }
-        }
-
-        if (!$matched) {
-            return back()->withErrors(['otp' => 'OTP tidak valid. Periksa kembali kode yang Anda masukkan.'])->withInput();
-        }
-
-        if (!is_null($matched->used_at)) {
-            return back()->withErrors(['otp' => 'OTP sudah digunakan pada ' . $matched->used_at->format('d-m-Y H:i') . '. Silakan minta OTP baru.'])->withInput();
-        }
-
-        if ($matched->expires_at->lte(now())) {
-            return back()->withErrors(['otp' => 'OTP sudah kedaluwarsa pada ' . $matched->expires_at->format('d-m-Y H:i') . '. Silakan minta OTP baru.'])->withInput();
-        }
-
-        if ($matched->created_at->lt(now()->subHours($maxHours))) {
-            return back()->withErrors(['otp' => 'OTP lebih tua dari batas maksimal ' . $maxHours . ' jam. Silakan minta OTP baru.'])->withInput();
-        }
-
-        // Valid → tandai digunakan & buka akses
-        $matched->update(['used_at' => now()]);
-        session(['evaluasi_mitra_kinerja_allowed' => (int)$rekap->id]);
-
-        return redirect()->route('EvaluasiMitraKinerja.create', ['id' => $rekap->id]);
-    }
-
-    /** Form evaluasi (mitra) */
+    /** Form evaluasi KINERJA (mitra) — TANPA OTP */
     public function create($id)
     {
-        // Gate OTP (lebih ramah: redirect ke gate jika invalid)
-        $allowed = (int) session('evaluasi_mitra_kinerja_allowed');
-        if ($allowed !== (int) $id) {
-            return redirect()
-                ->route('EvaluasiMitraKinerja.otpGate', ['rekapId' => $id])
-                ->with('error', 'Sesi evaluasi tidak valid atau sudah kedaluwarsa. Silakan masukkan OTP lagi.');
-        }
-
         $rekap   = RekapKerjaSama::with('laporanPelaksanaan')->findOrFail($id);
         $laporan = $rekap->laporanPelaksanaan; // bisa null
 
-        // Split helper (koma / baris baru)
         $split = function (?string $s): array {
             if (!$s) return [];
             $arr = preg_split('/\r\n|\r|\n|,/', $s);
@@ -138,7 +87,7 @@ class EvaluasiMitraKinerjaController extends Controller
         ));
     }
 
-    /** Map nilai teks → angka (helper untuk unit test) */
+    /** Map nilai teks → angka */
     private function mapNilai($value)
     {
         $valueMap = [
@@ -151,19 +100,12 @@ class EvaluasiMitraKinerjaController extends Controller
         return $valueMap[$value] ?? null;
     }
 
-    /** Simpan evaluasi (mitra) */
+    /** Simpan evaluasi KINERJA (mitra) — TANPA OTP */
     public function store(Request $request)
     {
-        // Gate OTP saat submit: ambil id dari route atau input
+        // Ambil id dari route atau input
         $rekapIdFromRoute = $request->route('id');
         $rekapId          = (int) ($rekapIdFromRoute ?? $request->input('rekap_id'));
-        $allowed          = (int) session('evaluasi_mitra_kinerja_allowed');
-
-        if ($allowed !== $rekapId) {
-            return redirect()
-                ->route('EvaluasiMitraKinerja.otpGate', ['rekapId' => $rekapId ?: 0])
-                ->with('error', 'Sesi evaluasi tidak valid atau sudah kedaluwarsa. Silakan masukkan OTP lagi.');
-        }
 
         $valueMap = [
             'Sangat Tinggi' => 5,
@@ -178,7 +120,6 @@ class EvaluasiMitraKinerjaController extends Controller
             'nodok'    => 'required|string|max:255',
             'mitra'    => 'required|string|max:255',
 
-            // --- TAMBAHAN: pengisi dari pihak mitra ---
             'pengisi_mitra' => 'required|string|max:100',
 
             'integritas'        => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
@@ -201,10 +142,8 @@ class EvaluasiMitraKinerjaController extends Controller
             'pdfFile'  => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        // Rapikan nama pengisi
         $validated['pengisi_mitra'] = trim($validated['pengisi_mitra']);
 
-        // Konversi nilai teks → angka
         foreach (
             [
                 'integritas',
@@ -227,23 +166,16 @@ class EvaluasiMitraKinerjaController extends Controller
             }
         }
 
-        // Upload PDF (opsional)
         if ($request->hasFile('pdfFile')) {
             $validated['file_pdf'] = $request->file('pdfFile')->store('evaluasi_pdf', 'public');
         }
 
-        // Simpan evaluasi
         EvaluasiMitraKinerja::create($validated);
 
-        // Tandai rekap sudah punya evaluasi kinerja
         RekapKerjaSama::where('id', $validated['rekap_id'])->update(['is_kinerja' => true]);
-
-        // (opsional) habiskan sesi agar tidak reuse di tab lain
-        // session()->forget('evaluasi_mitra_kinerja_allowed');
 
         return redirect()->back()->with('success', 'Evaluasi berhasil disimpan');
     }
-
 
     /** Hapus evaluasi (admin) */
     public function delete($id)
@@ -263,14 +195,12 @@ class EvaluasiMitraKinerjaController extends Controller
 
             $rekapId = $evaluasi->rekap_id;
 
-            // Hapus file PDF jika ada
             if (!empty($evaluasi->file_pdf) && Storage::disk('public')->exists($evaluasi->file_pdf)) {
                 Storage::disk('public')->delete($evaluasi->file_pdf);
             }
 
             $evaluasi->delete();
 
-            // Set is_kinerja=false hanya jika tidak ada evaluasi lain untuk rekap ini
             if ($rekapId) {
                 $masihAda = EvaluasiMitraKinerja::where('rekap_id', $rekapId)->exists();
                 if (!$masihAda) {
@@ -291,7 +221,7 @@ class EvaluasiMitraKinerjaController extends Controller
 
         return view('evaluasikerjasamakinerjaedit', [
             'evaluasi' => $evaluasi,
-            'rekap'    => $evaluasi->rekapKerjasama ?? $evaluasi->rekap, // fallback jika nama relasi berbeda
+            'rekap'    => $evaluasi->rekapKerjasama ?? $evaluasi->rekap,
         ]);
     }
 
@@ -349,73 +279,66 @@ class EvaluasiMitraKinerjaController extends Controller
             }
         }
 
-        // Ganti PDF (opsional)
         if ($request->hasFile('pdfFile')) {
             if (!empty($evaluasi->file_pdf) && Storage::disk('public')->exists($evaluasi->file_pdf)) {
                 Storage::disk('public')->delete($evaluasi->file_pdf);
             }
             $filename = 'eval_' . time() . '_' . Str::slug(pathinfo($request->file('pdfFile')->getClientOriginalName(), PATHINFO_FILENAME)) . '.pdf';
             $path = $request->file('pdfFile')->storeAs('evaluasi_pdf', $filename, 'public');
-            $validated['file_pdf'] = $path; // simpan path relatif ke disk 'public'
+            $validated['file_pdf'] = $path;
         }
 
         $evaluasi->update($validated);
 
-        return redirect()
-            ->route('EvaluasiMitraKinerja.index')
-            ->with('success', 'Evaluasi berhasil diperbarui.');
+        return redirect()->route('EvaluasiMitraKinerja.index')->with('success', 'Evaluasi berhasil diperbarui.');
     }
 
     /**
-     * Kirim tautan ke email mitra + OTP ke email admin
-     * Panggil dari dashboard admin.
+     * Kirim tautan ke email mitra (TANPA OTP) — menuju halaman pilihan
      */
     public function kirimLinkDanOtp(Request $request, $rekapId)
     {
         $rekap = RekapKerjaSama::findOrFail($rekapId);
 
-        // Email admin penerima OTP
-        $adminEmail = $request->user()->email
-            ?? config('mail.admin_address')
-            ?? config('mail.from.address');
+        $reqEmail   = trim((string) $request->input('email_mitra', ''));
+        $modelEmail = trim((string) ($rekap->email_mitra ?? ''));
+        $toEmail    = $reqEmail !== '' ? $reqEmail : $modelEmail;
 
-        if (empty($adminEmail)) {
-            return back()->with('error', 'Email admin tidak terkonfigurasi.');
+        if ($toEmail === '' || !filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
+            return back()->withErrors(['email_mitra' => 'Email mitra belum diisi/invalid.']);
         }
 
-        // OTP 6 digit
-        $plainOtp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt  = Carbon::now()->addHours(24);
 
-        // TTL & hard cap
-        $ttlMinutes = (int) env('EVAL_KINERJA_OTP_TTL', 30);
-        $maxHours   = (int) env('EVAL_KINERJA_OTP_MAX_HOURS', 12);
+        // Simpan log pengiriman (opsional)
+        $plainToken = Str::random(64);         // boleh tetap generate bila kolom token_hash NOT NULL
+        $tokenHash  = hash('sha256', $plainToken);
 
-        $expiresAt  = now()->addMinutes($ttlMinutes);
-        $hardCap    = now()->addHours($maxHours);
-        if ($expiresAt->greaterThan($hardCap)) {
-            $expiresAt = $hardCap;
-        }
-
-        // Simpan OTP
-        EvaluasiKinerjaOtp::create([
-            'rekap_id'      => $rekap->id,
-            'code_hash'     => Hash::make($plainOtp),
-            'expires_at'    => $expiresAt,
-            'used_at'       => null,
-            'sent_to_email' => $adminEmail,
+        EvaluasiLink::create([
+            'rekap_id'           => $rekap->id,
+            'context'            => 'kinerja',
+            'token_hash'         => $tokenHash, // tidak dipakai untuk validasi, hanya log
+            'expires_at'         => $expiresAt,
+            'used_at'            => null,
+            'invalidated_at'     => null,
+            'sent_to_email'      => $toEmail,
+            'created_by_staff_id' => auth()->id(),
+            'request_ip'         => $request->ip(),
+            'user_agent'         => substr($request->userAgent() ?? '', 0, 255),
         ]);
 
-        // Tautan gate OTP (mitra klik link ini)
-        $tautanGate = route('EvaluasiMitraKinerja.otpGate', ['rekapId' => $rekap->id]);
+        // Link langsung ke halaman pilihan (tanpa signature/OTP)
+        $url = route('evaluasi.kinerja.form', ['rekap' => $rekap->id]);
 
-        // Email ke MITRA: hanya tautan gate
-        if (!empty($rekap->email_pihak_mitra)) {
-            Mail::to($rekap->email_pihak_mitra)->send(new MitraEvaluasiLinkMail($rekap, $tautanGate));
-        }
+        Mail::to($toEmail)->send(new MitraEvaluasiLinkMail($rekap, $url, $expiresAt, 'kinerja'));
 
-        // Email ke ADMIN: kirim OTP (+ link gate sebagai referensi)
-        Mail::to($adminEmail)->send(new AdminOtpMail($rekap, $plainOtp, $tautanGate, 'kinerja'));
+        return back()->with('success', 'Link evaluasi terkirim ke ' . $toEmail);
+    }
 
-        return back()->with('success', 'Tautan dikirim ke email mitra; OTP dikirim ke email admin.');
+    /** Halaman pilihan (keseluruhan / perorangan) — TANPA OTP */
+    public function pilihanForm($rekapId)
+    {
+        $rekap = RekapKerjaSama::findOrFail($rekapId);
+        return view('evaluasikinerjapilihan', compact('rekap'));
     }
 }

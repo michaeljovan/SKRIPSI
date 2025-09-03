@@ -6,30 +6,39 @@ use App\Models\EvaluasiMitra;
 use App\Models\RekapKerjaSama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Models\EvaluasiKinerjaOtp;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
+use App\Mail\MitraEvaluasiLinkMail;
+use Carbon\Carbon;
+use Throwable;
+use App\Models\EvaluasiMitraPerorangan;
 
 class EvaluasiMitraController extends Controller
 {
-    /*** Display the evaluation form.*/
-
+    /** List evaluasi mitra (admin) */
     public function index()
     {
-        $evaluasimitra = EvaluasiMitra::with('rekapKerjasama')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        // gunakan page name berbeda supaya paginasi masing2 tab tidak saling bentrok
+        $mitraKes = EvaluasiMitra::with('rekapKerjasama.laporanPelaksanaan')
+            ->orderByDesc('created_at')
+            ->paginate(10, ['*'], 'kes_page');
 
-        return view('evaluasikerjasamamitra', ['evaluasimitra' => $evaluasimitra]);
+        $mitraPer = EvaluasiMitraPerorangan::with('rekapKerjasama.laporanPelaksanaan')
+            ->orderByDesc('created_at')
+            ->paginate(10, ['*'], 'per_page');
+
+        return view('evaluasikerjasamamitra', [
+            'evaluasimitra' => $mitraKes, // keseluruhan (nama lama dipertahankan)
+            'evaluasiPerorangan' => $mitraPer,
+        ]);
     }
 
+    /** Form input evaluasi MITRA (keseluruhan) */
     public function create($id)
     {
-        // (kalau ada gate OTP, letakkan ceknya di sini dulu)
-
-        // Ambil rekap + laporan pelaksanaan
-        $rekap = \App\Models\RekapKerjaSama::with('laporanPelaksanaan')->findOrFail($id);
+        $rekap   = RekapKerjaSama::with('laporanPelaksanaan')->findOrFail($id);
         $laporan = $rekap->laporanPelaksanaan; // bisa null
 
-        // Helper split nama (koma / baris baru)
         $split = function (?string $s): array {
             if (!$s) return [];
             $arr = preg_split('/\r\n|\r|\n|,/', $s);
@@ -38,7 +47,6 @@ class EvaluasiMitraController extends Controller
 
         $dosenList      = $split(optional($laporan)->dosen_terlibat);
         $mahasiswaList  = $split(optional($laporan)->mahasiswa_terlibat);
-
         $dosenCount     = $laporan->jumlah_dosen_terlibat     ?? count($dosenList);
         $mahasiswaCount = $laporan->jumlah_mahasiswa_terlibat ?? count($mahasiswaList);
 
@@ -52,10 +60,10 @@ class EvaluasiMitraController extends Controller
         ));
     }
 
+    /** Simpan evaluasi MITRA (keseluruhan) */
     public function store(Request $request)
     {
-        // Map text → angka
-        $valueMap = [
+        $map = [
             'Sangat Tinggi' => 5,
             'Tinggi'        => 4,
             'Cukup'         => 3,
@@ -64,14 +72,11 @@ class EvaluasiMitraController extends Controller
         ];
 
         $validated = $request->validate([
-            'rekap_id' => 'required|exists:rekapkerjasama,id',
-            'nodok'    => 'required|string|max:255',
-            'mitra'    => 'required|string|max:255',
-
-            // PENGISI MITRA (baruu)
+            'rekap_id'      => 'required|exists:rekapkerjasama,id',
+            'nodok'         => 'required|string|max:255',
+            'mitra'         => 'required|string|max:255',
             'pengisi_mitra' => 'required|string|max:100',
 
-            // Nilai (teks)
             'integritas'        => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'keahlian'          => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'komunikasi'        => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
@@ -80,15 +85,12 @@ class EvaluasiMitraController extends Controller
             'kreativitas'       => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'bahasaasing'       => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
 
-            // Opsional
             'komentar' => 'nullable|string',
             'pdfFile'  => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        // Normalisasi nama pengisi
         $validated['pengisi_mitra'] = trim($validated['pengisi_mitra']);
 
-        // Konversi teks → angka
         foreach (
             [
                 'integritas',
@@ -98,121 +100,102 @@ class EvaluasiMitraController extends Controller
                 'pengembangandiri',
                 'kreativitas',
                 'bahasaasing'
-            ] as $field
+            ] as $f
         ) {
-            $validated[$field] = $valueMap[$validated[$field]];
+            $validated[$f] = $map[$validated[$f]];
         }
 
-        // Upload PDF (jika ada)
         if ($request->hasFile('pdfFile')) {
             $validated['file_pdf'] = $request->file('pdfFile')->store('evaluasi_pdf', 'public');
         }
 
-        // Simpan
-        \App\Models\EvaluasiMitra::create($validated);
+        EvaluasiMitra::create($validated);
 
-        // Tandai rekap sudah ada evaluasi mitra
-        \App\Models\RekapKerjaSama::where('id', $validated['rekap_id'])
-            ->update(['is_mitra' => true]);
+        // tandai rekap sudah punya evaluasi mitra
+        RekapKerjaSama::where('id', $validated['rekap_id'])->update(['is_mitra' => true]);
 
-        return redirect()->back()->with('success', 'Evaluasi berhasil disimpan');
+        return back()->with('success', 'Evaluasi berhasil disimpan');
     }
 
-
-    // app/Http/Controllers/EvaluasiMitraController.php
-
+    /** Hapus evaluasi MITRA (admin) */
     public function delete($id)
     {
         try {
             if (!is_numeric($id)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'ID tidak valid'
-                ], 400);
+                return response()->json(['success' => false, 'message' => 'ID tidak valid'], 400);
             }
 
-            // Change to use 'idmitra' instead of 'idkinerja'
             $evaluasi = EvaluasiMitra::with('rekapKerjasama')
                 ->where('idmitra', $id)
                 ->first();
 
             if (!$evaluasi) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data evaluasi mitra tidak ditemukan'
-                ], 404);
+                return response()->json(['success' => false, 'message' => 'Data evaluasi mitra tidak ditemukan'], 404);
             }
 
-            $rekap_id = $evaluasi->rekap_id;
+            $rekapId = $evaluasi->rekap_id;
+
+            if ($evaluasi->file_pdf && Storage::disk('public')->exists($evaluasi->file_pdf)) {
+                Storage::disk('public')->delete($evaluasi->file_pdf);
+            }
+
             $evaluasi->delete();
 
-            if ($rekap_id) {
-                RekapKerjaSama::where('id', $rekap_id)
-                    ->update(['is_mitra' => false]);
+            // set is_mitra=false jika benar2 tidak ada evaluasi lain
+            $masihAda = EvaluasiMitra::where('rekap_id', $rekapId)->exists();
+            if (!$masihAda) {
+                RekapKerjaSama::where('id', $rekapId)->update(['is_mitra' => false]);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Evaluasi mitra berhasil dihapus'
-            ]);
+            return response()->json(['success' => true, 'message' => 'Evaluasi mitra berhasil dihapus']);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus evaluasi mitra: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus evaluasi mitra: ' . $e->getMessage()], 500);
         }
     }
 
+    /** Form edit evaluasi MITRA (admin) */
     public function edit($id)
     {
         $evaluasi = EvaluasiMitra::findOrFail($id);
-
-        $rekap = RekapKerjasama::findOrFail($evaluasi->rekap_id);
+        $rekap    = RekapKerjaSama::findOrFail($evaluasi->rekap_id);
 
         return view('evaluasikerjasamamitraedit', compact('evaluasi', 'rekap'));
     }
 
+    /** Update evaluasi MITRA (admin) */
     public function update(Request $request, $id)
     {
         $evaluasi = EvaluasiMitra::where('idmitra', $id)->firstOrFail();
 
-        // Validasi input
         $validated = $request->validate([
-            'integritas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'keahlian' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'komunikasi' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'kerjasamatim' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'integritas'       => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'keahlian'         => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'komunikasi'       => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'kerjasamatim'     => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
             'pengembangandiri' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'kreativitas' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-            'bahasaasing' => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
-
-            'pdfFile' => 'nullable|file|mimes:pdf|max:5120', // 5MB
+            'kreativitas'      => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'bahasaasing'      => 'required|in:Sangat Tinggi,Tinggi,Cukup,Kurang,Sangat Kurang',
+            'pdfFile'          => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        // Konversi nilai teks ke angka
         $map = [
             'Sangat Tinggi' => 5,
-            'Tinggi' => 4,
-            'Cukup' => 3,
-            'Kurang' => 2,
-            'Sangat Kurang' => 1
+            'Tinggi'        => 4,
+            'Cukup'         => 3,
+            'Kurang'        => 2,
+            'Sangat Kurang' => 1,
         ];
 
-        // Handle file upload PDF
         if ($request->hasFile('pdfFile')) {
-            // Hapus file lama jika ada
             if ($evaluasi->file_pdf && Storage::exists('public/' . $evaluasi->file_pdf)) {
                 Storage::delete('public/' . $evaluasi->file_pdf);
             }
-
-            // Upload file baru
-            $file = $request->file('pdfFile');
+            $file     = $request->file('pdfFile');
             $filename = 'eval_mitra_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('public/evaluasi_mitra', $filename);
+            $path     = $file->storeAs('public/evaluasi_mitra', $filename);
             $validated['file_pdf'] = str_replace('public/', '', $path);
         }
 
-        // Konversi nilai teks ke angka
         foreach (
             [
                 'integritas',
@@ -221,133 +204,61 @@ class EvaluasiMitraController extends Controller
                 'kerjasamatim',
                 'pengembangandiri',
                 'kreativitas',
-                'bahasaasing',
-
-            ] as $field
+                'bahasaasing'
+            ] as $f
         ) {
-            if (isset($validated[$field])) {
-                $validated[$field] = $map[$validated[$field]] ?? null;
-            }
+            $validated[$f] = $map[$validated[$f]] ?? null;
         }
 
-        // Update data
         $evaluasi->update($validated);
 
-        return redirect()
-            ->route('EvaluasiMitra.index')
+        return redirect()->route('EvaluasiMitra.index')
             ->with('success', 'Evaluasi mitra berhasil diperbarui');
     }
 
-
-    public function showOtpGate($rekapId)
+    /**
+     * KIRIM LINK (tanpa OTP) ke email mitra → menuju halaman pilihan (Keseluruhan / Perorangan).
+     */
+    public function kirimLink(Request $request, $rekapId)
     {
         $rekap = RekapKerjaSama::findOrFail($rekapId);
-        return view('evaluasi_mitra_otp_gate', compact('rekap'));
-    }
 
-    public function verifyOtp(Request $request, $rekapId)
-    {
+        // Ambil email dari input → fallback ke model
+        $toEmail = trim((string) $request->input('email_mitra', $rekap->email_mitra ?? $rekap->email_pihak_mitra ?? ''));
+        $request->merge(['email_mitra' => $toEmail]);
+
         $request->validate([
-            'otp' => 'required|string|size:6',
-        ], ['otp.size' => 'Kode OTP harus 6 digit.']);
+            'email_mitra' => 'required|email:rfc,dns',
+        ], [
+            'email_mitra.required' => 'Email mitra belum diisi.',
+            'email_mitra.email'    => 'Format email mitra tidak valid.',
+        ]);
 
-        $rekap = RekapKerjaSama::findOrFail($rekapId);
+        // Info masa berlaku (hanya ditampilkan di email)
+        $expiresAt = Carbon::now()->addHours(24);
 
-        // Hard cap umur OTP (default 12 jam)
-        $maxHours = (int) env('EVAL_KINERJA_OTP_MAX_HOURS', 12);
+        // Link ke halaman pilihan (tanpa token/OTP)
+        $url = Route::has('EvaluasiMitra.pilihan')
+            ? route('EvaluasiMitra.pilihan', ['rekapId' => $rekap->id])
+            : url("evaluasi-mitra/{$rekap->id}/pilihan");
 
-        // Ambil beberapa OTP terbaru (12 jam terakhir), lalu cocokan hash
-        $recentOtps = EvaluasiKinerjaOtp::where('rekap_id', $rekap->id)
-            ->where('created_at', '>=', now()->subHours($maxHours))
-            ->orderByDesc('id')
-            ->limit(10)
-            ->get();
-
-        $matched = null;
-        foreach ($recentOtps as $o) {
-            if (\Hash::check($request->otp, $o->code_hash)) {
-                $matched = $o;
-                break;
-            }
+        try {
+            Mail::to($toEmail)->send(new MitraEvaluasiLinkMail($rekap, $url, $expiresAt, 'kepuasan'));
+        } catch (Throwable $e) {
+            return back()->with('error', 'Gagal mengirim email: ' . $e->getMessage());
         }
 
-        if (!$matched) {
-            return back()->withErrors(['otp' => 'OTP tidak valid. Periksa kembali kode yang Anda masukkan.'])
-                ->withInput();
-        }
-
-        if (!is_null($matched->used_at)) {
-            return back()->withErrors(['otp' => 'OTP sudah digunakan pada ' . $matched->used_at->format('d-m-Y H:i') . '. Silakan minta OTP baru.'])
-                ->withInput();
-        }
-
-        if ($matched->expires_at->lte(now())) {
-            return back()->withErrors(['otp' => 'OTP sudah kedaluwarsa pada ' . $matched->expires_at->format('d-m-Y H:i') . '. Silakan minta OTP baru.'])
-                ->withInput();
-        }
-
-        if ($matched->created_at->lt(now()->subHours($maxHours))) {
-            return back()->withErrors(['otp' => 'OTP lebih tua dari batas maksimal ' . $maxHours . ' jam. Silakan minta OTP baru.'])
-                ->withInput();
-        }
-
-        // valid
-        $matched->update(['used_at' => now()]);
-
-        // Buka akses form Evaluasi Mitra (beda session key dengan kinerja)
-        session(['evaluasi_mitra_allowed' => $rekap->id]);
-
-        return redirect()->route('EvaluasiMitra.create', ['id' => $rekap->id]);
+        return back()->with(
+            'success',
+            'Tautan evaluasi mitra dikirim ke ' . $toEmail . ' (berlaku s.d. ' .
+                $expiresAt->timezone('Asia/Jakarta')->format('d/m/Y H:i') . ' WIB).'
+        );
     }
 
-    // app/Http/Controllers/EvaluasiMitraController.php
-
-    public function kirimLinkDanOtp(Request $request, $rekapId)
+    /** Halaman pilihan (Keseluruhan / Perorangan) */
+    public function pilihanForm($rekapId)
     {
-        $rekap = \App\Models\RekapKerjaSama::findOrFail($rekapId);
-
-        $adminEmail = optional($request->user())->email
-            ?? config('mail.admin_address')
-            ?? config('mail.from.address');
-
-        if (empty($adminEmail)) {
-            return back()->with('error', 'Email admin tidak terkonfigurasi.');
-        }
-
-        // Generate OTP
-        $plainOtp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        // TTL & hard cap
-        $ttlMinutes = (int) env('EVAL_KINERJA_OTP_TTL', 30);
-        $maxHours   = (int) env('EVAL_KINERJA_OTP_MAX_HOURS', 12);
-
-        $expiresAt = now()->addMinutes($ttlMinutes);
-        $hardCap   = now()->addHours($maxHours);
-        if ($expiresAt->greaterThan($hardCap)) $expiresAt = $hardCap;
-
-        // Simpan OTP (pakai tabel OTP yang sama)
-        $otp = new \App\Models\EvaluasiKinerjaOtp();
-        $otp->rekap_id      = $rekap->id;
-        $otp->code_hash     = \Hash::make($plainOtp);
-        $otp->expires_at    = $expiresAt;
-        $otp->used_at       = null;
-        $otp->sent_to_email = $adminEmail;
-        $otp->save();
-
-        // ⬇️ Link untuk MITRA: KEPUASAN, bukan kinerja
-        $tautanGate = route('EvaluasiMitra.otpGate', ['rekapId' => $rekap->id]);
-
-        // Email ke MITRA: kirim link gate "Evaluasi Kepuasan Mitra"
-        if (!empty($rekap->email_pihak_mitra)) {
-            \Mail::to($rekap->email_pihak_mitra)
-                ->send(new \App\Mail\MitraKepuasanLinkMail($rekap, $tautanGate));
-        }
-
-        // Email ke ADMIN: kirim OTP + link referensi
-        \Mail::to($adminEmail)
-            ->send(new \App\Mail\AdminOtpMail($rekap, $plainOtp, $tautanGate, 'kepuasan'));
-
-
-        return back()->with('success', 'Tautan Evaluasi Kepuasan dikirim ke email mitra; OTP dikirim ke email admin.');
+        $rekap = RekapKerjaSama::findOrFail($rekapId);
+        return view('evaluasimitrapilihan', compact('rekap'));
     }
 }
