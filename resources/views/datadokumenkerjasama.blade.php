@@ -216,7 +216,6 @@
                                                 </div>
                                             @endif
                                         </td>
-
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 @if ($rekap->is_laporan == true)
@@ -247,22 +246,16 @@
                                                     <span class="status-indicator status-empty"></span>
                                                     <span class="status-text status-empty-text">Belum Terisi</span>
 
-                                                    {{-- form tersembunyi untuk submit kirim link --}}
-                                                    <form id="form-kirim-{{ $rekap->id }}"
-                                                        action="{{ route('EvaluasiMitraKinerja.kirim', ['rekapId' => $rekap->id]) }}"
-                                                        method="POST" class="d-none">
-                                                        @csrf
-                                                        <input type="hidden" name="email_mitra"
-                                                            value="{{ $rekap->email_mitra ?? $rekap->email_pihak_mitra }}">
-                                                    </form>
-
                                                     <button type="button" class="btn btn-sm btn-primary ms-2"
-                                                        onclick="sendKinerjaLink({{ $rekap->id }}, '{{ $rekap->email_mitra ?? $rekap->email_pihak_mitra }}')">
+                                                        data-id="{{ $rekap->id }}"
+                                                        data-email="{{ $rekap->email_mitra ?? $rekap->email_pihak_mitra }}"
+                                                        onclick="submitKirimEvaluasiKinerja(this)">
                                                         <i class="bi bi-envelope-paper"></i> Kirim Link
                                                     </button>
                                                 @endif
                                             </div>
                                         </td>
+
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 @php
@@ -355,25 +348,29 @@
         </div>
 
         {{-- Form reusable untuk semua baris (anti nested form) --}}
+        {{-- === Reusable form untuk Kirim Link Kinerja (1x saja di halaman) === --}}
         <form id="form-kirim-evaluasi-kinerja" method="POST" class="d-none">
             @csrf
             <input type="hidden" name="email_mitra" id="email_mitra_field">
         </form>
+
         <script>
             async function submitKirimEvaluasiKinerja(btn) {
                 const id = btn.dataset.id;
-                const email = (btn.dataset.email || '').trim();
+                let email = (btn.dataset.email || '').trim(); // <-- cukup ambil apa adanya
 
-                // siapkan action ke route kirim
                 const form = document.getElementById('form-kirim-evaluasi-kinerja');
+                if (!form) {
+                    console.error('#form-kirim-evaluasi-kinerja tidak ditemukan');
+                    return;
+                }
+
                 form.action = "{{ route('EvaluasiMitraKinerja.kirim', ['rekapId' => '__ID__']) }}".replace('__ID__', id);
 
-                // isi hidden email (controller baca name="email_mitra")
                 const emailField = document.getElementById('email_mitra_field');
 
                 if (!email) {
-                    // minta user input email jika kosong di DB
-                    if (window.Swal) {
+                    if (window.Swal && Swal.fire) {
                         const {
                             value: inputEmail
                         } = await Swal.fire({
@@ -386,49 +383,37 @@
                             cancelButtonText: 'Batal',
                             inputValidator: v => (!v ? 'Wajib diisi' : null)
                         });
-                        if (!inputEmail) return; // batal
-                        emailField.value = inputEmail;
-                    } else {
-                        const inputEmail = prompt('Email mitra belum ada. Masukkan email mitra:');
                         if (!inputEmail) return;
-                        emailField.value = inputEmail;
+                        email = inputEmail.trim();
+                    } else {
+                        const ask = prompt('Email mitra belum ada. Masukkan email mitra:');
+                        if (!ask) return;
+                        email = ask.trim();
                     }
-                } else {
-                    emailField.value = email;
-                }
-
-                form.submit();
-            }
-
-            function sendMitraLink(btn) {
-                const id = btn.dataset.rekapId;
-                const form = document.getElementById('form-kirim-mitra-' + id);
-                if (!form) {
-                    alert('Form tidak ditemukan');
-                    return;
-                }
-
-                let emailInput = form.querySelector('input[name="email_mitra"]');
-                let email = (btn.dataset.email || emailInput?.value || '').trim();
-
-                if (!email) {
-                    const ask = prompt('Masukkan email mitra tujuan:');
-                    if (!ask) return;
-                    email = ask.trim();
                 }
 
                 if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    alert('Email tidak valid.');
+                    if (window.Swal && Swal.fire) {
+                        await Swal.fire('Email tidak valid', 'Periksa kembali alamat email.', 'error');
+                    } else {
+                        alert('Email tidak valid.');
+                    }
                     return;
                 }
 
-                if (!emailInput) {
-                    emailInput = document.createElement('input');
-                    emailInput.type = 'hidden';
-                    emailInput.name = 'email_mitra';
-                    form.appendChild(emailInput);
+                emailField.value = email;
+
+                if (window.Swal && Swal.fire) {
+                    const ok = await Swal.fire({
+                        title: 'Kirim link evaluasi?',
+                        text: `Email: ${email}`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Kirim',
+                        cancelButtonText: 'Batal'
+                    });
+                    if (!ok.isConfirmed) return;
                 }
-                emailInput.value = email;
 
                 form.submit();
             }

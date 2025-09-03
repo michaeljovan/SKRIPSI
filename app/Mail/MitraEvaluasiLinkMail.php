@@ -26,7 +26,7 @@ class MitraEvaluasiLinkMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Link & OTP Evaluasi Mitra')
+        return $this->subject('Link Evaluasi')
             ->view('emails.evaluasi_link'); // <- sesuaikan dengan file yang sudah ada
     }
 }
