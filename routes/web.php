@@ -21,6 +21,18 @@ Route::get('/', function () {
 });
 
 
+Route::get('/evaluasi-kinerja/{rekapId}/pilihan', [EvaluasiMitraKinerjaController::class, 'pilihanForm'])
+    ->name('EvaluasiMitraKinerja.pilihan');
+
+Route::get('/evaluasi-kinerja/{id}/create', [EvaluasiMitraKinerjaController::class, 'create'])
+    ->name('EvaluasiMitraKinerja.create');
+
+Route::get('/evaluasi/link/{rekap}/{token}', [EvaluasiLinkController::class, 'show'])
+    ->name('EvaluasiLink.show');
+
+Route::get('/evaluasi/link/start/{mode}', [EvaluasiLinkController::class, 'start'])
+    ->name('EvaluasiLink.start');
+
 Route::get('evaluasi-mitra/perorangan/{id}', [EvaluasiMitraPeroranganController::class, 'create'])
     ->name('EvaluasiMitraPerorangan.create');
 

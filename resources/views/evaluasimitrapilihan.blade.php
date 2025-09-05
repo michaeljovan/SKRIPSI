@@ -25,6 +25,47 @@
 
                     <div class="card-body">
 
+                        {{-- Status link --}}
+                        @php
+                            $expiresAt   = ($expiresAt ?? ($link->expires_at ?? null));
+                            $usedAt      = ($usedAt ?? ($link->used_at ?? null));
+                            $invalidated = ($invalidatedAt ?? ($link->invalidated_at ?? null));
+                            $isUsable    = isset($isUsable)
+                                ? (bool) $isUsable
+                                : (isset($link) && method_exists($link, 'isUsable') ? $link->isUsable() : true);
+
+                            $reason = null;
+                            if (!$isUsable) {
+                                if ($invalidated) {
+                                    $reason = 'Tautan ini telah dinonaktifkan oleh sistem.';
+                                } elseif ($usedAt) {
+                                    $reason = 'Tautan ini sudah digunakan sebelumnya.';
+                                } elseif ($expiresAt && \Carbon\Carbon::parse($expiresAt)->isPast()) {
+                                    $reason = 'Tautan ini sudah kedaluwarsa.';
+                                } else {
+                                    $reason = 'Tautan tidak valid.';
+                                }
+                            }
+                        @endphp
+
+                        @if (!$isUsable)
+                            <div class="alert alert-danger d-flex align-items-start" role="alert">
+                                <i class="bi bi-x-octagon-fill me-2 fs-4"></i>
+                                <div>
+                                    <div class="fw-semibold">Tautan Tidak Dapat Digunakan</div>
+                                    <div class="small">
+                                        {{ $reason }}
+                                        @if ($expiresAt)
+                                            <br> Kadaluwarsa: {{ \Carbon\Carbon::parse($expiresAt)->timezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB
+                                        @endif
+                                        @if ($usedAt)
+                                            <br> Dipakai pada: {{ \Carbon\Carbon::parse($usedAt)->timezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         {{-- Info dokumen --}}
                         <div class="alert alert-info d-flex align-items-start gap-2">
                             <i class="bi bi-file-earmark-text-fill fs-4"></i>
@@ -57,15 +98,19 @@
                         <div class="d-grid gap-3">
                             {{-- Keseluruhan --}}
                             <a href="{{ route('EvaluasiMitra.create', ['id' => $rekap->id]) }}"
-                                class="btn btn-primary btn-lg">
+                               class="btn btn-primary btn-lg js-choose-form {{ !$isUsable ? 'disabled' : '' }}"
+                               data-usable="{{ $isUsable ? '1' : '0' }}"
+                               data-reason="{{ $reason }}">
                                 <i class="bi bi-people-fill me-2"></i>
                                 Evaluasi Keseluruhan
                             </a>
 
-                            {{-- Perorangan (tampilkan jika route tersedia; kalau belum ada, ganti nama route sesuai proyekmu) --}}
+                            {{-- Perorangan --}}
                             @if (\Illuminate\Support\Facades\Route::has('EvaluasiMitraPerorangan.create'))
                                 <a href="{{ route('EvaluasiMitraPerorangan.create', ['id' => $rekap->id]) }}"
-                                    class="btn btn-outline-primary btn-lg">
+                                   class="btn btn-outline-primary btn-lg js-choose-form {{ !$isUsable ? 'disabled' : '' }}"
+                                   data-usable="{{ $isUsable ? '1' : '0' }}"
+                                   data-reason="{{ $reason }}">
                                     <i class="bi bi-person-check me-2"></i>
                                     Evaluasi Perorangan
                                 </a>
@@ -88,8 +133,43 @@
         </div>
     </div>
 
+    {{-- Modal alasan --}}
+    <div class="modal fade" id="linkInvalidModal" tabindex="-1" aria-labelledby="linkInvalidModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="linkInvalidModalLabel"><i class="bi bi-x-octagon-fill me-2"></i>Tautan Tidak Dapat Digunakan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="linkInvalidReason">Tautan tidak valid.</div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('data_kerja_sama') }}" class="btn btn-outline-secondary">Kembali ke Data Kerja Sama</a>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Mengerti</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Bootstrap JS --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener('click', function (e) {
+        const a = e.target.closest('.js-choose-form');
+        if (!a) return;
+
+        const usable = a.dataset.usable === '1';
+        if (!usable) {
+          e.preventDefault();
+          const reason = a.dataset.reason || 'Tautan tidak valid.';
+          document.getElementById('linkInvalidReason').textContent = reason;
+          const modalEl = document.getElementById('linkInvalidModal');
+          const m = new bootstrap.Modal(modalEl);
+          m.show();
+        }
+      });
+    </script>
 </body>
 
 </html>

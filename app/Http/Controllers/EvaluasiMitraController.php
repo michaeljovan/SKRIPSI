@@ -12,6 +12,7 @@ use App\Mail\MitraEvaluasiLinkMail;
 use Carbon\Carbon;
 use Throwable;
 use App\Models\EvaluasiMitraPerorangan;
+use App\Models\EvaluasiLink;
 
 class EvaluasiMitraController extends Controller
 {
@@ -259,6 +260,75 @@ class EvaluasiMitraController extends Controller
     public function pilihanForm($rekapId)
     {
         $rekap = RekapKerjaSama::findOrFail($rekapId);
-        return view('evaluasimitrapilihan', compact('rekap'));
+
+        $status = $this->resolveMitraLinkStatus((int)$rekapId);
+
+        return view('evaluasimitrapilihan', array_merge(
+            ['rekap' => $rekap],
+            $status // berisi: isUsable, reason, expiresAt, usedAt, invalidatedAt, link
+        ));
+    }
+
+    /**
+     * Hitung status usability tautan pilihan form untuk rekap tertentu.
+     * Prioritas: EvaluasiLink (jika ada) → fallback ke “sudah pernah diisi?”
+     */
+    protected function resolveMitraLinkStatus(int $rekapId): array
+    {
+        // Default: boleh dipakai
+        $isUsable      = true;
+        $reason        = null;
+        $expiresAt     = null;
+        $usedAt        = null;
+        $invalidatedAt = null;
+        $link          = null;
+
+        // 1) Jika pakai tabel EvaluasiLink (opsional)
+        if (class_exists(EvaluasiLink::class)) {
+            $link = EvaluasiLink::where('rekap_id', $rekapId)
+                ->where(function ($q) {
+                    // jika kamu punya kolom context, bisa difilter di sini, contoh:
+                    // $q->where('context', 'mitra');
+                })
+                ->latest('id')
+                ->first();
+
+            if ($link) {
+                $expiresAt     = $link->expires_at;
+                $usedAt        = $link->used_at;
+                $invalidatedAt = $link->invalidated_at;
+
+                // Pakai method model jika ada
+                if (method_exists($link, 'isUsable')) {
+                    $isUsable = $link->isUsable();
+                } else {
+                    $isUsable = is_null($usedAt)
+                        && is_null($invalidatedAt)
+                        && (!$expiresAt instanceof \Carbon\Carbon || $expiresAt->isFuture());
+                }
+
+                if (!$isUsable) {
+                    if ($invalidatedAt)      $reason = 'Tautan ini telah dinonaktifkan oleh sistem.';
+                    elseif ($usedAt)         $reason = 'Tautan ini sudah digunakan sebelumnya.';
+                    elseif ($expiresAt && $expiresAt->isPast()) $reason = 'Tautan ini sudah kedaluwarsa.';
+                    else                     $reason = 'Tautan tidak valid.';
+                }
+            }
+        }
+
+        // 2) Fallback: kalau tidak memakai EvaluasiLink, anggap “sudah diisi?” = tidak usable
+        if ($isUsable) {
+            $sudahKes = EvaluasiMitra::where('rekap_id', $rekapId)->exists();
+            $sudahPer = class_exists(EvaluasiMitraPerorangan::class)
+                ? EvaluasiMitraPerorangan::where('rekap_id', $rekapId)->exists()
+                : false;
+
+            if ($sudahKes || $sudahPer) {
+                $isUsable = false;
+                $reason   = 'Form evaluasi mitra untuk rekap ini sudah pernah diisi.';
+            }
+        }
+
+        return compact('isUsable', 'reason', 'expiresAt', 'usedAt', 'invalidatedAt', 'link');
     }
 }

@@ -296,6 +296,9 @@ class EvaluasiMitraKinerjaController extends Controller
     /**
      * Kirim tautan ke email mitra (TANPA OTP) — menuju halaman pilihan
      */
+    /**
+     * Kirim tautan ke email mitra (TANPA OTP) — menuju halaman pilihan
+     */
     public function kirimLinkDanOtp(Request $request, $rekapId)
     {
         $rekap = RekapKerjaSama::findOrFail($rekapId);
@@ -310,35 +313,105 @@ class EvaluasiMitraKinerjaController extends Controller
 
         $expiresAt  = Carbon::now()->addHours(24);
 
-        // Simpan log pengiriman (opsional)
-        $plainToken = Str::random(64);         // boleh tetap generate bila kolom token_hash NOT NULL
+        // (opsional) simpan log pengiriman
+        $plainToken = \Illuminate\Support\Str::random(64);
         $tokenHash  = hash('sha256', $plainToken);
 
         EvaluasiLink::create([
-            'rekap_id'           => $rekap->id,
-            'context'            => 'kinerja',
-            'token_hash'         => $tokenHash, // tidak dipakai untuk validasi, hanya log
-            'expires_at'         => $expiresAt,
-            'used_at'            => null,
-            'invalidated_at'     => null,
-            'sent_to_email'      => $toEmail,
+            'rekap_id'            => $rekap->id,
+            'context'             => 'kinerja',
+            'token_hash'          => $tokenHash, // dipakai untuk log/opsional verifikasi
+            'expires_at'          => $expiresAt,
+            'used_at'             => null,
+            'invalidated_at'      => null,
+            'sent_to_email'       => $toEmail,
             'created_by_staff_id' => auth()->id(),
-            'request_ip'         => $request->ip(),
-            'user_agent'         => substr($request->userAgent() ?? '', 0, 255),
+            'request_ip'          => $request->ip(),
+            'user_agent'          => substr($request->userAgent() ?? '', 0, 255),
         ]);
 
-        // Link langsung ke halaman pilihan (tanpa signature/OTP)
-        $url = route('evaluasi.kinerja.form', ['rekap' => $rekap->id]);
+        // Arahkan penerima ke halaman pilihan (yang sudah menampilkan status usable)
+        $url = route('EvaluasiMitraKinerja.pilihan', ['rekapId' => $rekap->id]);
 
-        Mail::to($toEmail)->send(new MitraEvaluasiLinkMail($rekap, $url, $expiresAt, 'kinerja'));
+        \Mail::to($toEmail)->send(new MitraEvaluasiLinkMail($rekap, $url, $expiresAt, 'kinerja'));
 
-        return back()->with('success', 'Link evaluasi terkirim ke ' . $toEmail);
+        return back()->with('success', 'Link evaluasi kinerja terkirim ke ' . $toEmail .
+            ' (berlaku s.d. ' . $expiresAt->timezone('Asia/Jakarta')->format('d/m/Y H:i') . ' WIB).');
     }
 
+
     /** Halaman pilihan (keseluruhan / perorangan) — TANPA OTP */
+    /** Halaman pilihan (Keseluruhan / Perorangan) — TANPA OTP */
     public function pilihanForm($rekapId)
     {
         $rekap = RekapKerjaSama::findOrFail($rekapId);
-        return view('evaluasikinerjapilihan', compact('rekap'));
+
+        // hitung status usability link
+        $status = $this->resolveKinerjaLinkStatus((int) $rekapId);
+
+        // kirim ke view 'evaluasikinerjapilihan' (Blade-mu yang menampilkan dua tombol)
+        return view('evaluasikinerjapilihan', array_merge(
+            ['rekap' => $rekap],
+            $status // -> isUsable, reason, expiresAt, usedAt, invalidatedAt, link
+        ));
+    }
+
+
+
+    protected function resolveKinerjaLinkStatus(int $rekapId): array
+    {
+        $isUsable      = true;
+        $reason        = null;
+        $expiresAt     = null;
+        $usedAt        = null;
+        $invalidatedAt = null;
+        $link          = null;
+
+        // 1) Cek link terbaru pada tabel evaluasi_links (jika tersedia)
+        if (class_exists(EvaluasiLink::class)) {
+            $link = EvaluasiLink::where('rekap_id', $rekapId)
+                ->where(function ($q) {
+                    // kalau kamu menyimpan context, aktifkan filter ini:
+                    $q->where('context', 'kinerja');
+                })
+                ->latest('id')
+                ->first();
+
+            if ($link) {
+                $expiresAt     = $link->expires_at;
+                $usedAt        = $link->used_at;
+                $invalidatedAt = $link->invalidated_at;
+
+                if (method_exists($link, 'isUsable')) {
+                    $isUsable = $link->isUsable();
+                } else {
+                    $isUsable = is_null($usedAt)
+                        && is_null($invalidatedAt)
+                        && (!$expiresAt instanceof Carbon || $expiresAt->isFuture());
+                }
+
+                if (!$isUsable) {
+                    if ($invalidatedAt)                       $reason = 'Tautan ini telah dinonaktifkan oleh sistem.';
+                    elseif ($usedAt)                          $reason = 'Tautan ini sudah digunakan sebelumnya.';
+                    elseif ($expiresAt && $expiresAt->isPast()) $reason = 'Tautan ini sudah kedaluwarsa.';
+                    else                                      $reason = 'Tautan tidak valid.';
+                }
+            }
+        }
+
+        // 2) Fallback: jika tidak ada EvaluasiLink atau masih usable, cek apakah sudah ada isian
+        if ($isUsable) {
+            $sudahKes = EvaluasiMitraKinerja::where('rekap_id', $rekapId)->exists();
+            $sudahPer = class_exists(EvaluasiMitraKinerjaPerorangan::class)
+                ? EvaluasiMitraKinerjaPerorangan::where('rekap_id', $rekapId)->exists()
+                : false;
+
+            if ($sudahKes || $sudahPer) {
+                $isUsable = false;
+                $reason   = 'Form evaluasi kinerja untuk rekap ini sudah pernah diisi.';
+            }
+        }
+
+        return compact('isUsable', 'reason', 'expiresAt', 'usedAt', 'invalidatedAt', 'link');
     }
 }
