@@ -44,7 +44,7 @@ class PelaksanaanKerjaSamaController extends Controller
                 'dosen_terlibat' => 'nullable|string',
                 'mahasiswa_terlibat' => 'nullable|string',
 
-                'anggaran_ukdw' => 'required|numeric',
+                'anggaran_ukdw' => 'required|integer|min:0',
                 'hasil_pelaksanaan' => 'required|string',
                 'tautan_link_kegiatan' => 'nullable|url',
                 'dokumen_kegiatan' => 'nullable|file|mimes:pdf|max:5120', // max 5MB

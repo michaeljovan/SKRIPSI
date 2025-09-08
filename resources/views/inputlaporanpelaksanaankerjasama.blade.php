@@ -87,7 +87,7 @@
                 </div>
             </div>
             <form id="laporanForm" action="{{ route('pelaksanaankerjasama.store') }}" method="POST"
-                enctype="multipart/form-data">
+                enctype="multipart/form-data" novalidate>
                 @csrf
                 <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
 
@@ -168,22 +168,36 @@
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="in_cash" class="form-label">In Cash (Rp)</label>
-                            <textarea class="form-control-plaintext border rounded px-3 py-2 bg-light compact-textarea" id="in_cash" readonly>{{ $rekap->in_cash ? number_format($rekap->in_cash, 0, ',', '.') : '-' }}</textarea>
+                            <textarea class="form-control-plaintext border rounded px-3 py-2 bg-light compact-textarea" id="in_cash" readonly>{{ $rekap->in_cash !== null && $rekap->in_cash !== ''
+                                ? (is_numeric($rekap->in_cash)
+                                    ? number_format((float) $rekap->in_cash, 0, ',', '.')
+                                    : $rekap->in_cash)
+                                : '-' }}</textarea>
                             <div class="form-text">Nilai dari rekap kerja sama</div>
                         </div>
+
                         <div class="col-md-4 mb-3">
                             <label for="in_kind" class="form-label">In Kind</label>
-                            <textarea class="form-control-plaintext border rounded px-3 py-2 bg-light compact-textarea" id="in_kind" readonly>{{ $rekap->in_kind ? number_format($rekap->in_kind, 0, ',', '.') : '-' }}</textarea>
+                            <textarea class="form-control-plaintext border rounded px-3 py-2 bg-light compact-textarea" id="in_kind" readonly>{{ $rekap->in_kind !== null && $rekap->in_kind !== ''
+                                ? (is_numeric($rekap->in_kind)
+                                    ? number_format((float) $rekap->in_kind, 0, ',', '.')
+                                    : $rekap->in_kind)
+                                : '-' }}</textarea>
                             <div class="form-text">Nilai dari rekap kerja sama</div>
                         </div>
+
                         <div class="col-md-4 mb-3">
                             <label for="anggaran_ukdw" class="form-label">Anggaran UKDW (Rp)</label>
                             <input type="text" class="form-control" id="anggaran_ukdw" name="anggaran_ukdw"
-                                required>
+                                inputmode="numeric" autocomplete="off" required>
                             <div class="form-text">Masukkan angka tanpa pemisah. (Contoh: 15000000)</div>
+                            <div id="anggaranUkdwFeedback" class="invalid-feedback d-none">
+                                Anggaran UKDW harus diisi angka (0–9) tanpa pemisah.
+                            </div>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- SECTION: Hasil Pelaksanaan & Dokumen -->
                 <div class="form-section">
@@ -269,8 +283,19 @@
                 dokInput.addEventListener('change', validateDokumenKegiatan);
             }
 
+            const anggaran = document.getElementById('anggaran_ukdw');
+            const anggaranFeedback = document.getElementById('anggaranUkdwFeedback');
+
+            anggaran?.addEventListener('input', () => {
+                const cleaned = (anggaran.value || '').replace(/[^\d]/g, ''); // hanya digit
+                if (anggaran.value !== cleaned) anggaran.value = cleaned;
+                anggaran.classList.remove('is-invalid');
+                anggaranFeedback?.classList.add('d-none');
+            });
+
+
             // -------------------- Submit dengan SweetAlert + fetch --------------------
-            submitButton.addEventListener('click', function(e) {
+            function handleSubmit(e) {
                 e.preventDefault();
 
                 // Validasi HTML5
@@ -282,11 +307,9 @@
                 // Validasi file (PDF & ≤5MB)
                 if (!validateDokumenKegiatan()) return;
 
-                // Normalisasi angka: kirim angka murni (tanpa titik/koma/spasi)
+                // Normalisasi angka
                 const anggaranEl = document.getElementById('anggaran_ukdw');
-                if (anggaranEl) {
-                    anggaranEl.value = (anggaranEl.value || '').replace(/\D/g, '');
-                }
+                if (anggaranEl) anggaranEl.value = (anggaranEl.value || '').replace(/\D/g, '');
 
                 Swal.fire({
                     title: 'Simpan Laporan Pelaksanaan?',
@@ -306,18 +329,21 @@
                             method: 'POST',
                             body: formData,
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')
-                                    .value,
+                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')?.value ||
+                                    '',
                                 'Accept': 'application/json'
-                            }
+                            },
+                            credentials: 'same-origin' // <-- penting agar cookie session ikut
                         })
-                        .then(response => {
+                        .then(async (response) => {
+                            const ct = response.headers.get('Content-Type') || '';
+                            const isJSON = ct.includes('application/json');
+                            const data = isJSON ? await response.json() : {};
+
                             if (!response.ok) {
-                                return response.json().then(data => Promise.reject(data));
+                                return Promise.reject(data);
                             }
-                            return response.json();
-                        })
-                        .then(data => {
+
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil!',
@@ -326,20 +352,14 @@
                                 timer: 1500,
                                 showConfirmButton: false
                             }).then(() => {
-                                // Redirect kalau backend kasih URL; fallback reload
-                                if (data.redirect) {
-                                    window.location.href = data.redirect;
-                                } else {
-                                    window.location.reload();
-                                }
+                                if (data.redirect) window.location.href = data.redirect;
+                                else window.location.reload();
                             });
                         })
                         .catch(error => {
                             if (error && error.errors) {
-                                const errorList = Object.values(error.errors)
-                                    .flat()
-                                    .map(msg => `<li>${msg}</li>`)
-                                    .join('');
+                                const errorList = Object.values(error.errors).flat().map(msg =>
+                                    `<li>${msg}</li>`).join('');
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Validasi Gagal!',
@@ -350,13 +370,17 @@
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Terjadi Kesalahan',
-                                    text: error?.message ||
-                                        'Tidak dapat menyimpan data.'
+                                    text: error?.message || 'Tidak dapat menyimpan data.'
                                 });
                             }
                         });
                 });
-            });
+            }
+
+            // tangkap klik tombol + submit via Enter
+            submitButton?.addEventListener('click', handleSubmit);
+            form?.addEventListener('submit', handleSubmit);
+
 
             // -------------------- Flash message dari backend --------------------
             // Blade akan render blok ini saat ada session/error

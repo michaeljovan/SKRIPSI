@@ -23,9 +23,8 @@ return new class extends Migration
             $table->timestamps();
 
             // Relasi ke tabel rekapkerjasama (nama tabel sesuai validasi di kode Anda)
-            $table->foreign('rekap_id')
-                  ->references('id')->on('rekapkerjasama')
-                  ->cascadeOnDelete();
+            $table->foreignId('rekap_id')->constrained('rekap_kerja_sama')->cascadeOnDelete();
+
 
             // Index bantu untuk query
             $table->index(['rekap_id', 'context']);

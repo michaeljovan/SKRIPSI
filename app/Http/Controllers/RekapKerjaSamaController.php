@@ -122,8 +122,8 @@ class RekapKerjaSamaController extends Controller
                     'required_if:jenisPermohonan,perpanjang',
                     'integer',
                     Rule::exists('rekapkerjasama', 'id')->where(function ($q) use ($today) {
-                        $q->where('status', 'selesai')
-                            ->orWhereDate('tanggal_selesai', '<', $today);
+                        $q->where('status', 'aktif')
+                            ->orWhereDate('tanggal_selesai', '>', $today);
                     }),
                 ],
 
@@ -268,7 +268,6 @@ class RekapKerjaSamaController extends Controller
 
         // Tentukan dokumen induk yang valid
         $allowed = match ($jenis) {
-            'MoA' => ['MoU'],
             'IA' => ['MoU', 'MoA'],
             default => [],
         };
@@ -316,8 +315,8 @@ class RekapKerjaSamaController extends Controller
         $semuaDokumen = RekapKerjaSama::query()
             ->select('id', 'no_dokumen', 'judul_kerja_sama', 'tanggal_selesai', 'status')
             ->where(function ($q) use ($today) {
-                $q->where('status', 'selesai')
-                    ->orWhereDate('tanggal_selesai', '<', $today);
+                $q->where('status', 'aktif')
+                    ->orWhereDate('tanggal_selesai', '>', $today);
             })
             ->orderByDesc('created_at')
             ->orderByDesc('id')
@@ -363,7 +362,7 @@ class RekapKerjaSamaController extends Controller
 
             // RULES & MESSAGES (kunci uang pakai camelCase agar konsisten dengan store)
             $rules = [
-                'noDokumen'          => ['required', \Illuminate\Validation\Rule::unique('rekapkerjasama', 'no_dokumen')->ignore($rekap->id, 'id')],
+                'noDokumen'          => ['required', Rule::unique('rekapkerjasama', 'no_dokumen')->ignore($rekap->id, 'id')],
                 'unit'               => ['required'],
                 'mitraKerjaSama'     => ['required'],
                 'judulKerjaSama'     => ['required'],
@@ -700,12 +699,11 @@ class RekapKerjaSamaController extends Controller
             ->with('success', 'Kerja sama dihentikan per ' . $today->format('d/m/Y') . '.');
     }
 
-
     public function kerjasamaBerakhir(Request $request)
     {
         $today = Carbon::today();
 
-        $items = \App\Models\RekapKerjaSama::query()
+        $items = RekapKerjaSama::query()
             ->whereDate('tanggal_selesai', '<', $today) // sudah berakhir
             ->orderByDesc('tanggal_selesai')            // yang paling baru kadaluarsa di atas
             ->paginate(15)
@@ -714,6 +712,49 @@ class RekapKerjaSamaController extends Controller
         return view('kerjasamaberakhir', [
             'items' => $items,
             'today' => $today,
+        ]);
+    }
+
+    public function apiDetail(Request $request)
+    {
+        $id = $request->query('id');
+        $rekap = RekapKerjaSama::with('induk')->findOrFail($id);
+
+        // TODO: Authorization policy (disarankan):
+        // $this->authorize('view', $rekap);
+
+        // Normalisasi bentuk_kerja_sama jadi array
+        $bentuk = $rekap->bentuk_kerja_sama;
+        if (is_string($bentuk)) {
+            $tmp = json_decode($bentuk, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($tmp)) {
+                $bentuk = $tmp;
+            } else {
+                $bentuk = array_filter(array_map('trim', explode(',', $bentuk)));
+            }
+        } elseif (!is_array($bentuk)) {
+            $bentuk = [];
+        }
+
+        return response()->json([
+            'id'                  => $rekap->id,
+            'no_dokumen'          => $rekap->no_dokumen,
+            'unit'                => $rekap->unit,
+            'mitra_kerja_sama'    => $rekap->mitra_kerja_sama,
+            'judul_kerja_sama'    => $rekap->judul_kerja_sama,
+            'jenis_kerja_sama'    => $rekap->jenis_kerja_sama, // MoU|MoA|IA
+            'kategori'            => $rekap->kategori,
+            'pihak_ukdw'          => $rekap->pihak_ukdw,
+            'pihak_mitra'         => $rekap->pihak_mitra,
+            'email_pihak_mitra'   => $rekap->email_pihak_mitra,
+            'tanggal_mulai'       => optional($rekap->tanggal_mulai)->format('Y-m-d'),
+            'tanggal_selesai'     => optional($rekap->tanggal_selesai)->format('Y-m-d'),
+            'bentuk_kerja_sama'   => $bentuk,
+            'in_kind'             => $rekap->in_kind,
+            'total_in_kind'       => $rekap->total_in_kind,
+            'in_cash'             => $rekap->in_cash,
+            'total_in_cash'       => $rekap->total_in_cash,
+            'jumlah_implementasi' => $rekap->jumlah_implementasi,
         ]);
     }
 }

@@ -96,23 +96,6 @@
                     <form id="kerjaSamaForm" action="{{ route('rekapkerjasama.store') }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
-                        <!-- Row 1 -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="noDokumen" class="form-label">No Dokumen</label>
-                                <input type="text" class="form-control" id="noDokumen" name="noDokumen" required>
-                                <div id="noDokumenError" class="text-danger mt-1" style="display: none;"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="unit" class="form-label">Unit</label>
-                                <select class="form-select" id="unit" name="unit" required>
-                                    <option value="" selected disabled> Pilih Unit</option>
-                                    <option value="Fakultas Teknologi Informasi">Fakultas Teknologi Informasi</option>
-                                    <option value="Informatika">Informatika</option>
-                                    <option value="Sistem Informasi">Sistem Informasi</option>
-                                </select>
-                            </div>
-                        </div>
 
                         {{-- Jenis Permohonan --}}
                         <div class="row mb-3 align-items-end">
@@ -170,6 +153,85 @@
                             </div>
                         </div>
 
+                        <div class="row mb-3 align-items-start">
+                            {{-- Kolom kiri: Jenis Kerja Sama --}}
+                            <div class="col-md-6">
+                                <label class="form-label">Jenis Kerja Sama</label>
+                                <div class="border border-secondary rounded p-3 shadow-sm">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="jenis1"
+                                            name="jenisKerjaSama" value="MoU" required>
+                                        <label class="form-check-label" for="jenis1">MoU (Memorandum of
+                                            Understanding)</label>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="radio" id="jenis2"
+                                            name="jenisKerjaSama" value="MoA">
+                                        <label class="form-check-label" for="jenis2">MoA (Memorandum of
+                                            Agreement)</label>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="radio" id="jenis3"
+                                            name="jenisKerjaSama" value="IA">
+                                        <label class="form-check-label" for="jenis3">IA (Implementing
+                                            Agreement)</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Kolom kanan: Dokumen Induk --}}
+                            <div class="col-md-6">
+                                <label class="form-label d-block">Dokumen Induk</label>
+                                <div id="dokumenIndukCard" class="border border-secondary rounded p-3 shadow-sm">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label for="parentDocument" class="form-label">Pilih Dokumen Induk</label>
+                                            <select class="form-select" id="parentDocument" name="parent_id">
+                                                <!-- Opsi akan diisi via JavaScript -->
+                                            </select>
+                                            <div class="form-text">
+                                                Untuk MoA pilih MoU induk, untuk IA pilih MoU/MoA induk
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="parentMitra" class="form-label">Mitra Kerja Sama</label>
+                                            <input type="text" class="form-control field-gray" id="parentMitra"
+                                                name="parentMitra" readonly>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="parentJudul" class="form-label">Judul Kerja Sama</label>
+                                            <input type="text" class="form-control field-gray" id="parentJudul"
+                                                name="parentJudul" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div id="noParentDocAlert" class="alert alert-info mt-3 d-none">
+                                        Tidak diperlukan dokumen induk untuk MoU
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 1 -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="noDokumen" class="form-label">No Dokumen</label>
+                                <input type="text" class="form-control" id="noDokumen" name="noDokumen" required>
+                                <div id="noDokumenError" class="text-danger mt-1" style="display: none;"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="unit" class="form-label">Unit</label>
+                                <select class="form-select" id="unit" name="unit" required>
+                                    <option value="" selected disabled> Pilih Unit</option>
+                                    <option value="Fakultas Teknologi Informasi">Fakultas Teknologi Informasi</option>
+                                    <option value="Informatika">Informatika</option>
+                                    <option value="Sistem Informasi">Sistem Informasi</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Row 2 -->
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -206,71 +268,6 @@
                                         minimal satu Bentuk Kerja Sama</div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Jenis Kerja Sama</label>
-                                <div class="border border-secondary rounded p-3 shadow-sm">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" id="jenis1"
-                                            name="jenisKerjaSama" value="MoU" required>
-                                        <label class="form-check-label" for="jenis1">MoU (Memorandum of
-                                            Understanding)</label>
-                                    </div>
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" id="jenis2"
-                                            name="jenisKerjaSama" value="MoA">
-                                        <label class="form-check-label" for="jenis2">MoA (Memorandum of
-                                            Agreement)</label>
-                                    </div>
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" id="jenis3"
-                                            name="jenisKerjaSama" value="IA">
-                                        <label class="form-check-label" for="jenis3">IA (Implementing
-                                            Agreement)</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Section Parent Document - Selalu Tampil -->
-                            <div class="mt-3">
-                                <div class="mt-3" id="dokumenIndukCard">
-                                    <div class="card-header bg-light">
-                                        <h6 class="card-title mb-0">Dokumen Induk</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <label for="parentDocument" class="form-label">Pilih Dokumen
-                                                    Induk</label>
-                                                <select class="form-select" id="parentDocument" name="parent_id">
-                                                    <!-- Opsi akan diisi via JavaScript -->
-                                                </select>
-                                                <div class="form-text">
-                                                    Untuk MoA pilih MoU induk, untuk IA pilih MoU/MoA induk
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="parentMitra" class="form-label">Mitra Kerja Sama</label>
-                                                <input type="text" class="form-control field-gray"
-                                                    id="parentMitra" name="parentMitra" readonly>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mt-3">
-                                            <div class="col-md-6">
-                                                <label for="parentJudul" class="form-label">Judul Kerja Sama</label>
-                                                <input type="text" class="form-control field-gray"
-                                                    id="parentJudul" name="parentJudul" readonly>
-                                            </div>
-
-                                        </div>
-                                        <div id="noParentDocAlert" class="alert alert-info mt-3"
-                                            style="display: none;">
-                                            Tidak diperlukan dokumen induk untuk MoU
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                         <!-- Row 4 -->
                         <div class="row mb-3">
@@ -342,10 +339,13 @@
                             <div class="col-md-6">
                                 <label for="totalInKind" class="form-label">Total In Kind (Rp)</label>
                                 <input type="text" class="form-control" id="totalInKind" name="totalInKind"
-                                    placeholder="Diisi dengan angka">
+                                    placeholder="Diisi dengan angka" inputmode="numeric" autocomplete="off">
+                                <div id="totalInKindFeedback" class="invalid-feedback d-none">
+                                    Total In Kind harus berupa angka bulat (0–9).
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="inCash" class="form-label">In Cash (Rp)</label>
+                                <label for="inCash" class="form-label">In Cash</label>
                                 <textarea class="form-control" id="inCash" name="inCash" rows="2"
                                     placeholder="Contoh : Tiket Pesawat - 1.000.000"></textarea>
                             </div>
@@ -356,13 +356,22 @@
                             <div class="col-md-6">
                                 <label for="totalInCash" class="form-label">Total In Cash (Rp)</label>
                                 <input type="text" class="form-control" id="totalInCash" name="totalInCash"
-                                    placeholder="Diisi dengan angka">
+                                    placeholder="Diisi dengan angka" inputmode="numeric" autocomplete="off">
+                                <div id="totalInCashFeedback" class="invalid-feedback d-none">
+                                    Total In Cash harus berupa angka bulat (0–9).
+                                </div>
                             </div>
+
                             <div class="col-md-6">
                                 <label for="jumlahImplementasi" class="form-label">Jumlah Implementasi</label>
                                 <input type="text" class="form-control" id="jumlahImplementasi"
-                                    name="jumlahImplementasi" placeholder="Diisi dengan angka">
+                                    name="jumlahImplementasi" placeholder="Diisi dengan angka" inputmode="numeric"
+                                    autocomplete="off">
+                                <div id="jumlahImplementasiFeedback" class="invalid-feedback d-none">
+                                    Jumlah Implementasi harus berupa angka bulat (0–9).
+                                </div>
                             </div>
+
                         </div>
 
                         <!-- Row 9 -->
@@ -406,6 +415,26 @@
             const showWarn = (title, text) => Swal.fire(title, text, 'warning');
             const showErr = (title, text) => Swal.fire(title, text, 'error');
             const showOk = (title, text) => Swal.fire(title, text, 'success');
+            const safeSet = (el, val) => {
+                if (el) el.value = (val ?? '');
+            };
+
+            // Refs angka + feedback
+            const jmlImpl = document.getElementById('jumlahImplementasi');
+            const jmlImplFeedback = document.getElementById('jumlahImplementasiFeedback');
+            const totalInKind = document.getElementById('totalInKind');
+            const totalInKindFeedback = document.getElementById('totalInKindFeedback');
+            const totalInCash = document.getElementById('totalInCash');
+            const totalInCashFeedback = document.getElementById('totalInCashFeedback');
+
+            function clearInvalid(field, feedback) {
+                field?.classList.remove('is-invalid');
+                feedback?.classList.add('d-none');
+            }
+            [jmlImpl, totalInKind, totalInCash].forEach((f, i) => {
+                const feeds = [jmlImplFeedback, totalInKindFeedback, totalInCashFeedback];
+                f?.addEventListener('input', () => clearInvalid(f, feeds[i]));
+            });
 
             // Dapatkan CSRF token dari meta atau input hidden sebagai fallback
             const getCsrfToken = () =>
@@ -460,7 +489,6 @@
                     masaBerlaku.value = '';
                 }
             }
-
             tanggalMulai?.addEventListener('change', () => {
                 if (tanggalMulai && tanggalSelesai) tanggalSelesai.min = tanggalMulai.value;
                 calculateDuration();
@@ -526,12 +554,13 @@
                 }
             }
 
-            // ===================== DOKUMEN INDUK (opsional, beda fitur) =====================
+            // ===================== DOKUMEN INDUK =====================
             const jenisRadios = $$('input[name="jenisKerjaSama"]');
             const parentSelect = $('#parentDocument');
             const parentMitra = $('#parentMitra');
             const parentJudul = $('#parentJudul');
             const noParentAlert = $('#noParentDocAlert');
+            const mainMitra = $('#mitraKerjaSama'); // untuk ikut auto-isi dari induk (jika kosong)
 
             if (parentSelect && jenisRadios.length) {
                 const API_DOK_INDUK = "{{ route('api.dokumen_induk') }}";
@@ -542,7 +571,7 @@
                         headers: {
                             'Accept': 'application/json'
                         },
-                        credentials: 'same-origin' // penting agar cookie ikut
+                        credentials: 'same-origin'
                     });
                     if (!res.ok) {
                         const txt = await res.text().catch(() => '');
@@ -566,7 +595,7 @@
                         if (Array.isArray(data) && data.length) {
                             data.forEach(item => {
                                 const opt = document.createElement('option');
-                                opt.value = item.id; // bisa 'none' atau id
+                                opt.value = item.id;
                                 opt.textContent = (item.no_dokumen === 'Tidak Ada Induk') ?
                                     'Tidak Ada Induk' :
                                     `${item.no_dokumen} - ${item.judul_kerja_sama}`;
@@ -599,13 +628,140 @@
                     const sel = this.options[this.selectedIndex];
                     if (!sel) return;
                     if (sel.value === 'none') {
-                        if (parentMitra) parentMitra.value = '';
-                        if (parentJudul) parentJudul.value = '';
+                        safeSet(parentMitra, '');
+                        safeSet(parentJudul, '');
                     } else {
-                        if (parentMitra) parentMitra.value = sel.dataset.mitra || '';
-                        if (parentJudul) parentJudul.value = sel.dataset.judul || '';
+                        safeSet(parentMitra, sel.dataset.mitra || '');
+                        safeSet(parentJudul, sel.dataset.judul || '');
+                        // Isi field Mitra utama dari induk JIKA saat ini masih kosong (supaya tidak menimpa input user)
+                        if (mainMitra && !mainMitra.value.trim()) {
+                            mainMitra.value = sel.dataset.mitra || '';
+                        }
                     }
                 });
+            }
+
+            // ===================== PERPANJANG → AUTOFILL DARI DOKUMEN LAMA =====================
+            const API_REKAP_DETAIL = "{{ route('api.rekap.detail') }}";
+
+            // Field utama untuk autofill
+            const fldUnit = $('#unit');
+            const fldMitra = $('#mitraKerjaSama');
+            const fldJudul = $('#judulKerjaSama');
+            const fldJenisRadios = $$('input[name="jenisKerjaSama"]');
+            const fldBentukChecks = $$('input[name="bentukKerjaSama[]"]');
+            const fldKategori = $('#kategori');
+            const fldPihakUKDW = $('#pihakUKDW');
+            const fldPihakMitra = $('#pihakMitra');
+            const fldEmailMitra = $('#emailMitra');
+            const fldTglMulai = $('#tanggalMulai');
+            const fldTglSelesai = $('#tanggalSelesai');
+            const fldInKind = $('#inKind');
+            const fldTotalInKind2 = $('#totalInKind');
+            const fldInCash = $('#inCash');
+            const fldTotalInCash2 = $('#totalInCash');
+            const fldJumlahImpl2 = $('#jumlahImplementasi');
+
+            const setJenis = (val) => {
+                fldJenisRadios.forEach(r => r.checked = (r.value === String(val)));
+                const checked = document.querySelector('input[name="jenisKerjaSama"]:checked');
+                checked && checked.dispatchEvent(new Event('change')); // biar loader induk/logic lain jalan
+            };
+
+            const setBentuk = (arr) => {
+                const lower = (v) => String(v || '').toLowerCase();
+                const setVals = new Set((arr || []).map(lower));
+                fldBentukChecks.forEach(chk => {
+                    chk.checked = setVals.has(lower(chk.value));
+                });
+            };
+
+            async function fetchRekapDetail(id) {
+                const url = `${API_REKAP_DETAIL}?id=${encodeURIComponent(id)}`;
+                const res = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            }
+
+            async function autoFillFromPerpanjang(id) {
+                try {
+                    Swal.fire({
+                        title: 'Memuat...',
+                        html: 'Mengambil data dokumen...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    const d = await fetchRekapDetail(id);
+
+                    // 1) Jenis (MoU/MoA/IA)
+                    setJenis(d.jenis_kerja_sama);
+
+                    // 2) Isi field utama (TIDAK menyentuh noDokumen baru)
+                    safeSet(fldUnit, d.unit);
+                    safeSet(fldMitra, d.mitra_kerja_sama);
+                    safeSet(fldJudul, d.judul_kerja_sama);
+                    setBentuk(d.bentuk_kerja_sama);
+                    safeSet(fldKategori, d.kategori);
+                    safeSet(fldPihakUKDW, d.pihak_ukdw);
+                    safeSet(fldPihakMitra, d.pihak_mitra);
+                    safeSet(fldEmailMitra, d.email_pihak_mitra);
+
+                    // Tanggal periode baru biasanya diisi manual
+                    // Jika mau menyalin tanggal lama, uncomment baris ini:
+                    // safeSet(fldTglMulai, d.tanggal_mulai);
+                    // safeSet(fldTglSelesai, d.tanggal_selesai);
+
+                    safeSet(fldInKind, d.in_kind);
+                    safeSet(fldTotalInKind2, d.total_in_kind);
+                    safeSet(fldInCash, d.in_cash);
+                    safeSet(fldTotalInCash2, d.total_in_cash);
+                    safeSet(fldJumlahImpl2, d.jumlah_implementasi);
+
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Data dimuat',
+                        timer: 900,
+                        showConfirmButton: false
+                    });
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Tidak dapat memuat data dokumen perpanjang.'
+                    });
+                }
+            }
+
+            function onTogglePermohonan() {
+                const isPerpanjang = !!radioPerpanjang?.checked;
+                if (isPerpanjang && selectPerpanjang?.value) {
+                    autoFillFromPerpanjang(selectPerpanjang.value);
+                } else {
+                    // Mode BARU: kosongkan field-field yang disalin
+                    [fldUnit, fldMitra, fldJudul, fldPihakUKDW, fldPihakMitra, fldEmailMitra, fldInKind, fldInCash,
+                        fldTotalInKind2, fldTotalInCash2, fldJumlahImpl2
+                    ]
+                    .forEach(el => safeSet(el, ''));
+                    fldBentukChecks.forEach(chk => chk.checked = false);
+                    safeSet(fldTglMulai, '');
+                    safeSet(fldTglSelesai, '');
+                }
+            }
+            radioBaru?.addEventListener('change', onTogglePermohonan);
+            radioPerpanjang?.addEventListener('change', onTogglePermohonan);
+            selectPerpanjang?.addEventListener('change', function() {
+                if (radioPerpanjang?.checked && this.value) autoFillFromPerpanjang(this.value);
+            });
+            if (radioPerpanjang?.checked && selectPerpanjang?.value) {
+                autoFillFromPerpanjang(selectPerpanjang.value);
             }
 
             // ===================== Validasi ukuran file 5MB + format PDF =====================
@@ -656,11 +812,30 @@
                     parentVal = selectPerpanjang.value || 'none';
                 }
 
-                // ❌ HAPUS sanitasi untuk inKind / inCash / total* (biarkan server parse)
-                // (Opsional) kalau mau: pastikan jumlahImplementasi hanya digit
-                const onlyDigits = v => (v || '').toString().replace(/[^\d]/g, '');
-                const jmlImpl = document.getElementById('jumlahImplementasi');
-                if (jmlImpl) jmlImpl.value = onlyDigits(jmlImpl.value);
+                // ===== Validasi angka bulat untuk 3 field =====
+                function validateDigitsField(field, label, feedbackEl) {
+                    if (!field) return true;
+                    const raw = (field.value || '').trim();
+                    const required = field.hasAttribute('required');
+                    const ok = raw === '' ? !required : /^\d+$/.test(raw);
+
+                    if (!ok) {
+                        e.preventDefault();
+                        field.classList.add('is-invalid');
+                        feedbackEl && feedbackEl.classList.remove('d-none');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Input tidak valid',
+                            text: `${label} harus diisi dengan angka bulat (0–9).`
+                        });
+                        field.focus();
+                        return false;
+                    }
+                    return true;
+                }
+                if (!validateDigitsField(totalInKind, 'Total In Kind', totalInKindFeedback)) return;
+                if (!validateDigitsField(totalInCash, 'Total In Cash', totalInCashFeedback)) return;
+                if (!validateDigitsField(jmlImpl, 'Jumlah Implementasi', jmlImplFeedback)) return;
 
                 const formData = new FormData(form);
                 formData.set('parent_id', parentVal);
@@ -709,7 +884,7 @@
                                 'Accept': 'application/json'
                                 // JANGAN set 'Content-Type' untuk FormData
                             },
-                            credentials: 'same-origin' // <-- penting agar cookie session ikut
+                            credentials: 'same-origin'
                         });
                     })
                     .then(async (response) => {
@@ -748,13 +923,14 @@
                         }
 
                         Swal.fire({
-                            title: 'Berhasil!',
-                            text: data.message || 'Data kerja sama berhasil disimpan!',
-                            icon: 'success'
-                        }).then(() => {
-                            window.location.href = data.redirect ||
-                                '{{ route('data_kerja_sama') }}';
-                        });
+                                title: 'Berhasil!',
+                                text: data.message || 'Data kerja sama berhasil disimpan!',
+                                icon: 'success'
+                            })
+                            .then(() => {
+                                window.location.href = data.redirect ||
+                                    '{{ route('data_kerja_sama') }}';
+                            });
                     })
                     .catch(err => {
                         if (['NO_DUPLICATE', 'VALIDATION_ERROR', 'CSRF_419'].includes(err.message))
@@ -765,6 +941,7 @@
             });
         });
     </script>
+
 </body>
 
 </html>

@@ -54,6 +54,11 @@ Route::get(
     [EvaluasiMitraKinerjaPeroranganController::class, 'create']
 )->name('EvaluasiMitraKinerjaPerorangan.create');
 
+Route::middleware(['auth']) // atau sesuai kebutuhanmu
+    ->get('/api/rekap/detail', [RekapKerjaSamaController::class, 'apiDetail'])
+    ->name('api.rekap.detail');
+
+
 Route::post(
     'evaluasi-mitra-kinerja/perorangan/{id}',
     [EvaluasiMitraKinerjaPeroranganController::class, 'store']

@@ -305,7 +305,7 @@
                                                     class="btn btn-sm btn-warning me-1" title="Edit">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                @if (($rekap->status ?? 'aktif') === 'aktif')
+                                                @if (($rekap->status ?? 'aktif') === 'aktif' && !$isSelesai)
                                                     <form
                                                         action="{{ route('rekapkerjasama.stop.form', ['id' => $rekap->id]) }}"
                                                         method="GET" class="d-inline">
