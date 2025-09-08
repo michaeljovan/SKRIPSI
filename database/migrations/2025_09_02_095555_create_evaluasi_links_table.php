@@ -10,7 +10,12 @@ return new class extends Migration
     {
         Schema::create('evaluasi_links', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('rekap_id');
+
+            $table->unsignedBigInteger('rekap_id');            // <- definisikan kolomnya SEKALI
+            $table->foreign('rekap_id')                        // <- lalu FK-nya (ini TIDAK menambah kolom baru)
+                ->references('id')->on('rekapkerjasama')
+                ->cascadeOnDelete();
+
             $table->string('context', 20)->default('kinerja'); // kinerja | kepuasan
             $table->string('token_hash', 64)->unique();       // sha256 hex, single-use
             $table->timestamp('expires_at');                  // waktu kadaluarsa link
@@ -23,7 +28,6 @@ return new class extends Migration
             $table->timestamps();
 
             // Relasi ke tabel rekapkerjasama (nama tabel sesuai validasi di kode Anda)
-            $table->foreignId('rekap_id')->constrained('rekap_kerja_sama')->cascadeOnDelete();
 
 
             // Index bantu untuk query

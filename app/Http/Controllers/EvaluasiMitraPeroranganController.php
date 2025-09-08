@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\RekapKerjaSama;
 use App\Models\EvaluasiMitraPerorangan;
 use Illuminate\Http\Request;
-
+use DB;
+use App\Models\EvaluasiLink;
 class EvaluasiMitraPeroranganController extends Controller
 {
     /** Tampilkan form perorangan (multi-orang) */
@@ -35,7 +36,7 @@ class EvaluasiMitraPeroranganController extends Controller
 
         // Validasi
         $request->validate([
-            'rekap_id' => 'required|in:'.$rekap->id, // pastikan sesuai URL
+            'rekap_id' => 'required|in:' . $rekap->id, // pastikan sesuai URL
             'pengisi_mitra' => 'required|string|max:100',
 
             'items' => 'required|array|min:1',
@@ -72,10 +73,17 @@ class EvaluasiMitraPeroranganController extends Controller
                 'submitted_at'   => now(),
             ];
 
-            foreach ([
-                'integritas','keahlian','komunikasi','kerjasamatim',
-                'pengembangandiri','kreativitas','bahasaasing',
-            ] as $f) {
+            foreach (
+                [
+                    'integritas',
+                    'keahlian',
+                    'komunikasi',
+                    'kerjasamatim',
+                    'pengembangandiri',
+                    'kreativitas',
+                    'bahasaasing',
+                ] as $f
+            ) {
                 $data[$f] = $map[$it[$f]] ?? null;
             }
 
@@ -85,12 +93,25 @@ class EvaluasiMitraPeroranganController extends Controller
                     ->store('evaluasi_mitra/perorangan', 'public');
             }
 
+
+
             EvaluasiMitraPerorangan::create($data);
+
+            if ($request->filled('token')) {
+                $hash = hash('sha256', $request->input('token'));
+                DB::transaction(function () use ($hash) {
+                    EvaluasiLink::where('token_hash', $hash)
+                        ->whereNull('used_at')
+                        ->whereNull('invalidated_at')
+                        ->where('expires_at', '>', now())
+                        ->update(['used_at' => now()]);
+                });
+            }
         }
 
         // tandai rekap sudah ada evaluasi mitra
         $rekap->update(['is_mitra' => true]);
-
-        return back()->with('success', 'Semua evaluasi perorangan berhasil dikirim.');
+        return redirect()->route('EvaluasiMitra.thanks')
+            ->with('success', 'Terima kasih, evaluasi berhasil dikirim.');
     }
-}
+};

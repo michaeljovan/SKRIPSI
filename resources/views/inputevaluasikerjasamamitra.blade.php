@@ -41,6 +41,9 @@
                             <form action="{{ route('EvaluasiMitra.store') }}" method="POST"
                                 enctype="multipart/form-data">
                                 @csrf
+                                @if (!empty($token))
+                                    <input type="hidden" name="token" value="{{ $token }}">
+                                @endif
                                 <div class="mb-4">
                                     <h6 class="border-bottom pb-2">Informasi Dokumen</h6>
                                     <div class="row g-3">

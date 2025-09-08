@@ -24,15 +24,16 @@
                     </div>
 
                     <div class="card-body">
-
                         {{-- Status link --}}
                         @php
-                            $expiresAt   = ($expiresAt ?? ($link->expires_at ?? null));
-                            $usedAt      = ($usedAt ?? ($link->used_at ?? null));
-                            $invalidated = ($invalidatedAt ?? ($link->invalidated_at ?? null));
-                            $isUsable    = isset($isUsable)
+                            $expiresAt = $expiresAt ?? ($link->expires_at ?? null);
+                            $usedAt = $usedAt ?? ($link->used_at ?? null);
+                            $invalidated = $invalidatedAt ?? ($link->invalidated_at ?? null);
+                            $isUsable = isset($isUsable)
                                 ? (bool) $isUsable
-                                : (isset($link) && method_exists($link, 'isUsable') ? $link->isUsable() : true);
+                                : (isset($link) && method_exists($link, 'isUsable')
+                                    ? $link->isUsable()
+                                    : true);
 
                             $reason = null;
                             if (!$isUsable) {
@@ -56,10 +57,14 @@
                                     <div class="small">
                                         {{ $reason }}
                                         @if ($expiresAt)
-                                            <br> Kadaluwarsa: {{ \Carbon\Carbon::parse($expiresAt)->timezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB
+                                            <br> Kadaluwarsa:
+                                            {{ \Carbon\Carbon::parse($expiresAt)->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}
+                                            WIB
                                         @endif
                                         @if ($usedAt)
-                                            <br> Dipakai pada: {{ \Carbon\Carbon::parse($usedAt)->timezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB
+                                            <br> Dipakai pada:
+                                            {{ \Carbon\Carbon::parse($usedAt)->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}
+                                            WIB
                                         @endif
                                     </div>
                                 </div>
@@ -96,29 +101,49 @@
                         </p>
 
                         <div class="d-grid gap-3">
-                            {{-- Keseluruhan --}}
-                            <a href="{{ route('EvaluasiMitra.create', ['id' => $rekap->id]) }}"
-                               class="btn btn-primary btn-lg js-choose-form {{ !$isUsable ? 'disabled' : '' }}"
-                               data-usable="{{ $isUsable ? '1' : '0' }}"
-                               data-reason="{{ $reason }}">
-                                <i class="bi bi-people-fill me-2"></i>
-                                Evaluasi Keseluruhan
-                            </a>
+                            @php
+                                // disabled bila token kosong/invalid atau link tidak usable
+                                $disabled = !$isUsable || empty($token);
+                            @endphp
 
-                            {{-- Perorangan --}}
-                            @if (\Illuminate\Support\Facades\Route::has('EvaluasiMitraPerorangan.create'))
-                                <a href="{{ route('EvaluasiMitraPerorangan.create', ['id' => $rekap->id]) }}"
-                                   class="btn btn-outline-primary btn-lg js-choose-form {{ !$isUsable ? 'disabled' : '' }}"
-                                   data-usable="{{ $isUsable ? '1' : '0' }}"
-                                   data-reason="{{ $reason }}">
+                            {{-- Keseluruhan (via token) --}}
+                            @if (Route::has('EvaluasiMitra.keseluruhan.token'))
+                                <a href="{{ $disabled ? '#' : route('EvaluasiMitra.keseluruhan.token', ['token' => $token]) }}"
+                                    class="btn btn-primary btn-lg js-choose-form {{ $disabled ? 'disabled' : '' }}"
+                                    @if ($disabled) aria-disabled="true" tabindex="-1" @endif
+                                    data-usable="{{ $isUsable ? '1' : '0' }}" data-reason="{{ $reason }}"
+                                    data-token="{{ $token }}">
+                                    <i class="bi bi-people-fill me-2"></i>
+                                    Evaluasi Keseluruhan
+                                </a>
+                            @else
+                                <div class="alert alert-warning mb-0">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Route <code>EvaluasiMitra.keseluruhan.token</code> belum dibuat.
+                                </div>
+                            @endif
+
+                            {{-- Perorangan (via token) --}}
+                            @if (Route::has('EvaluasiMitra.perorangan.token'))
+                                <a href="{{ $disabled ? '#' : route('EvaluasiMitra.perorangan.token', ['token' => $token]) }}"
+                                    class="btn btn-outline-primary btn-lg js-choose-form {{ $disabled ? 'disabled' : '' }}"
+                                    @if ($disabled) aria-disabled="true" tabindex="-1" @endif
+                                    data-usable="{{ $isUsable ? '1' : '0' }}" data-reason="{{ $reason }}"
+                                    data-token="{{ $token }}">
                                     <i class="bi bi-person-check me-2"></i>
                                     Evaluasi Perorangan
                                 </a>
                             @else
                                 <div class="alert alert-warning mb-0">
                                     <i class="bi bi-exclamation-triangle me-1"></i>
-                                    Form Perorangan belum tersedia. Pastikan route
-                                    <code>EvaluasiMitraPerorangan.create</code> sudah dibuat.
+                                    Route <code>EvaluasiMitra.perorangan.token</code> belum dibuat.
+                                </div>
+                            @endif
+
+                            @if (empty($token))
+                                <div class="alert alert-danger mt-2">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Token tidak tersedia atau tidak valid.
                                 </div>
                             @endif
                         </div>
@@ -134,18 +159,22 @@
     </div>
 
     {{-- Modal alasan --}}
-    <div class="modal fade" id="linkInvalidModal" tabindex="-1" aria-labelledby="linkInvalidModalLabel" aria-hidden="true">
+    <div class="modal fade" id="linkInvalidModal" tabindex="-1" aria-labelledby="linkInvalidModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="linkInvalidModalLabel"><i class="bi bi-x-octagon-fill me-2"></i>Tautan Tidak Dapat Digunakan</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    <h5 class="modal-title" id="linkInvalidModalLabel"><i class="bi bi-x-octagon-fill me-2"></i>Tautan
+                        Tidak Dapat Digunakan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <div id="linkInvalidReason">Tautan tidak valid.</div>
                 </div>
                 <div class="modal-footer">
-                    <a href="{{ route('data_kerja_sama') }}" class="btn btn-outline-secondary">Kembali ke Data Kerja Sama</a>
+                    <a href="{{ route('data_kerja_sama') }}" class="btn btn-outline-secondary">Kembali ke Data Kerja
+                        Sama</a>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Mengerti</button>
                 </div>
             </div>
@@ -155,20 +184,20 @@
     {{-- Bootstrap JS --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      document.addEventListener('click', function (e) {
-        const a = e.target.closest('.js-choose-form');
-        if (!a) return;
+        document.addEventListener('click', function(e) {
+            const a = e.target.closest('.js-choose-form');
+            if (!a) return;
 
-        const usable = a.dataset.usable === '1';
-        if (!usable) {
-          e.preventDefault();
-          const reason = a.dataset.reason || 'Tautan tidak valid.';
-          document.getElementById('linkInvalidReason').textContent = reason;
-          const modalEl = document.getElementById('linkInvalidModal');
-          const m = new bootstrap.Modal(modalEl);
-          m.show();
-        }
-      });
+            const usable = a.dataset.usable === '1';
+            if (!usable) {
+                e.preventDefault();
+                const reason = a.dataset.reason || 'Tautan tidak valid.';
+                document.getElementById('linkInvalidReason').textContent = reason;
+                const modalEl = document.getElementById('linkInvalidModal');
+                const m = new bootstrap.Modal(modalEl);
+                m.show();
+            }
+        });
     </script>
 </body>
 

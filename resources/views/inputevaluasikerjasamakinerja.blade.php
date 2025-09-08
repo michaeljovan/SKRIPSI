@@ -38,9 +38,14 @@
                         </div>
                         <div class="card-body">
                             <form method="POST"
-                                action="{{ route('EvaluasiMitraKinerja.store', ['id' => $rekap->id]) }}"
+                                action="{{ route('EvaluasiMitraKinerja.keseluruhan.store.token', ['token' => $token]) }}"
                                 enctype="multipart/form-data">
                                 @csrf
+
+                                @if (!empty($token))
+                                    <input type="hidden" name="token" value="{{ $token }}">
+                                @endif
+
                                 <input type="hidden" name="rekap_id" value="{{ $rekap->id }}">
                                 <div class="mb-4">
                                     <h6 class="border-bottom pb-2">Informasi Dokumen</h6>

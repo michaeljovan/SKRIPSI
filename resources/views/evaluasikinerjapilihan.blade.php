@@ -36,10 +36,10 @@
 
                         {{-- Normalisasi status link --}}
                         @php
-                            $expiresAt     = $expiresAt ?? ($link->expires_at ?? null);
-                            $usedAt        = $usedAt ?? ($link->used_at ?? null);
+                            $expiresAt = $expiresAt ?? ($link->expires_at ?? null);
+                            $usedAt = $usedAt ?? ($link->used_at ?? null);
                             $invalidatedAt = $invalidatedAt ?? ($link->invalidated_at ?? null);
-                            $isUsable      = isset($isUsable) ? (bool) $isUsable : true;
+                            $isUsable = isset($isUsable) ? (bool) $isUsable : true;
 
                             if (!$isUsable && !isset($reason)) {
                                 if (!empty($invalidatedAt)) {
@@ -88,26 +88,38 @@
                             </div>
                         </div>
 
+                        @php
+                            // tombol non-aktif bila token kosong atau link tidak usable
+                            $disabled = empty($token) || (isset($isUsable) && !$isUsable);
+                        @endphp
+
                         <div class="d-grid gap-3">
-                            {{-- Kinerja Keseluruhan --}}
-                            <a href="{{ $isUsable ? route('EvaluasiMitraKinerja.create_direct', ['id' => $rekap->id]) : 'javascript:void(0)' }}"
-                               class="btn btn-primary btn-lg js-choose-form {{ !$isUsable ? 'disabled' : '' }}"
-                               data-usable="{{ $isUsable ? '1' : '0' }}"
-                               data-reason="{{ $reason ?? '' }}"
-                               @if(!$isUsable) aria-disabled="true" tabindex="-1" @endif>
+                            {{-- Kinerja Keseluruhan (via token) --}}
+                            <a href="{{ $disabled ? '#' : route('EvaluasiMitraKinerja.keseluruhan.token', ['token' => $token]) }}"
+                                class="btn btn-primary btn-lg js-choose-form {{ $disabled ? 'disabled' : '' }}"
+                                data-usable="{{ $disabled ? '0' : '1' }}" data-reason="{{ $reason ?? '' }}"
+                                data-token="{{ $token ?? '' }}"
+                                @if ($disabled) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="bi bi-people-fill me-2"></i>
                                 Evaluasi Kinerja Keseluruhan
                             </a>
 
-                            {{-- Kinerja Perorangan --}}
-                            <a href="{{ $isUsable ? route('EvaluasiMitraKinerjaPerorangan.create', ['id' => $rekap->id]) : 'javascript:void(0)' }}"
-                               class="btn btn-outline-primary btn-lg js-choose-form {{ !$isUsable ? 'disabled' : '' }}"
-                               data-usable="{{ $isUsable ? '1' : '0' }}"
-                               data-reason="{{ $reason ?? '' }}"
-                               @if(!$isUsable) aria-disabled="true" tabindex="-1" @endif>
-                                <i class="bi bi-person-check me-2"></i>
-                                Evaluasi Kinerja Perorangan
-                            </a>
+                            {{-- Kinerja Perorangan (via token) --}}
+                            @if (Route::has('EvaluasiMitraKinerja.perorangan.token'))
+                                <a href="{{ $disabled ? '#' : route('EvaluasiMitraKinerja.perorangan.token', ['token' => $token]) }}"
+                                    class="btn btn-outline-primary btn-lg js-choose-form {{ $disabled ? 'disabled' : '' }}"
+                                    data-usable="{{ $disabled ? '0' : '1' }}" data-reason="{{ $reason ?? '' }}"
+                                    data-token="{{ $token ?? '' }}"
+                                    @if ($disabled) aria-disabled="true" tabindex="-1" @endif>
+                                    <i class="bi bi-person-check me-2"></i>
+                                    Evaluasi Kinerja Perorangan
+                                </a>
+                            @else
+                                <div class="alert alert-warning mb-0">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Route <code>EvaluasiMitraKinerja.perorangan.token</code> belum dibuat.
+                                </div>
+                            @endif
                         </div>
 
                     </div>
@@ -121,14 +133,16 @@
     </div>
 
     {{-- Modal pemberitahuan ketika tombol diklik namun link tidak usable --}}
-    <div class="modal fade" id="linkInvalidModal" tabindex="-1" aria-labelledby="linkInvalidModalLabel" aria-hidden="true">
+    <div class="modal fade" id="linkInvalidModal" tabindex="-1" aria-labelledby="linkInvalidModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="linkInvalidModalLabel">
                         <i class="bi bi-x-octagon-fill me-2"></i>Tautan Tidak Dapat Digunakan
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <div id="linkInvalidReason">Tautan tidak valid.</div>
@@ -145,7 +159,7 @@
 
     {{-- Interceptor klik tombol --}}
     <script>
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             const a = e.target.closest('.js-choose-form');
             if (!a) return;
 

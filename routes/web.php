@@ -21,6 +21,51 @@ Route::get('/', function () {
 });
 
 
+Route::prefix('evaluasi-kinerja')->name('EvaluasiMitraKinerja.')->group(function () {
+    Route::post('{rekapId}/kirim-token', [EvaluasiMitraKinerjaController::class, 'kirimLinkDanOtp'])
+        ->name('kirim.token');
+
+    Route::get('t/{token}/pilihan',     [EvaluasiMitraKinerjaController::class, 'pilihanByToken'])
+        ->name('pilihan.token');
+
+    Route::get('t/{token}/keseluruhan', [EvaluasiMitraKinerjaController::class, 'createKeseluruhanByToken'])
+        ->name('keseluruhan.token');
+    Route::post('t/{token}/keseluruhan', [EvaluasiMitraKinerjaController::class, 'storeKeseluruhanByToken'])
+        ->name('keseluruhan.store.token');
+
+    Route::get('t/{token}/perorangan',  [EvaluasiMitraKinerjaController::class, 'createPeroranganByToken'])
+        ->name('perorangan.token');
+    Route::post('t/{token}/perorangan', [EvaluasiMitraKinerjaController::class, 'storePeroranganByToken'])
+        ->name('perorangan.store.token');
+});
+
+
+Route::prefix('evaluasi-kinerja')->name('EvaluasiMitraKinerja.')->group(function () {
+    // Kirim link token via email (context=kinerja)
+    Route::post('{rekapId}/kirim-token', [EvaluasiMitraKinerjaController::class, 'kirimLinkToken'])
+        ->name('kirim.token');
+
+    // Halaman pilihan via token
+    Route::get('t/{token}/pilihan', [EvaluasiMitraKinerjaController::class, 'pilihanByToken'])
+        ->name('pilihan.token');
+
+    // Keseluruhan via token
+    Route::get('t/{token}/keseluruhan',  [EvaluasiMitraKinerjaController::class, 'createKeseluruhanByToken'])
+        ->name('keseluruhan.token');
+    Route::post('t/{token}/keseluruhan', [EvaluasiMitraKinerjaController::class, 'storeKeseluruhanByToken'])
+        ->name('keseluruhan.store.token');
+
+    // Perorangan via token
+    Route::get('t/{token}/perorangan',  [EvaluasiMitraKinerjaController::class, 'createPeroranganByToken'])
+        ->name('perorangan.token');
+    Route::post('t/{token}/perorangan', [EvaluasiMitraKinerjaController::class, 'storePeroranganByToken'])
+        ->name('perorangan.store.token');
+});
+
+
+Route::view('/evaluasi-mitra/terima-kasih', 'evaluasi.thanks')
+    ->name('EvaluasiMitra.thanks');
+
 Route::get('/evaluasi-kinerja/{rekapId}/pilihan', [EvaluasiMitraKinerjaController::class, 'pilihanForm'])
     ->name('EvaluasiMitraKinerja.pilihan');
 
@@ -29,6 +74,9 @@ Route::get('/evaluasi-kinerja/{id}/create', [EvaluasiMitraKinerjaController::cla
 
 Route::get('/evaluasi/link/{rekap}/{token}', [EvaluasiLinkController::class, 'show'])
     ->name('EvaluasiLink.show');
+
+Route::get('/evaluasi-mitra/perorangan/{token}', [EvaluasiMitraController::class, 'createPeroranganByToken'])
+    ->name('EvaluasiMitra.perorangan.token');
 
 Route::get('/evaluasi/link/start/{mode}', [EvaluasiLinkController::class, 'start'])
     ->name('EvaluasiLink.start');
@@ -65,14 +113,26 @@ Route::post(
 )->name('EvaluasiMitraKinerjaPerorangan.store');
 
 // Options JSON (dropdown induk) — beri nama:
-Route::get('/rekapkerjasama/options', [\App\Http\Controllers\RekapKerjaSamaController::class, 'options'])
+Route::get('/rekapkerjasama/options', [RekapKerjaSamaController::class, 'options'])
     ->name('rekapkerjasama.options');
 
 Route::post('evaluasi-mitra/{rekapId}/kirim', [EvaluasiMitraController::class, 'kirimLink'])
     ->name('EvaluasiMitra.kirim');
 
+Route::get('/evaluasi-mitra/pilihan/{token}', [EvaluasiMitraController::class, 'pilihanByToken'])
+    ->name('EvaluasiMitra.pilihan.token');
+
+// form keseluruhan (berbasis token acak)
+Route::get('/evaluasi-mitra/keseluruhan/{token}', [EvaluasiMitraController::class, 'createKeseluruhanByToken'])
+    ->name('EvaluasiMitra.keseluruhan.token');
+
+// form perorangan (berbasis token acak)
+Route::get('/evaluasi-mitra/perorangan/{token}', [EvaluasiMitraController::class, 'createPeroranganByToken'])
+    ->name('EvaluasiMitra.perorangan.token');
+
+
 // Kirim OTP Evaluasi Kinerja (staff):
-Route::post('/rekapkerjasama/{rekap}/send-evaluasi-otp', [\App\Http\Controllers\RekapKerjaSamaController::class, 'sendEvaluasiOtp'])
+Route::post('/rekapkerjasama/{rekap}/send-evaluasi-otp', [RekapKerjaSamaController::class, 'sendEvaluasiOtp'])
     ->name('rekap.sendEvaluasiOtp');
 
 // (sudah ada di kodenya) Gate OTP yang dipakai dalam email:

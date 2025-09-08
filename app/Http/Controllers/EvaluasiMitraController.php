@@ -13,6 +13,8 @@ use Carbon\Carbon;
 use Throwable;
 use App\Models\EvaluasiMitraPerorangan;
 use App\Models\EvaluasiLink;
+use DB;
+use Str;
 
 class EvaluasiMitraController extends Controller
 {
@@ -115,7 +117,20 @@ class EvaluasiMitraController extends Controller
         // tandai rekap sudah punya evaluasi mitra
         RekapKerjaSama::where('id', $validated['rekap_id'])->update(['is_mitra' => true]);
 
-        return back()->with('success', 'Evaluasi berhasil disimpan');
+        if ($request->filled('token')) {
+            $hash = hash('sha256', $request->input('token'));
+            DB::transaction(function () use ($hash) {
+                // update “once” dengan guard race-condition
+                EvaluasiLink::where('token_hash', $hash)
+                    ->whereNull('used_at')
+                    ->whereNull('invalidated_at')
+                    ->where('expires_at', '>', now())
+                    ->update(['used_at' => now()]);
+            });
+        }
+
+        return redirect()->route('EvaluasiMitra.thanks')
+            ->with('success', 'Terima kasih, evaluasi berhasil dikirim.');
     }
 
     /** Hapus evaluasi MITRA (admin) */
@@ -222,38 +237,143 @@ class EvaluasiMitraController extends Controller
      */
     public function kirimLink(Request $request, $rekapId)
     {
-        $rekap = RekapKerjaSama::findOrFail($rekapId);
-
-        // Ambil email dari input → fallback ke model
+        $rekap   = \App\Models\RekapKerjaSama::findOrFail($rekapId);
         $toEmail = trim((string) $request->input('email_mitra', $rekap->email_mitra ?? $rekap->email_pihak_mitra ?? ''));
-        $request->merge(['email_mitra' => $toEmail]);
 
+        $request->merge(['email_mitra' => $toEmail]);
         $request->validate([
             'email_mitra' => 'required|email:rfc,dns',
-        ], [
-            'email_mitra.required' => 'Email mitra belum diisi.',
-            'email_mitra.email'    => 'Format email mitra tidak valid.',
         ]);
 
-        // Info masa berlaku (hanya ditampilkan di email)
-        $expiresAt = Carbon::now()->addHours(24);
+        // 1) generate token plaintext + hash
+        $plainToken = Str::random(64);
+        $hash       = hash('sha256', $plainToken);
+        $expiresAt  = Carbon::now()->addHours(24);
 
-        // Link ke halaman pilihan (tanpa token/OTP)
-        $url = Route::has('EvaluasiMitra.pilihan')
-            ? route('EvaluasiMitra.pilihan', ['rekapId' => $rekap->id])
-            : url("evaluasi-mitra/{$rekap->id}/pilihan");
+        // 2) simpan EvaluasiLink
+        EvaluasiLink::create([
+            'rekap_id'            => $rekap->id,
+            'context'             => 'kepuasan', // atau 'mitra' sesuai kebutuhanmu
+            'token_hash'          => $hash,
+            'expires_at'          => $expiresAt,
+            'sent_to_email'       => $toEmail,
+            'created_by_staff_id' => auth()->id(),
+            'request_ip'          => $request->ip(),
+            'user_agent'          => substr($request->userAgent() ?? '', 0, 191),
+        ]);
 
-        try {
-            Mail::to($toEmail)->send(new MitraEvaluasiLinkMail($rekap, $url, $expiresAt, 'kepuasan'));
-        } catch (Throwable $e) {
-            return back()->with('error', 'Gagal mengirim email: ' . $e->getMessage());
-        }
+        // 3) URL ke HALAMAN PILIHAN (SOFT CHECK) berbasis token
+        $url = route('EvaluasiMitra.pilihan.token', ['token' => $plainToken]);
+
+        // 4) kirim email
+        Mail::to($toEmail)->send(new MitraEvaluasiLinkMail($rekap, $url, $expiresAt, 'kepuasan'));
 
         return back()->with(
             'success',
-            'Tautan evaluasi mitra dikirim ke ' . $toEmail . ' (berlaku s.d. ' .
-                $expiresAt->timezone('Asia/Jakarta')->format('d/m/Y H:i') . ' WIB).'
+            'Tautan evaluasi mitra dikirim ke ' . $toEmail .
+                ' (berlaku s.d. ' . $expiresAt->timezone('Asia/Jakarta')->format('d/m/Y H:i') . ' WIB).'
         );
+    }
+
+    // === NEW: helper validasi token → return [link, rekap] atau abort 410/403 ===
+    protected function resolveTokenOrFail(string $plainToken): array
+    {
+        $hash = hash('sha256', $plainToken);
+
+        /** @var EvaluasiLink|null $link */
+        $link = EvaluasiLink::where('token_hash', $hash)->first();
+
+        if (!$link) abort(404, 'Tautan tidak ditemukan.');
+
+        // Cek usable (pakai method model kamu)
+        if (!$link->isUsable()) {
+            if ($link->invalidated_at) abort(403, 'Tautan ini telah dinonaktifkan.');
+            if ($link->used_at)        abort(410, 'Tautan ini sudah digunakan.');
+            if ($link->expires_at && $link->expires_at->isPast()) abort(410, 'Tautan ini sudah kedaluwarsa.');
+            abort(403, 'Tautan tidak valid.');
+        }
+
+        $rekap = $link->rekap()->with('laporanPelaksanaan')->firstOrFail();
+
+        return [$link, $rekap];
+    }
+
+    // === NEW: Halaman pilihan berbasis token ===
+    public function pilihanByToken(string $token)
+    {
+        $hash = hash('sha256', $token);
+
+        /** @var \App\Models\EvaluasiLink|null $link */
+        $link = \App\Models\EvaluasiLink::with('rekap')->where('token_hash', $hash)->first();
+
+        if (!$link) {
+            // boleh 404, karena token salah/unknown
+            abort(404, 'Tautan tidak ditemukan.');
+        }
+
+        $rekap = $link->rekap ?: \App\Models\RekapKerjaSama::findOrFail($link->rekap_id);
+
+        // SOFT: hitung status tanpa abort
+        $isUsable  = method_exists($link, 'isUsable') ? $link->isUsable() : (is_null($link->used_at) && is_null($link->invalidated_at) && $link->expires_at->isFuture());
+        $reason = null;
+        if (!$isUsable) {
+            if ($link->invalidated_at)                           $reason = 'Tautan ini telah dinonaktifkan oleh sistem.';
+            elseif ($link->used_at)                              $reason = 'Tautan ini sudah digunakan.';
+            elseif ($link->expires_at && $link->expires_at->isPast()) $reason = 'Tautan ini sudah kedaluwarsa.';
+            else                                                 $reason = 'Tautan tidak valid.';
+        }
+
+        return view('evaluasimitrapilihan', [
+            'rekap'         => $rekap,
+            'token'         => $token,        // penting! agar <a> ke form bisa bawa token
+            'isUsable'      => $isUsable,
+            'reason'        => $reason,
+            'expiresAt'     => $link->expires_at,
+            'usedAt'        => $link->used_at,
+            'invalidatedAt' => $link->invalidated_at,
+            'link'          => $link,
+        ]);
+    }
+
+
+    // === NEW: Buka form keseluruhan berbasis token acak ===
+    // EvaluasiMitraController.php
+
+    public function createKeseluruhanByToken(string $token)
+    {
+        [$link, $rekap] = $this->resolveTokenOrFail($token);
+
+        // samakan seperti create()
+        $laporan = $rekap->laporanPelaksanaan; // bisa null
+
+        $split = function (?string $s): array {
+            if (!$s) return [];
+            $arr = preg_split('/\r\n|\r|\n|,/', $s);
+            return array_values(array_filter(array_map('trim', $arr), fn($v) => $v !== ''));
+        };
+
+        $dosenList      = $split(optional($laporan)->dosen_terlibat);
+        $mahasiswaList  = $split(optional($laporan)->mahasiswa_terlibat);
+        $dosenCount     = $laporan->jumlah_dosen_terlibat     ?? count($dosenList);
+        $mahasiswaCount = $laporan->jumlah_mahasiswa_terlibat ?? count($mahasiswaList);
+
+        return view('inputevaluasikerjasamamitra', compact(
+            'rekap',
+            'laporan',
+            'dosenList',
+            'mahasiswaList',
+            'dosenCount',
+            'mahasiswaCount',
+            'token'
+        ));
+    }
+
+
+    // === NEW: Buka form perorangan berbasis token acak ===
+    public function createPeroranganByToken(string $token)
+    {
+        [$link, $rekap] = $this->resolveTokenOrFail($token); // STRICT
+        return view('evaluasimitra_perorangan', compact('rekap', 'token'));
     }
 
     /** Halaman pilihan (Keseluruhan / Perorangan) */
